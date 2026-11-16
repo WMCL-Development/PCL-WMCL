@@ -8,6 +8,7 @@
         <Platform Name="ARM64" />
         <Platform Name="x64" />
     </Configurations>
+    <Project Path="PCL.Cli\PCL.Cli.csproj" Type="C#" />
     <Project Path="PCL.Core\PCL.Core.csproj" Type="C#" />
     <Project Path="PCL.Core.Test\PCL.Core.Test.csproj" Type="C#" />
     <Project Path="PCL.Launcher.Core\PCL.Launcher.Core.csproj" Type="C#" />

@@ -211,7 +211,7 @@ public class LifecycleScopeGenerator : IIncrementalGenerator
         sb.AppendLine($"    public string Name => {model.Name.ToLiteral()};");
         sb.AppendLine($"    public bool SupportAsync => {(model.SupportAsync ? "true" : "false")};");
         sb.AppendLine();
-        sb.AppendLine("    private static LifecycleContext Context { get => field ?? throw new InvalidOperationException(\"Not initialized\"); set; } = null!;");
+        sb.AppendLine("    private static LifecycleContext Context { get => field ?? Lifecycle.GetFallbackContext(); set; } = null!;");
         sb.AppendLine("    private static ILifecycleService Service => Context.ServiceInstance;");
         sb.AppendLine($"    public {model.TypeName}() {{ Context = Lifecycle.GetContext(this); }}");
         sb.AppendLine();
