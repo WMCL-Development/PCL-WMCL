@@ -11,6 +11,9 @@ public static partial class GameLaunch
 {
     public const string MesaLoaderWindowsVersion = "26.0.4";
 
+    /// <summary>游戏进程成功启动后触发，参数为进程 ID。</summary>
+    public static event Action<int>? GameProcessStarted;
+
     public const string LaunchStageLoginId = "Launch:Login";
     public const string LaunchStageGetJavaId = "Launch:GetJava";
     public const string LaunchStageCompleteFilesId = "Launch:CompleteFiles";
@@ -35,10 +38,6 @@ public static partial class GameLaunch
         _ShowDonateHint();
 #endif
 
-#if DEBUG || DEBUGCI
-        return;
-#endif
-        _ShowPurchaseHint();
     }
 
     private static void _ValidateLaunchPath()
@@ -203,47 +202,6 @@ public static partial class GameLaunch
     }
 #endif
 
-    private static void _ShowPurchaseHint()
-    {
-        if (ProfileService.HasMicrosoftProfile)
-            return;
-
-        if (Lang.IsFeaturesUnrestricted)
-        {
-            if (LaunchUi.ShowMessageBox(
-                    Lang.Text("Minecraft.Launch.PurchaseHint.Message"),
-                    Lang.Text("Minecraft.Launch.PurchaseHint.Title"),
-                    Lang.Text("Minecraft.Launch.PurchaseHint.Purchase"),
-                    Lang.Text("Minecraft.Launch.PurchaseHint.Later")
-                )
-                == 1)
-                LauncherUi.Interaction?.OpenWebsite(
-                    "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj");
-            return;
-        }
-
-        switch (LaunchUi.ShowMessageBox(
-                    Lang.Text("Minecraft.Launch.AccountVerification.Message"),
-                    Lang.Text("Minecraft.Launch.AccountVerification.Title"),
-                    Lang.Text("Minecraft.Launch.AccountVerification.Purchase"),
-                    Lang.Text("Minecraft.Launch.AccountVerification.Demo"),
-                    Lang.Text("Minecraft.Launch.AccountVerification.Back"),
-                    button1Action: () =>
-                        LauncherUi.Interaction?.OpenWebsite(
-                            "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")))
-        {
-            case 2:
-                LauncherUi.Interaction?.ShowHint(
-                    Lang.Text("Minecraft.Launch.DemoMode"),
-                    NotificationType.Error);
-                currentLaunchOptions!.ExtraArgs.Add("--demo");
-                break;
-
-            case 3:
-                throw new Exception("$$");
-        }
-    }
-
     public static bool isLaunching;
     public static McLaunchOptions? currentLaunchOptions;
 
@@ -293,7 +251,7 @@ public static partial class GameLaunch
     {
         isLaunching = true;
         currentLaunchOptions = options ?? new McLaunchOptions();
-        if (!LauncherCommon.RunInUi())
+        if (!LauncherCommon.RunInUi() && !LauncherCommon.HeadlessMode)
             throw new Exception("McLaunchStart 必须在 UI 线程调用！");
         if (mcLaunchLoader.State == LoadState.Loading)
         {

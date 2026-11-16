@@ -41,6 +41,11 @@ public static class LauncherCommon
 
     public static LauncherLogHandler? UiLogHandler { get; set; }
 
+    /// <summary>
+    ///     无界面模式：命令行等场景下没有 UI 线程，启动管线改为同步在当前线程执行。
+    ///     </summary>
+    public static bool HeadlessMode { get; set; }
+
     private static bool _modeDebug;
 
     /// <summary>是否处于调试模式，由宿主同步。</summary>
@@ -72,6 +77,11 @@ public static class LauncherCommon
     public const string VersionBranchCode = "0";
 #endif
 
+    /// <summary>
+    ///     日志门面：Hint 及以上级别转给界面提示（<see cref="UiLogHandler" />），
+    ///     其余按级别落到 <see cref="LogWrapper" />。业务代码统一走这里，不要直接调 LogWrapper，
+    ///     否则用户看不到界面提示。
+    /// </summary>
     public static void Log(
         string text,
         LauncherLogLevel level = LauncherLogLevel.Normal,
@@ -148,6 +158,8 @@ public static class LauncherCommon
     /// <summary>确保在 UI 线程中执行代码并返回结果。</summary>
     public static T? RunInUiWait<T>(Func<T> func)
     {
+        // 无界面模式下没有 UI 线程，直接在调用线程执行。
+        if (HeadlessMode) return func();
         var dispatcher = PlatformServices.UiDispatcher;
         if (dispatcher is null) return default;
         return dispatcher.CheckAccess() ? func() : dispatcher.Invoke(func);
@@ -156,6 +168,12 @@ public static class LauncherCommon
     /// <summary>确保在 UI 线程中执行代码，必要时阻断当前线程直至执行完毕。</summary>
     public static void RunInUiWait(Action action)
     {
+        if (HeadlessMode)
+        {
+            action();
+            return;
+        }
+
         var dispatcher = PlatformServices.UiDispatcher;
         if (dispatcher is null) return;
         if (dispatcher.CheckAccess()) action();

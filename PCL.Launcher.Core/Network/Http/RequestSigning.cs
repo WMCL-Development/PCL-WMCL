@@ -24,6 +24,7 @@ public static class RequestSigning
         client.Version = HttpVersion.Version20;
         client.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
         if (Uri.TryCreate(url, UriKind.Absolute, out var parsedUri)
+            && !string.IsNullOrWhiteSpace(Secrets.CurseForgeAPIKey)
             && (parsedUri.Host == "api.curseforge.com"
                 || parsedUri.Host == "edge.forgecdn.net"
                 || parsedUri.Host == "mediafilez.forgecdn.net"))

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.Tools.Lottery;
 using PCL.Core.Platform;
 using PCL.Core.Utils;
 using PCL.Core.Utils.OS;
@@ -460,6 +461,10 @@ public static partial class GameLaunch
 
         gameProcess.Start();
         McLaunchLog($"已启动游戏进程：{startInfo.FileName}");
+        // 通知界面层：游戏进程已经起来，可用于「启动后最小化/隐藏启动器」等行为。
+        GameProcessStarted?.Invoke(gameProcess.Id);
+        // 每成功启动一次游戏 +1 次抽奖机会；状态文件写失败不影响启动。
+        LotteryStore.RecordLaunch();
         if (loader.IsAborted)
         {
             McLaunchLog("由于取消启动，已强制结束游戏进程");
