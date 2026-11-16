@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <LangVersion>15.0</LangVersion>
+        <AssemblyName>pcl-cli</AssemblyName>
+        <RootNamespace>PCL.Cli</RootNamespace>
+        <InvariantGlobalization>false</InvariantGlobalization>
+    </PropertyGroup>
+    <ItemGroup>
+        <!-- 与界面版一致：入口程序集必须带上启动器元数据，Basics 会从入口程序集读取。 -->
+        <EmbeddedResource Include="..\PCL.Launcher\Resources\metadata.json" Link="metadata.json">
+            <LogicalName>PCL.metadata.json</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\PCL.Core\PCL.Core.csproj" />
+        <ProjectReference Include="..\PCL.Launcher.Core\PCL.Launcher.Core.csproj" />
+        <ProjectReference Include="..\PCL.Platform\PCL.Platform.csproj" />
+        <ProjectReference Include="..\PCL.Core.UI\PCL.Core.UI.csproj" />
+    </ItemGroup>
+</Project>
