@@ -1609,7 +1609,55 @@
     <!-- Launch.Account.ProfileSkin -->
 
     <sys:String x:Key="Launch.Account.ProfileSkin.CapeUnsupported">目前檔案不支援修改披風！</sys:String>
+    <sys:String x:Key="Launch.Account.ProfileSkin.Preview3D">3D 皮膚預覽</sys:String>
     <sys:String x:Key="Launch.Account.ProfileSkin.ChangeCape">修改披風</sys:String>
+    <sys:String x:Key="Skin.Editor.Title">皮膚編輯器</sys:String>
+    <sys:String x:Key="Skin.Editor.Tools">工具</sys:String>
+    <sys:String x:Key="Skin.Editor.Brush">畫筆</sys:String>
+    <sys:String x:Key="Skin.Editor.Eraser">橡皮擦</sys:String>
+    <sys:String x:Key="Skin.Editor.Fill">填充</sys:String>
+    <sys:String x:Key="Skin.Editor.Pick">吸色</sys:String>
+    <sys:String x:Key="Skin.Editor.Undo">復原</sys:String>
+    <sys:String x:Key="Skin.Editor.Redo">重做</sys:String>
+    <sys:String x:Key="Skin.Editor.MirrorH">水平鏡像</sys:String>
+    <sys:String x:Key="Skin.Editor.MirrorV">垂直鏡像</sys:String>
+    <sys:String x:Key="Skin.Editor.Clear">清空</sys:String>
+    <sys:String x:Key="Skin.Editor.ResetView">重置視圖</sys:String>
+    <sys:String x:Key="Skin.Editor.Color">顏色</sys:String>
+    <sys:String x:Key="Skin.Editor.Save">儲存為 PNG</sys:String>
+    <sys:String x:Key="Skin.Editor.NoSkin">未載入皮膚</sys:String>
+    <sys:String x:Key="Skin.Editor.Loaded">已載入 {0}×{1} 皮膚</sys:String>
+    <sys:String x:Key="Skin.Editor.Filled">已填充 {0} 個像素</sys:String>
+    <sys:String x:Key="Skin.Editor.MirroredH">已水平鏡像</sys:String>
+    <sys:String x:Key="Skin.Editor.MirroredV">已垂直鏡像</sys:String>
+    <sys:String x:Key="Skin.Editor.Cleared">已清空皮膚</sys:String>
+    <sys:String x:Key="Skin.Editor.Undone">已復原</sys:String>
+    <sys:String x:Key="Skin.Editor.Redone">已重做</sys:String>
+    <sys:String x:Key="Launch.Skin.NeedLogin">請先登入帳號再上傳皮膚</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.Resource.Preparing">正在準備資源…</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.Resource.Failed">資源準備失敗，已回退預設樣式</sys:String>
+    <sys:String x:Key="Launch.Skin.Title">皮膚</sys:String>
+    <sys:String x:Key="Launch.Skin.Preview">預覽</sys:String>
+    <sys:String x:Key="Launch.Skin.Front">正面</sys:String>
+    <sys:String x:Key="Launch.Skin.Back">背面</sys:String>
+    <sys:String x:Key="Launch.Skin.Reset">重置視角</sys:String>
+    <sys:String x:Key="Launch.Skin.LocalFile">本機檔案</sys:String>
+    <sys:String x:Key="Launch.Skin.PickSkin">選擇皮膚檔案</sys:String>
+    <sys:String x:Key="Launch.Skin.PickCape">選擇披風檔案</sys:String>
+    <sys:String x:Key="Launch.Skin.Account">帳號</sys:String>
+    <sys:String x:Key="Launch.Skin.UploadSkin">上傳皮膚</sys:String>
+    <sys:String x:Key="Launch.Skin.UploadCape">上傳披風</sys:String>
+    <sys:String x:Key="Launch.Skin.Editor">皮膚編輯器</sys:String>
+    <sys:String x:Key="Launch.Skin.OpenEditor">開啟皮膚編輯器</sys:String>
+    <sys:String x:Key="Launch.Skin.NoAccount">未登入帳號</sys:String>
+    <sys:String x:Key="Launch.Skin.NeedLocalFile">請先選擇本機皮膚檔案</sys:String>
+    <sys:String x:Key="Launch.Skin.Unsupported">該帳號不支援直接上傳</sys:String>
+    <sys:String x:Key="Launch.Skin.Uploading">正在上傳…</sys:String>
+    <sys:String x:Key="Launch.Skin.Uploaded">皮膚已上傳</sys:String>
+    <sys:String x:Key="Launch.Skin.UploadFailed">上傳失敗</sys:String>
+    <sys:String x:Key="Launch.Skin.CapeUnsupported">披風只能由官方發放，無法自行上傳</sys:String>
+    <sys:String x:Key="Launch.Skin.Saved">已儲存</sys:String>
+    <sys:String x:Key="Launch.Skin.EditorFailed">開啟編輯器失敗</sys:String>
     <sys:String x:Key="Launch.Account.ProfileSkin.ChangeSkin">修改外觀</sys:String>
     <sys:String x:Key="Launch.Account.ProfileSkin.EditPassword">修改密碼</sys:String>
     <sys:String x:Key="Launch.Account.ProfileSkin.EditProfile">修改資訊</sys:String>
@@ -2605,6 +2653,14 @@
     <sys:String x:Key="Setup.GameLink.Protocol.Tcp.ToolTip">讓 EasyTier 優先使用 TCP 進行通訊，TCP 通常能帶來更好的穩定性</sys:String>
     <sys:String x:Key="Setup.GameLink.Protocol.Udp">UDP</sys:String>
     <sys:String x:Key="Setup.GameLink.Protocol.Udp.ToolTip">讓 EasyTier 優先使用 UDP 進行通訊，UDP 通常能帶來更低的通訊時延</sys:String>
+    <sys:String x:Key="Setup.GameLink.EasyTier.Title">EasyTier 參數</sys:String>
+    <sys:String x:Key="Setup.GameLink.EasyTier.Shared">四種連線方式都跑在 EasyTier 上，這裡的設定對它們全部生效；Astral 另有獨立設定。</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Title">連線方式</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Hint">連線頁只顯示這裡選取的方式，其餘面板會隱藏。</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Lobby">連線大廳</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Astral">Astral 連線</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Terracotta">陶瓦連線</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.EasyTier">EasyTier 直連</sys:String>
     <sys:String x:Key="Setup.GameLink.RestartRequired">修改此處的設定後，需要重新啟動大廳以使設定生效。</sys:String>
     <sys:String x:Key="Setup.GameLink.Username">使用者名稱</sys:String>
     <sys:String x:Key="Setup.GameLink.Username.ToolTip">PCL CE 會盡可能使用此處的使用者名稱用於大廳資訊展示。&#xA;若留空，則使用 Natayark ID 的使用者名稱。&#xA;&#xA;部分情況下可能始終展示 Natayark ID 使用者名稱，而非此處設定的名稱。</sys:String>
@@ -2854,7 +2910,7 @@
 
     <!-- Setup.Left -->
 
-    <sys:String x:Key="Setup.Left.Category.About">關於</sys:String>
+    <sys:String x:Key="Setup.Left.Category.About">其他</sys:String>
     <sys:String x:Key="Setup.Left.Category.Game">遊戲</sys:String>
     <sys:String x:Key="Setup.Left.Category.Launcher">啟動器</sys:String>
     <sys:String x:Key="Setup.Left.Category.Tools">工具</sys:String>
@@ -3047,6 +3103,7 @@
     <sys:String x:Key="Setup.Ui.Basic.GetSnapshot">取得官方快照版</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.LockWindow">鎖定啟動器大小</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.Opacity">不透明度</sys:String>
+    <sys:String x:Key="Setup.Ui.Basic.Scale">介面縮放</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.Opacity2">不透明度</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.ShowTriviaHint">在啟動遊戲時顯示"你知道嗎"</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.Title">基礎</sys:String>
@@ -3175,6 +3232,10 @@
     <sys:String x:Key="Setup.Ui.Theme.Color.CatBlue">龍貓藍</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Color.CrashBlue">當機藍</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Color.Hmcl">HMCL</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Color.Mint">薄荷綠</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Color.Amber">琥珀橙</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Color.Rose">玫瑰紅</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Color.Violet">紫羅蘭</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Color.SkyBlue">天空藍</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Dark">深色</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.DarkColor">深色配色</sys:String>
@@ -3182,6 +3243,9 @@
     <sys:String x:Key="Setup.Ui.Theme.FollowSystem">跟隨系統</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Light">淺色</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.LightColor">淺色配色</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Tweak.Hue">色相</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Tweak.Light">明度</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Tweak.Chroma">彩度</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Title">主題</sys:String>
 
     <!-- Setup.Update -->
@@ -3287,6 +3351,15 @@
     <sys:String x:Key="Tools.Left.Utilities">奇妙小工具</sys:String>
     <sys:String x:Key="Tools.Left.Utilities.Title">百寶箱</sys:String>
 
+
+    <!-- Tools.Astral -->
+    <sys:String x:Key="Tools.Left.Astral">Astral 連線</sys:String>
+    <sys:String x:Key="Tools.Astral.Join.Title">加入 Astral 房間</sys:String>
+    <sys:String x:Key="Tools.Astral.Join.Hint">貼上長連結、短連結或 6 位短碼，會自動辨識。</sys:String>
+    <sys:String x:Key="Tools.Astral.Join.Button">加入房間</sys:String>
+    <sys:String x:Key="Tools.Astral.Leave.Button">離開</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Title">建立 Astral 房間</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Button">開房並產生分享碼</sys:String>
     <!-- Tools.GameLink -->
 
     <sys:String x:Key="Tools.GameLink.Announcement.Format">[{0}] {1}</sys:String>
@@ -3320,8 +3393,8 @@
     <sys:String x:Key="Tools.GameLink.Exit.HostWarning">由於你是大廳建立者，退出後此大廳將會自動解散。</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Action">加入</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Clear">清除</sys:String>
-    <sys:String x:Key="Tools.GameLink.Join.Description">1、在下方輸入朋友傳送給你的大廳編號，點擊【加入】&#xA;2、啟動遊戲，選擇【多人遊戲】，在區域網遊戲中加入大廳</sys:String>
-    <sys:String x:Key="Tools.GameLink.Join.IdHint">編號應該長得像這樣：U/NNNN-AAAA-SSSS-EEEE</sys:String>
+    <sys:String x:Key="Tools.GameLink.Join.Description">1、在下方輸入朋友傳送給你的大廳編號或陶瓦編號，點擊【加入】&#xA;2、啟動遊戲，選擇【多人遊戲】，在區域網遊戲中加入大廳</sys:String>
+    <sys:String x:Key="Tools.GameLink.Join.IdHint">大廳編號形如 U/NNNN-AAAA-SSSS-EEEE，陶瓦編號形如 ABCDE-FGHIJ-KLMNO-PQRST-UVWXY</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.InvalidText">大廳編號不正確，請檢查後重新輸入</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Paste">貼上</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Title">加入大廳</sys:String>
@@ -3421,6 +3494,187 @@
     <sys:String x:Key="Tools.ServerQuery.Error.Timeout.ReadWrite">資料讀寫超時</sys:String>
     <sys:String x:Key="Tools.ServerQuery.Error.UnableToConnect">無法連線: {0}</sys:String>
 
+    <!-- Tools.Astral.User/Host/Relay -->
+    <sys:String x:Key="Tools.Astral.User.Label">使用者名稱</sys:String>
+    <sys:String x:Key="Tools.Astral.User.Hint">留空則用系統名稱</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Name">房間名稱</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Protected">產生隨機密碼（保護房間）</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Network">網路名稱</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Secret">金鑰</sys:String>
+    <sys:String x:Key="Tools.Astral.Relay.Hint">開房時可勾選要使用的中繼節點：</sys:String>
+    <sys:String x:Key="Tools.Astral.Relay.Name">備註名稱</sys:String>
+    <sys:String x:Key="Tools.Astral.Relay.Add">新增</sys:String>
+    <sys:String x:Key="Tools.Astral.Relay.Remove">移除</sys:String>
+    <!-- Tools.Astral.Members -->
+    <sys:String x:Key="Tools.Astral.Ip.Override">虛擬 IP（可留空）</sys:String>
+    <sys:String x:Key="Tools.Astral.Members.Title">房間成員</sys:String>
+    <!-- Tools.Astral.List/Share -->
+    <sys:String x:Key="Tools.Astral.List.Title">房間列表</sys:String>
+    <sys:String x:Key="Tools.Astral.List.Hint">最多保留 20 筆，選一筆再按「加入選取」。</sys:String>
+    <sys:String x:Key="Tools.Astral.List.Join">加入選取</sys:String>
+    <sys:String x:Key="Tools.Astral.List.Remove">移除</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.Title">分享給朋友</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.Short">短連結</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.Long">長連結</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.Copy">複製</sys:String>
+    <sys:String x:Key="Tools.Astral.Ip.Label">虛擬 IP</sys:String>
+    <sys:String x:Key="Tools.Astral.Add.Button">加入列表</sys:String>
+    <!-- Setup.Misc.Niri -->
+    <sys:String x:Key="Setup.Misc.Niri.Title">Niri 視窗規則</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Hint">在 niri 設定裡寫入 PCL CE 的視窗規則（浮動、模糊跟隨背景模糊設定）。會先備份原設定，只改動自己標記的區塊。</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Apply">寫入 Niri 規則</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Working">正在寫入…</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Done">已寫入。原設定備份：{0}</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.DoneShort">已寫入 Niri 視窗規則</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Failed">寫入失敗：{0}</sys:String>
+    <!-- Setup.Launch.Behavior -->
+    <sys:String x:Key="Setup.Launch.Behavior.Title">啟動器行為</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.CloseToTray">關閉視窗時隱藏到系統匣</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.CloseToTray.ToolTip">關閉按鈕隱藏到系統匣，而不是結束程式。系統匣不可用時仍會直接結束。</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.AfterLaunch">啟動遊戲後</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.AfterLaunch.Keep">保持視窗</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.AfterLaunch.Minimize">最小化視窗</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.AfterLaunch.Hide">隱藏視窗</sys:String>
+    <!-- Tray -->
+    <sys:String x:Key="Tray.ShowWindow">顯示主視窗</sys:String>
+    <sys:String x:Key="Tray.Exit">結束</sys:String>
+    <sys:String x:Key="Tray.ToolTip">PCL CE — 正在背景執行</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Button">檢查並修復</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.ToolTip">依官方清單校驗實例檔案，缺少的會自動下載補齊。</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Healthy">檢查 {0} 個檔案，全部正常</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Found">發現 {0} 個檔案缺少，開始補齊…</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Done">修復完成，已補齊 {0} 個檔案</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Partial">修復部分完成：成功 {0}，失敗 {1}</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Title">資源更新審閱</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Hint">勾選需要更新的資源，未勾選的保持原樣。</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.SelectAll">全選</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.SelectNone">全不選</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Selected">已選擇 {0} 項</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Apply">開始更新</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Empty">沒有可更新的資源</sys:String>
+    <sys:String x:Key="Instance.Resource.UpdateAll">全部更新</sys:String>
+
+    <sys:String x:Key="Tools.Test.Directories.Title">目錄入口</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Hint">開啟或複製啟動器使用的目錄。</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Game">遊戲目錄</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Config">設定目錄</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Log">日誌目錄</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Open">開啟</sys:String>
+
+    <sys:String x:Key="Tools.Test.Lottery.Skip">跳過</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Preparing">正在準備獎池…</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Downloading">正在下載遊戲資源…</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Parsing">正在解析物品…</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.DownloadFailed">下載遊戲資源失敗</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.NoItems">獎池為空，請檢查遊戲檔案</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.PrepareFailed">準備獎池失敗：{0}</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Title">抽獎</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Available">可抽 {0} 次 · 累計啟動 {1} 次（每次啟動 +1）</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Collection">收藏進度：{0}/{1}（{2:0.0}%）</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.DrawOne">抽一次</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.DrawTen">抽十次</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.CollectionHeader">收藏庫</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.PoolLoading">獎品目錄載入中…</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Drawn">已抽 {0} 次</sys:String>
+
+    <sys:String x:Key="Tools.Test.SkinModel.PickCape">選擇披風檔案</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.CapeLoaded">已載入披風</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.Pick">選擇面板檔案</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.Loaded">已載入面板</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.Title">3D 面板預覽</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.Hint">選擇面板檔案後在這裡檢視立體效果，支援經典與纖細模型。</sys:String>
+
+    <!-- Tools.Test.SpeedTest -->
+    <sys:String x:Key="Tools.Test.SpeedTest.Title">鏡像測速</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Hint">依序測試 Mojang、BMCLAPI、Modrinth 的下載速度，單點約 3 秒。</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Start">開始測速</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Running">正在測速…</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Progress">已完成 {0}/4</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Failed">測速失敗：所有測速點均不可用</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Done">最快：{0}（{1:0.00} MB/s）</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Error">測速出錯：{0}</sys:String>
+    <!-- More -->
+    <sys:String x:Key="Main.Tab.Link">連線</sys:String>
+    <sys:String x:Key="Main.Tab.More">更多</sys:String>
+    <sys:String x:Key="More.Left.Tools">工具</sys:String>
+    <sys:String x:Key="More.Left.Info">資訊</sys:String>
+    <sys:String x:Key="More.Left.Toolbox">百寶箱</sys:String>
+    <sys:String x:Key="More.Help.Features.Info">各頁面的功能分布</sys:String>
+    <sys:String x:Key="More.Help.Launch.Info">啟動流程、Java、版本隔離</sys:String>
+    <sys:String x:Key="More.Help.Link.Info">大廳編號、邀請碼、直連參數</sys:String>
+    <sys:String x:Key="More.Help.Tools.Info">皮膚預覽、抽獎、鏡像測速</sys:String>
+    <sys:String x:Key="More.Help.Setup.Info">縮放、主題配色、代理、日誌</sys:String>
+    <sys:String x:Key="More.Help.Cli.Info">pcl-cli 的全部命令</sys:String>
+    <sys:String x:Key="More.Help.Title">說明主題</sys:String>
+    <sys:String x:Key="More.Help.Features">功能總覽</sys:String>
+    <sys:String x:Key="More.Help.Launch">啟動與實例</sys:String>
+    <sys:String x:Key="More.Help.Link">連線</sys:String>
+    <sys:String x:Key="More.Help.Tools">工具</sys:String>
+    <sys:String x:Key="More.Help.Setup">設定</sys:String>
+    <sys:String x:Key="More.Help.Cli">命令列</sys:String>
+    <sys:String x:Key="More.Left.Help">說明</sys:String>
+    <sys:String x:Key="More.Left.About">關於與鳴謝</sys:String>
+    <sys:String x:Key="More.Left.Feedback">意見回饋</sys:String>
+    <!-- Setup.GameLink.Astral -->
+    <sys:String x:Key="Setup.GameLink.Astral.Title">Astral 連線</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Username">使用者名稱</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Username.ToolTip">留空則用系統使用者名稱。</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.VirtualIp">虛擬 IP</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.VirtualIp.ToolTip">留空由 EasyTier 自動分配，例如 10.144.144.2。</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Hint">中繼伺服器：房主與加入者至少要有一個相同節點。</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Name">備註</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Add">新增</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Remove">移除</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Invalid">節點位址要寫成 tcp://host:11010。</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Exists">該節點已存在。</sys:String>
+    <!-- Tools.GameLink.Mode -->
+    <sys:String x:Key="Tools.GameLink.Mode.Current">目前：連線大廳</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.ToAstral">切換到 Astral 連線</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.Astral">目前：Astral 連線</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.ToLobby">回到連線大廳</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Title">EasyTier 直連</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Hint">自行約定網路名稱與金鑰即可組網，不經過大廳或 Astral；中繼留空時使用預設公共節點。</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Network">網路名稱</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Secret">金鑰</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Secret.Watermark">雙方必須一致</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Peers">中繼</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Start">開始</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Stop">斷開</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Running">已連線，本機連接埠 {0}</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.Terracotta">辨識為：陶瓦房間</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.Lobby">辨識為：PCL CE 大廳</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.Unknown">無法辨識該編號</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.Terracotta">陶瓦連線</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.ToTerracotta">切換到陶瓦連線</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Title">建立陶瓦房間</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Description">選好區域網連接埠後點建立，啟動器會在本機產生房間編號並開好通道。</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Port">區域網連接埠</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Action">建立房間</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Stop">關閉房間</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Starting">正在準備…</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Failed">建立失敗，請檢查 EasyTier 是否可用</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Ready">房間已建立，編號裡的連接埠 {0} 已轉發到本機 {1}</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.CodeLabel">已建立房間</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Hint">把上方編號發給朋友，並在遊戲裡對區域網開放</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Join.Title">加入陶瓦房間</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Join.Description">貼上朋友傳給你的陶瓦編號。編號自帶網路名稱與金鑰，加入時不需要登入帳號。</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Join.Hint">ABCDE-FGHIJ-KLMNO-PQRST-UVWXY</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Join.Action">加入</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Leave.Action">斷開</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Preview.Invalid">無法辨識這個編號</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Preview.Ok">已辨識陶瓦編號，連接埠 {0}</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Preview.NotTerracotta">這是 PCL CE 大廳編號，請在大廳模式中加入</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Status.Joining">正在加入…</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Status.Joined">已加入，連接埠 {0}</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Status.Failed">加入失敗，請檢查編號或網路</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Steps.Title">使用步驟</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Steps.Line1">1、啟動遊戲並進入世界，在遊戲選單裡選擇【對區域網開放】</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Steps.Line2">2、把朋友給你的陶瓦編號貼到上方，點擊【加入】</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Steps.Line3">3、回到遊戲，在多人遊戲的區域網列表裡進入房間</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.Direct">EasyTier 直連</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.ToDirect">切換到 EasyTier 直連</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.Lobby">大廳</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.AstralName">Astral 連線</sys:String>
     <!-- Tools.Test -->
 
     <sys:String x:Key="Tools.Test.CeNotice">為便於維護，PCL CE 中不包含百寶箱功能……</sys:String>
@@ -3441,6 +3695,10 @@
     <sys:String x:Key="Tools.Test.Achievement.FetchFailed">取得進度圖片失敗，請檢查文字是否包含特殊字元</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.FileFilter">PNG 圖片 (*.png)|*.png</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.InvalidId">請輸入正確的物品 ID！</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.LocalImageFailed">目前環境無法開啟檔案選擇器，請改用物品 ID。</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.LocalImagePicked">已選擇本機圖片，預覽與儲存都會用它當圖示。</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.LocalImage">本機圖片</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.Pick">選擇物品</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.ItemId">物品名（ID）</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.Line1">第一行</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.Line2">第二行（可選）</sys:String>
@@ -3448,10 +3706,13 @@
     <sys:String x:Key="Tools.Test.Achievement.Preview">預覽進度影像</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.Save">儲存圖片</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.Saved">自訂進度圖片已儲存！</sys:String>
-    <sys:String x:Key="Tools.Test.Achievement.Title">自訂進度圖片生成器 (僅支援英文)</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.DefaultTitle">成就達成！</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.DefaultLine">完成了一項了不起的成就</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.Title">自訂成就圖片產生器</sys:String>
 
     <!-- Tools.Test.Avatar -->
 
+    <sys:String x:Key="Tools.Test.Avatar.LoadFailed">載入面板失敗</sys:String>
     <sys:String x:Key="Tools.Test.Avatar.FileFilter">影像檔案(*.png)|*.png</sys:String>
     <sys:String x:Key="Tools.Test.Avatar.GenerateFailed">生成大頭貼失敗：{0}</sys:String>
     <sys:String x:Key="Tools.Test.Avatar.Generated">大頭貼生成成功！</sys:String>
@@ -3523,6 +3784,7 @@
     <sys:String x:Key="Tools.Test.Skin.Fetching">正在取得外觀...</sys:String>
     <sys:String x:Key="Tools.Test.Skin.FileFilter">外觀圖片檔案(*.png)|*.png</sys:String>
     <sys:String x:Key="Tools.Test.Skin.InvalidId">這不是一個有效的 ID...</sys:String>
+    <sys:String x:Key="Tools.Test.Skin.Description">輸入正版玩家的名稱或 UUID，把它的皮膚儲存到本機。</sys:String>
     <sys:String x:Key="Tools.Test.Skin.PlayerName">微軟使用者名稱</sys:String>
     <sys:String x:Key="Tools.Test.Skin.Save">儲存外觀</sys:String>
     <sys:String x:Key="Tools.Test.Skin.Saved">玩家 {0} 的外觀已儲存！</sys:String>

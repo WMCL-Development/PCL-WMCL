@@ -1657,7 +1657,55 @@
     <!-- Launch.Account.ProfileSkin -->
 
     <sys:String x:Key="Launch.Account.ProfileSkin.CapeUnsupported">This profile does not support changing the cape!</sys:String>
+    <sys:String x:Key="Launch.Account.ProfileSkin.Preview3D">3D skin preview</sys:String>
     <sys:String x:Key="Launch.Account.ProfileSkin.ChangeCape">Change cape</sys:String>
+    <sys:String x:Key="Skin.Editor.Title">Skin editor</sys:String>
+    <sys:String x:Key="Skin.Editor.Tools">Tools</sys:String>
+    <sys:String x:Key="Skin.Editor.Brush">Brush</sys:String>
+    <sys:String x:Key="Skin.Editor.Eraser">Eraser</sys:String>
+    <sys:String x:Key="Skin.Editor.Fill">Fill</sys:String>
+    <sys:String x:Key="Skin.Editor.Pick">Pick colour</sys:String>
+    <sys:String x:Key="Skin.Editor.Undo">Undo</sys:String>
+    <sys:String x:Key="Skin.Editor.Redo">Redo</sys:String>
+    <sys:String x:Key="Skin.Editor.MirrorH">Mirror horizontally</sys:String>
+    <sys:String x:Key="Skin.Editor.MirrorV">Mirror vertically</sys:String>
+    <sys:String x:Key="Skin.Editor.Clear">Clear</sys:String>
+    <sys:String x:Key="Skin.Editor.ResetView">Reset view</sys:String>
+    <sys:String x:Key="Skin.Editor.Color">Colour</sys:String>
+    <sys:String x:Key="Skin.Editor.Save">Save as PNG</sys:String>
+    <sys:String x:Key="Skin.Editor.NoSkin">No skin loaded</sys:String>
+    <sys:String x:Key="Skin.Editor.Loaded">Loaded {0}×{1} skin</sys:String>
+    <sys:String x:Key="Skin.Editor.Filled">Filled {0} pixels</sys:String>
+    <sys:String x:Key="Skin.Editor.MirroredH">Mirrored horizontally</sys:String>
+    <sys:String x:Key="Skin.Editor.MirroredV">Mirrored vertically</sys:String>
+    <sys:String x:Key="Skin.Editor.Cleared">Skin cleared</sys:String>
+    <sys:String x:Key="Skin.Editor.Undone">Undone</sys:String>
+    <sys:String x:Key="Skin.Editor.Redone">Redone</sys:String>
+    <sys:String x:Key="Launch.Skin.NeedLogin">Sign in before uploading a skin</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.Resource.Preparing">Preparing resources…</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.Resource.Failed">Resource preparation failed; using the default look</sys:String>
+    <sys:String x:Key="Launch.Skin.Title">Skin</sys:String>
+    <sys:String x:Key="Launch.Skin.Preview">Preview</sys:String>
+    <sys:String x:Key="Launch.Skin.Front">Front</sys:String>
+    <sys:String x:Key="Launch.Skin.Back">Back</sys:String>
+    <sys:String x:Key="Launch.Skin.Reset">Reset view</sys:String>
+    <sys:String x:Key="Launch.Skin.LocalFile">Local file</sys:String>
+    <sys:String x:Key="Launch.Skin.PickSkin">Choose skin file</sys:String>
+    <sys:String x:Key="Launch.Skin.PickCape">Choose cape file</sys:String>
+    <sys:String x:Key="Launch.Skin.Account">Account</sys:String>
+    <sys:String x:Key="Launch.Skin.UploadSkin">Upload skin</sys:String>
+    <sys:String x:Key="Launch.Skin.UploadCape">Upload cape</sys:String>
+    <sys:String x:Key="Launch.Skin.Editor">Skin editor</sys:String>
+    <sys:String x:Key="Launch.Skin.OpenEditor">Open skin editor</sys:String>
+    <sys:String x:Key="Launch.Skin.NoAccount">Not signed in</sys:String>
+    <sys:String x:Key="Launch.Skin.NeedLocalFile">Pick a local skin file first</sys:String>
+    <sys:String x:Key="Launch.Skin.Unsupported">This account cannot upload directly</sys:String>
+    <sys:String x:Key="Launch.Skin.Uploading">Uploading…</sys:String>
+    <sys:String x:Key="Launch.Skin.Uploaded">Skin uploaded</sys:String>
+    <sys:String x:Key="Launch.Skin.UploadFailed">Upload failed</sys:String>
+    <sys:String x:Key="Launch.Skin.CapeUnsupported">Capes are granted by Mojang and cannot be uploaded</sys:String>
+    <sys:String x:Key="Launch.Skin.Saved">Saved</sys:String>
+    <sys:String x:Key="Launch.Skin.EditorFailed">Failed to open the editor</sys:String>
     <sys:String x:Key="Launch.Account.ProfileSkin.ChangeSkin">Change skin</sys:String>
     <sys:String x:Key="Launch.Account.ProfileSkin.EditPassword">Edit password</sys:String>
     <sys:String x:Key="Launch.Account.ProfileSkin.EditProfile">Edit profile</sys:String>
@@ -2383,6 +2431,7 @@
     <!-- Region -->
 
     <sys:String x:Key="Region.Feature.Restricted">Minecraft downloads, repairs, and modpack installation are unavailable in your country or region.</sys:String>
+    <sys:String x:Key="Region.Feature.Unknown">Could not determine region info. Minecraft downloads, repairs, and modpack installation are temporarily unavailable.</sys:String>
     <!-- Select -->
 
     <sys:String x:Key="Select.Error.OperationFailed">An instance selection operation failed. See the details below.</sys:String>
@@ -2663,6 +2712,14 @@
     <sys:String x:Key="Setup.GameLink.Protocol.Tcp.ToolTip">Let EasyTier prefer TCP communication, which usually provides better stability.</sys:String>
     <sys:String x:Key="Setup.GameLink.Protocol.Udp">UDP</sys:String>
     <sys:String x:Key="Setup.GameLink.Protocol.Udp.ToolTip">Let EasyTier prefer UDP communication, which usually provides lower latency.</sys:String>
+    <sys:String x:Key="Setup.GameLink.EasyTier.Title">EasyTier options</sys:String>
+    <sys:String x:Key="Setup.GameLink.EasyTier.Shared">All four methods run on EasyTier, so these settings apply to every one of them. Astral has its own settings below.</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Title">Connection method</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Hint">The multiplayer page only shows the method selected here; the other panels stay hidden.</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Lobby">Lobby</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Astral">Astral</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.Terracotta">Terracotta</sys:String>
+    <sys:String x:Key="Setup.GameLink.Connection.EasyTier">EasyTier direct</sys:String>
     <sys:String x:Key="Setup.GameLink.RestartRequired">A lobby restart is required for changes on this page to take effect.</sys:String>
     <sys:String x:Key="Setup.GameLink.Username">Username</sys:String>
     <sys:String x:Key="Setup.GameLink.Username.ToolTip">PCL CE will try to use this username for lobby display.&#xA;If left blank, the Natayark ID username will be used.&#xA;&#xA;In some cases, the Natayark ID username may still be displayed instead of the name set here.</sys:String>
@@ -2921,7 +2978,7 @@
 
     <!-- Setup.Left -->
 
-    <sys:String x:Key="Setup.Left.Category.About">About</sys:String>
+    <sys:String x:Key="Setup.Left.Category.About">Other</sys:String>
     <sys:String x:Key="Setup.Left.Category.Game">Game</sys:String>
     <sys:String x:Key="Setup.Left.Category.Launcher">Launcher</sys:String>
     <sys:String x:Key="Setup.Left.Category.Tools">Tools</sys:String>
@@ -3115,6 +3172,7 @@
     <sys:String x:Key="Setup.Ui.Basic.GetSnapshot">Get official snapshot build</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.LockWindow">Lock launcher size</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.Opacity">Opacity</sys:String>
+    <sys:String x:Key="Setup.Ui.Basic.Scale">Interface scale</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.Opacity2">Opacity</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.ShowTriviaHint">Show "Trivia" when launching the game</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.Title">Basics</sys:String>
@@ -3243,6 +3301,10 @@
     <sys:String x:Key="Setup.Ui.Theme.Color.CatBlue">LTCat Blue</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Color.CrashBlue">Crash Blue</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Color.Hmcl">HMCL</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Color.Mint">Mint</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Color.Amber">Amber</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Color.Rose">Rose</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Color.Violet">Violet</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Color.SkyBlue">Sky Blue</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Dark">Dark</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.DarkColor">Dark theme color</sys:String>
@@ -3250,6 +3312,9 @@
     <sys:String x:Key="Setup.Ui.Theme.FollowSystem">Follow system</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Light">Light</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.LightColor">Light theme color</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Tweak.Hue">Hue</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Tweak.Light">Lightness</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Tweak.Chroma">Chroma</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Title">Theme</sys:String>
 
     <!-- Setup.Update -->
@@ -3355,6 +3420,15 @@
     <sys:String x:Key="Tools.Left.Utilities">Utilities</sys:String>
     <sys:String x:Key="Tools.Left.Utilities.Title">Toolbox</sys:String>
 
+
+    <!-- Tools.Astral -->
+    <sys:String x:Key="Tools.Left.Astral">Astral Link</sys:String>
+    <sys:String x:Key="Tools.Astral.Join.Title">Join an Astral room</sys:String>
+    <sys:String x:Key="Tools.Astral.Join.Hint">Paste the long link, short link or 6-digit code.</sys:String>
+    <sys:String x:Key="Tools.Astral.Join.Button">Join</sys:String>
+    <sys:String x:Key="Tools.Astral.Leave.Button">Leave</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Title">Create an Astral room</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Button">Host and generate a share string</sys:String>
     <!-- Tools.GameLink -->
 
     <sys:String x:Key="Tools.GameLink.Announcement.Format">[{0}] {1}</sys:String>
@@ -3388,8 +3462,8 @@
     <sys:String x:Key="Tools.GameLink.Exit.HostWarning">Since you are the lobby host, exiting will automatically disband this lobby.</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Action">Join</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Clear">Clear</sys:String>
-    <sys:String x:Key="Tools.GameLink.Join.Description">1. Enter the lobby ID sent by your friend below and click "Join"&#xA;2. Launch the game, select "Multiplayer", and join the lobby in LAN games</sys:String>
-    <sys:String x:Key="Tools.GameLink.Join.IdHint">ID should look like: U/NNNN-AAAA-SSSS-EEEE</sys:String>
+    <sys:String x:Key="Tools.GameLink.Join.Description">1. Paste the lobby code or Terracotta code your friend sent you, then click Join&#xA;2. Launch the game, open Multiplayer, and join the LAN world</sys:String>
+    <sys:String x:Key="Tools.GameLink.Join.IdHint">Lobby codes look like U/NNNN-AAAA-SSSS-EEEE; Terracotta codes look like ABCDE-FGHIJ-KLMNO-PQRST-UVWXY</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.InvalidText">Invalid lobby ID. Please check and enter it again.</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Paste">Paste</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Title">Join lobby</sys:String>
@@ -3489,6 +3563,187 @@
     <sys:String x:Key="Tools.ServerQuery.Error.Timeout.ReadWrite">Read/Write timeout</sys:String>
     <sys:String x:Key="Tools.ServerQuery.Error.UnableToConnect">Unable to connect: {0}</sys:String>
 
+    <!-- Tools.Astral.User/Host/Relay -->
+    <sys:String x:Key="Tools.Astral.User.Label">Username</sys:String>
+    <sys:String x:Key="Tools.Astral.User.Hint">Leave empty to use the system name</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Name">Room name</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Protected">Generate a random password</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Network">Network name</sys:String>
+    <sys:String x:Key="Tools.Astral.Host.Secret">Secret</sys:String>
+    <sys:String x:Key="Tools.Astral.Relay.Hint">Choose relays for this room:</sys:String>
+    <sys:String x:Key="Tools.Astral.Relay.Name">Label</sys:String>
+    <sys:String x:Key="Tools.Astral.Relay.Add">Add</sys:String>
+    <sys:String x:Key="Tools.Astral.Relay.Remove">Remove</sys:String>
+    <!-- Tools.Astral.Members -->
+    <sys:String x:Key="Tools.Astral.Ip.Override">Virtual IP (optional)</sys:String>
+    <sys:String x:Key="Tools.Astral.Members.Title">Room members</sys:String>
+    <!-- Tools.Astral.List/Share -->
+    <sys:String x:Key="Tools.Astral.List.Title">Room list</sys:String>
+    <sys:String x:Key="Tools.Astral.List.Hint">Up to 20 entries. Select one and click Join.</sys:String>
+    <sys:String x:Key="Tools.Astral.List.Join">Join selected</sys:String>
+    <sys:String x:Key="Tools.Astral.List.Remove">Remove</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.Title">Share with friends</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.Short">Short link</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.Long">Long link</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.Copy">Copy</sys:String>
+    <sys:String x:Key="Tools.Astral.Ip.Label">Virtual IP</sys:String>
+    <sys:String x:Key="Tools.Astral.Add.Button">Add to list</sys:String>
+    <!-- Setup.Misc.Niri -->
+    <sys:String x:Key="Setup.Misc.Niri.Title">Niri window rule</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Hint">Writes a PCL CE window rule into your niri config (floating, blur follows the background blur setting). The original file is backed up and only our marked block is changed.</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Apply">Apply niri rule</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Working">Writing…</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Done">Done. Backup: {0}</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.DoneShort">niri window rule applied</sys:String>
+    <sys:String x:Key="Setup.Misc.Niri.Failed">Failed: {0}</sys:String>
+    <!-- Setup.Launch.Behavior -->
+    <sys:String x:Key="Setup.Launch.Behavior.Title">Launcher behavior</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.CloseToTray">Hide to tray when closing</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.CloseToTray.ToolTip">Closing hides the window to tray instead of exiting. Falls back to exit when no tray is available.</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.AfterLaunch">After launching the game</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.AfterLaunch.Keep">Keep window</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.AfterLaunch.Minimize">Minimize window</sys:String>
+    <sys:String x:Key="Setup.Launch.Behavior.AfterLaunch.Hide">Hide window</sys:String>
+    <!-- Tray -->
+    <sys:String x:Key="Tray.ShowWindow">Show window</sys:String>
+    <sys:String x:Key="Tray.Exit">Exit</sys:String>
+    <sys:String x:Key="Tray.ToolTip">PCL CE — running in background</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Button">Check and repair</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.ToolTip">Verify instance files against the official manifest and download what is missing.</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Healthy">Checked {0} files, all good</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Found">{0} files missing, repairing…</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Done">Repair finished, {0} files restored</sys:String>
+    <sys:String x:Key="Instance.Setup.Repair.Partial">Repair partially finished: {0} ok, {1} failed</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Title">Review resource updates</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Hint">Tick the resources to update; unticked ones stay unchanged.</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.SelectAll">Select all</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.SelectNone">Select none</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Selected">{0} selected</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Apply">Update selected</sys:String>
+    <sys:String x:Key="Instance.Comp.Update.Review.Empty">Nothing to update</sys:String>
+    <sys:String x:Key="Instance.Resource.UpdateAll">Update all</sys:String>
+
+    <sys:String x:Key="Tools.Test.Directories.Title">Directories</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Hint">Open the folders the launcher uses.</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Game">Game folder</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Config">Config folder</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Log">Log folder</sys:String>
+    <sys:String x:Key="Tools.Test.Directories.Open">Open</sys:String>
+
+    <sys:String x:Key="Tools.Test.Lottery.Skip">Skip</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Preparing">Preparing the prize pool…</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Downloading">Downloading game assets…</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Parsing">Parsing items…</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.DownloadFailed">Failed to download game assets</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.NoItems">Prize pool is empty; check your game files</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.PrepareFailed">Failed to prepare the prize pool: {0}</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Title">Lottery</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Available">{0} draws available · {1} launches (one per launch)</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Collection">Collection: {0}/{1} ({2:0.0}%)</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.DrawOne">Draw one</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.DrawTen">Draw ten</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.CollectionHeader">Collection</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.PoolLoading">Loading prize pool…</sys:String>
+    <sys:String x:Key="Tools.Test.Lottery.Drawn">Drew {0} time(s)</sys:String>
+
+    <sys:String x:Key="Tools.Test.SkinModel.PickCape">Choose cape file</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.CapeLoaded">Cape loaded</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.Pick">Choose skin file</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.Loaded">Skin loaded</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.Title">3D skin preview</sys:String>
+    <sys:String x:Key="Tools.Test.SkinModel.Hint">Pick a skin file to see it in 3D; classic and slim models are supported.</sys:String>
+
+    <!-- Tools.Test.SpeedTest -->
+    <sys:String x:Key="Tools.Test.SpeedTest.Title">Mirror speed test</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Hint">Measures download speed of Mojang, BMCLAPI and Modrinth (~3s each).</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Start">Start test</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Running">Testing…</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Progress">Finished {0}/4</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Failed">All endpoints failed</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Done">Fastest: {0} ({1:0.00} MB/s)</sys:String>
+    <sys:String x:Key="Tools.Test.SpeedTest.Error">Speed test error: {0}</sys:String>
+    <!-- More -->
+    <sys:String x:Key="Main.Tab.Link">Link</sys:String>
+    <sys:String x:Key="Main.Tab.More">More</sys:String>
+    <sys:String x:Key="More.Left.Tools">Tools</sys:String>
+    <sys:String x:Key="More.Left.Info">Info</sys:String>
+    <sys:String x:Key="More.Left.Toolbox">Toolbox</sys:String>
+    <sys:String x:Key="More.Help.Features.Info">Where each feature lives</sys:String>
+    <sys:String x:Key="More.Help.Launch.Info">Startup flow, Java, isolation</sys:String>
+    <sys:String x:Key="More.Help.Link.Info">Lobby codes, invites, direct LAN</sys:String>
+    <sys:String x:Key="More.Help.Tools.Info">Skin preview, lottery, speed test</sys:String>
+    <sys:String x:Key="More.Help.Setup.Info">Scaling, theme colours, proxy, logs</sys:String>
+    <sys:String x:Key="More.Help.Cli.Info">Every pcl-cli command</sys:String>
+    <sys:String x:Key="More.Help.Title">Help topics</sys:String>
+    <sys:String x:Key="More.Help.Features">Overview</sys:String>
+    <sys:String x:Key="More.Help.Launch">Launch and instances</sys:String>
+    <sys:String x:Key="More.Help.Link">Multiplayer</sys:String>
+    <sys:String x:Key="More.Help.Tools">Tools</sys:String>
+    <sys:String x:Key="More.Help.Setup">Settings</sys:String>
+    <sys:String x:Key="More.Help.Cli">Command line</sys:String>
+    <sys:String x:Key="More.Left.Help">Help</sys:String>
+    <sys:String x:Key="More.Left.About">About</sys:String>
+    <sys:String x:Key="More.Left.Feedback">Feedback</sys:String>
+    <!-- Setup.GameLink.Astral -->
+    <sys:String x:Key="Setup.GameLink.Astral.Title">Astral Link</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Username">Username</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Username.ToolTip">Leave empty to use the system user name.</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.VirtualIp">Virtual IP</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.VirtualIp.ToolTip">Leave empty to let EasyTier assign one, e.g. 10.144.144.2.</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Hint">Relays: host and joiner need at least one shared node.</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Name">Label</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Add">Add</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Remove">Remove</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Invalid">Use the form tcp://host:11010.</sys:String>
+    <sys:String x:Key="Setup.GameLink.Astral.Relay.Exists">That relay already exists.</sys:String>
+    <!-- Tools.GameLink.Mode -->
+    <sys:String x:Key="Tools.GameLink.Mode.Current">Mode: Lobby</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.ToAstral">Switch to Astral Link</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.Astral">Mode: Astral Link</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.ToLobby">Back to Lobby</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Title">EasyTier direct</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Hint">Agree on a network name and secret to form a LAN without lobby or Astral. Leave relays empty to use public nodes.</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Network">Network</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Secret">Secret</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Secret.Watermark">Must match on both sides</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Peers">Relays</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Start">Start</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Stop">Disconnect</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Running">Connected, local port {0}</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.Terracotta">Detected: Terracotta room</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.Lobby">Detected: PCL CE lobby</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.Unknown">Unrecognised code</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.Terracotta">Terracotta</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.ToTerracotta">Switch to Terracotta</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Title">Create Terracotta room</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Description">Pick the LAN port and click create; the launcher generates a room code locally and opens a tunnel.</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Port">LAN port</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Action">Create room</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Stop">Close room</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Starting">Preparing…</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Failed">Create failed; check that EasyTier is available</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Ready">Room ready: port {0} in the code is forwarded to local {1}</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.CodeLabel">Room created</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.Hint">Send the code above to your friends and open the world to LAN</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Join.Title">Join Terracotta room</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Join.Description">Paste the Terracotta code your friend sent you. The code carries the network name and secret, so no account is needed.</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Join.Hint">ABCDE-FGHIJ-KLMNO-PQRST-UVWXY</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Join.Action">Join</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Leave.Action">Disconnect</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Preview.Invalid">Unrecognised code</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Preview.Ok">Terracotta code detected, port {0}</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Preview.NotTerracotta">This is a PCL CE lobby code; use lobby mode instead</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Status.Joining">Joining…</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Status.Joined">Joined, port {0}</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Status.Failed">Join failed; check the code or your network</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Steps.Title">How to use</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Steps.Line1">1. Launch the game, enter a world and choose Open to LAN</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Steps.Line2">2. Paste the Terracotta code above and click Join</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Steps.Line3">3. Back in game, open Multiplayer and enter the LAN world</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.Direct">EasyTier direct</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.ToDirect">Switch to EasyTier direct</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.Lobby">Multiplayer lobby</sys:String>
+    <sys:String x:Key="Tools.GameLink.Mode.AstralName">Astral Link</sys:String>
     <!-- Tools.Test -->
 
     <sys:String x:Key="Tools.Test.CeNotice">For ease of maintenance, this feature is not included in the Community Edition...</sys:String>
@@ -3511,6 +3766,10 @@
     <sys:String x:Key="Tools.Test.Achievement.FetchFailed">Failed to get achievement image. Please check for special characters.</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.FileFilter">PNG image (*.png)|*.png</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.InvalidId">Please enter a valid item ID!</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.LocalImageFailed">File picker is unavailable here; use an item ID instead.</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.LocalImagePicked">Local image selected; preview and save will use it as the icon.</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.LocalImage">Local image</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.Pick">Pick item</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.ItemId">Item name (ID)</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.Line1">Line 1</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.Line2">Line 2 (optional)</sys:String>
@@ -3518,10 +3777,13 @@
     <sys:String x:Key="Tools.Test.Achievement.Preview">Preview achievement</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.Save">Save image</sys:String>
     <sys:String x:Key="Tools.Test.Achievement.Saved">Custom achievement image saved!</sys:String>
-    <sys:String x:Key="Tools.Test.Achievement.Title">Custom achievement image generator (English only)</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.DefaultTitle">Achievement unlocked!</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.DefaultLine">You completed something great</sys:String>
+    <sys:String x:Key="Tools.Test.Achievement.Title">Custom achievement image</sys:String>
 
     <!-- Tools.Test.Avatar -->
 
+    <sys:String x:Key="Tools.Test.Avatar.LoadFailed">Failed to load the skin</sys:String>
     <sys:String x:Key="Tools.Test.Avatar.FileFilter">Image file (*.png)|*.png</sys:String>
     <sys:String x:Key="Tools.Test.Avatar.GenerateFailed">Failed to generate avatar: {0}</sys:String>
     <sys:String x:Key="Tools.Test.Avatar.Generated">Avatar generated!</sys:String>
@@ -3593,6 +3855,7 @@
     <sys:String x:Key="Tools.Test.Skin.Fetching">Fetching skin...</sys:String>
     <sys:String x:Key="Tools.Test.Skin.FileFilter">Skin image file (*.png)|*.png</sys:String>
     <sys:String x:Key="Tools.Test.Skin.InvalidId">This is not a valid ID...</sys:String>
+    <sys:String x:Key="Tools.Test.Skin.Description">Enter a Mojang player name or UUID to save their skin locally.</sys:String>
     <sys:String x:Key="Tools.Test.Skin.PlayerName">Player name</sys:String>
     <sys:String x:Key="Tools.Test.Skin.Save">Save skin</sys:String>
     <sys:String x:Key="Tools.Test.Skin.Saved">Player {0}'s skin saved!</sys:String>
