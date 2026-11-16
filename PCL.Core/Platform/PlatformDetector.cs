@@ -9,6 +9,7 @@ public static class PlatformDetector
     /// <exception cref="PlatformNotSupportedException">当前操作系统不受支持。</exception>
     public static PlatformKind Detect()
     {
+        if (OperatingSystem.IsAndroid()) return PlatformKind.Android;
         if (OperatingSystem.IsWindows()) return PlatformKind.Windows;
         if (OperatingSystem.IsLinux()) return PlatformKind.Linux;
         if (OperatingSystem.IsMacOS()) return PlatformKind.MacOs;

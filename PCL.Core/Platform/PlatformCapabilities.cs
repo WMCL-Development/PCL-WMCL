@@ -38,6 +38,18 @@ public sealed record PlatformCapabilities : IPlatformCapabilities
         SupportsDisplayProtocolSelection = false
     };
 
+    /// <summary>Android：无进程启动、无托盘/快捷方式/回收站，下载走应用私有目录。</summary>
+    public static PlatformCapabilities Android { get; } = new()
+    {
+        SupportsBundledLauncher = false,
+        SupportsShortcutIcon = false,
+        NativeLibraryExtensions = [".so"],
+        SupportsWindowsStoreDependencies = false,
+        UsesWindowsPaths = false,
+        SuppressAltMenu = false,
+        SupportsDisplayProtocolSelection = false
+    };
+
     public required bool SupportsBundledLauncher { get; init; }
     public required bool SupportsShortcutIcon { get; init; }
     public required IReadOnlyList<string> NativeLibraryExtensions { get; init; }

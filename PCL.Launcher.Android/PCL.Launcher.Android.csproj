@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AssemblyTitle>PCL CE</AssemblyTitle>
+        <AssemblyName>PCL.Launcher.Android</AssemblyName>
+        <Description>PCL CE 的 Android 宿主</Description>
+        <Company>PCL Community</Company>
+        <Product>PCL CE</Product>
+        <RootNamespace>PCL.Android</RootNamespace>
+        <TargetFramework>net11.0-android</TargetFramework>
+        <LangVersion>15.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Configurations>Debug;Release</Configurations>
+        <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+        <ApplicationId>com.pclcommunity.pclce</ApplicationId>
+        <ApplicationVersion>1</ApplicationVersion>
+        <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <RunAOTCompilation>false</RunAOTCompilation>
+        <NoWarn>$(NoWarn);CA1416</NoWarn>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Android" Version="12.1.6" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\PCL.Core\PCL.Core.csproj" />
+        <ProjectReference Include="..\PCL.Core.UI\PCL.Core.UI.csproj" />
+        <ProjectReference Include="..\PCL.Launcher.Core\PCL.Launcher.Core.csproj" />
+        <ProjectReference Include="..\PCL.Localization\PCL.Localization.csproj" />
+        <ProjectReference Include="..\PCL.Platform.Android\PCL.Platform.Android.csproj" />
+    </ItemGroup>
+</Project>

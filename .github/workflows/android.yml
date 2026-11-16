@@ -1,0 +1,52 @@
+name: Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev]
+    paths:
+      - 'PCL.Launcher.Android/**'
+      - 'PCL.Platform.Android/**'
+      - 'PCL.Core/**'
+      - 'PCL.Core.UI/**'
+      - 'PCL.Launcher.Core/**'
+      - 'PCL.Localization/**'
+      - 'PCL.Platform/**'
+      - '.github/workflows/android.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            11.0.x
+            10.0.x
+
+      - name: Install Android workload
+        run: dotnet workload install android
+
+      - name: Build APK
+        env:
+          PCL_WRITE_SECRET: 1
+          PCL_MS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          PCL_CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+        run: |
+          dotnet build PCL.Launcher.Android/PCL.Launcher.Android.csproj \
+            -c Release -f net11.0-android -p:AndroidPackageFormat=apk
+
+      - name: Collect APK
+        run: |
+          mkdir -p out
+          find PCL.Launcher.Android/bin -name '*.apk' -exec cp {} out/ \;
+          ls -lh out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pcl-ce-android-apk
+          path: out/*.apk
+          if-no-files-found: error

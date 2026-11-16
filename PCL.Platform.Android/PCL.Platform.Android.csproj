@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AssemblyTitle>PCL.Platform.Android</AssemblyTitle>
+        <AssemblyName>PCL.Platform.Android</AssemblyName>
+        <Description>PCL CE 的 Android 平台实现</Description>
+        <Company>PCL Community</Company>
+        <Product>PCL.Platform.Android</Product>
+        <RootNamespace>PCL.Platform.Android</RootNamespace>
+        <TargetFramework>net11.0-android</TargetFramework>
+        <LangVersion>15.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Configurations>Debug;Release</Configurations>
+        <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+        <NoWarn>$(NoWarn);CA1416</NoWarn>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\PCL.Core\PCL.Core.csproj" />
+        <ProjectReference Include="..\PCL.Core.UI\PCL.Core.UI.csproj" />
+        <ProjectReference Include="..\PCL.Platform\PCL.Platform.csproj" />
+    </ItemGroup>
+</Project>

@@ -5,5 +5,6 @@ public enum PlatformKind
 {
     Windows,
     Linux,
-    MacOs
+    MacOs,
+    Android
 }
