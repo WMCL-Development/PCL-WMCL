@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="using:PCL.UI.Controls"
+             xmlns:loc="using:PCL.Core.UI"
+             x:Class="PCL.Views.Pages.More.PageMoreHelp"
+             x:Name="Root">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="25,25,25,25">
+            <ui:MyCard Title="{loc:Loc More.Help.Title}">
+                <StackPanel Margin="25,35,25,20">
+                    <UniformGrid Columns="2">
+                        <ui:MyListItem x:Name="ItemFeatures"
+                                       Height="56" Margin="0,0,6,6"
+                                       Type="Clickable" MinPaddingRight="20" LogoScale="0.9"
+                                       SvgIcon="lucide/layout-list"
+                                       Title="{loc:Loc More.Help.Features}"
+                                       Info="{loc:Loc More.Help.Features.Info}" />
+                        <ui:MyListItem x:Name="ItemLaunch"
+                                       Height="56" Margin="6,0,0,6"
+                                       Type="Clickable" MinPaddingRight="20" LogoScale="0.9"
+                                       SvgIcon="lucide/rocket"
+                                       Title="{loc:Loc More.Help.Launch}"
+                                       Info="{loc:Loc More.Help.Launch.Info}" />
+                        <ui:MyListItem x:Name="ItemLink"
+                                       Height="56" Margin="0,0,6,6"
+                                       Type="Clickable" MinPaddingRight="20" LogoScale="0.9"
+                                       SvgIcon="lucide/link-2"
+                                       Title="{loc:Loc More.Help.Link}"
+                                       Info="{loc:Loc More.Help.Link.Info}" />
+                        <ui:MyListItem x:Name="ItemTools"
+                                       Height="56" Margin="6,0,0,6"
+                                       Type="Clickable" MinPaddingRight="20" LogoScale="0.9"
+                                       SvgIcon="lucide/tool-case"
+                                       Title="{loc:Loc More.Help.Tools}"
+                                       Info="{loc:Loc More.Help.Tools.Info}" />
+                        <ui:MyListItem x:Name="ItemSetup"
+                                       Height="56" Margin="0,0,6,0"
+                                       Type="Clickable" MinPaddingRight="20" LogoScale="0.9"
+                                       SvgIcon="lucide/settings"
+                                       Title="{loc:Loc More.Help.Setup}"
+                                       Info="{loc:Loc More.Help.Setup.Info}" />
+                        <ui:MyListItem x:Name="ItemCli"
+                                       Height="56" Margin="6,0,0,0"
+                                       Type="Clickable" MinPaddingRight="20" LogoScale="0.9"
+                                       SvgIcon="lucide/scroll-text"
+                                       Title="{loc:Loc More.Help.Cli}"
+                                       Info="{loc:Loc More.Help.Cli.Info}" />
+                    </UniformGrid>
+                </StackPanel>
+            </ui:MyCard>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

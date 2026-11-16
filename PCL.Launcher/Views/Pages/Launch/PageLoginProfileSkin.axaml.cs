@@ -116,6 +116,10 @@ public partial class PageLoginProfileSkin : LoginPageBase
             "Launch.Account.ProfileSkin.ChangeCape",
             "lucide/shirt",
             () => ViewModel.ChangeCapeCommand.Execute(null));
+        AddItem(
+            "Launch.Account.ProfileSkin.Preview3D",
+            "lucide/box",
+            OpenSkinPreview);
 
         _btnSkin.ContextMenu = new ContextMenu
         {
@@ -144,6 +148,17 @@ public partial class PageLoginProfileSkin : LoginPageBase
             items.Add(item);
             return item;
         }
+    }
+
+    /// <summary>打开 3D 皮肤预览窗口。</summary>
+    private void OpenSkinPreview()
+    {
+        _ = PCL.Core.UI.Dialogs.DialogService.Instance.ShowAsync(
+            new PCL.UI.Dialogs.ContentDialogRequest
+            {
+                Title = Lang.Text("Launch.Skin.Title"),
+                ContentFactory = () => new SkinPanel()
+            });
     }
 
     private void BuildEditMenu()

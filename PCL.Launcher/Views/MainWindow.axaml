@@ -20,6 +20,7 @@
         Title="Plain Craft Launcher Community Edition ">
     <Grid x:Name="PanRoot"
           Background="Transparent">
+        <LayoutTransformControl x:Name="PanScale">
         <ui:MyDropShadow Color="#21000000"
                          ShadowRadius="10"
                          CornerRadius="6"
@@ -83,5 +84,6 @@
                 </Grid>
             </Border>
         </ui:MyDropShadow>
+    </LayoutTransformControl>
     </Grid>
 </Window>

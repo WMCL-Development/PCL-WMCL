@@ -1,0 +1,22 @@
+<StackPanel Spacing="10">
+    <TextBlock FontSize="19" FontWeight="SemiBold" Text="设置" />
+    <TextBlock Opacity="0.7" TextWrapping="Wrap" Text="设置页各子项的说明，重点是个性化与杂项。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="启动" />
+    <TextBlock TextWrapping="Wrap" Text="包含实例隔离、窗口标题与可见性、进程优先级、内存、渲染器、JVM 与游戏参数、启动器行为等。" />
+    <TextBlock TextWrapping="Wrap" Text="启动器行为决定游戏启动后启动器保持、最小化还是隐藏；关闭按钮也可设为隐藏到系统托盘。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="个性化" />
+    <TextBlock TextWrapping="Wrap" Text="界面缩放支持 80% 到 150%，会按窗口可用空间自动收敛，避免内容溢出。" />
+    <TextBlock TextWrapping="Wrap" Text="主题支持预设与自定义微调：色相偏移、明度偏移、色度偏移，三项组合可覆盖绝大多数配色需求。" />
+    <TextBlock TextWrapping="Wrap" Text="此外可调整不透明度、字体、背景图片、启动音乐、标题栏样式、主页布局与功能隐藏。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="联机" />
+    <TextBlock TextWrapping="Wrap" Text="EasyTier 相关参数、Astral 账号与中继设置、网络连通性测试。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="杂项" />
+    <TextBlock TextWrapping="Wrap" Text="公告显示、实时日志行数、HTTP 代理、动画速度、Linux 显示协议，以及把窗口规则写入 Niri 配置。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="日志与更新" />
+    <TextBlock TextWrapping="Wrap" Text="日志页可查看实时日志并导出；更新页可选择更新通道并检查新版本。" />
+</StackPanel>

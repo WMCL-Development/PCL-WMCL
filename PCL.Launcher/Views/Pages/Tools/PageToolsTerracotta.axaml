@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="using:PCL.UI.Controls"
+             xmlns:loc="using:PCL.Core.UI"
+             x:CompileBindings="False"
+             x:Class="PCL.Views.Pages.Tools.PageToolsTerracotta">
+    <ui:MyScrollViewer HorizontalScrollBarVisibility="Disabled"
+                       VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="10">
+            <ui:MyCard Margin="10" Title="{loc:Loc Tools.Terracotta.Join.Title}">
+                <StackPanel Margin="25,40,21,15">
+                    <TextBlock Margin="0,0,0,10"
+                               FontSize="13"
+                               LineHeight="22"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc Tools.Terracotta.Join.Description}" />
+                    <ui:MyTextBox x:Name="TextCode"
+                                  Text="{Binding Code, Mode=TwoWay}"
+                                  HintText="{loc:Loc Tools.Terracotta.Join.Hint}" />
+                    <TextBlock Margin="0,6,0,0"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Opacity="0.8"
+                               IsVisible="{Binding Preview, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               Text="{Binding Preview}" />
+                    <WrapPanel Margin="0,15,0,0">
+                        <ui:MyButton x:Name="BtnJoin" MinWidth="120" Margin="0,0,15,10" Padding="13,0"
+                                     Command="{Binding JoinCommand}"
+                                     Text="{loc:Loc Tools.Terracotta.Join.Action}" />
+                        <ui:MyButton x:Name="BtnLeave" MinWidth="120" Margin="0,0,0,10" Padding="13,0"
+                                     Command="{Binding LeaveCommand}"
+                                     IsEnabled="{Binding IsRunning}"
+                                     Text="{loc:Loc Tools.Terracotta.Leave.Action}" />
+                    </WrapPanel>
+                    <TextBlock Margin="0,4,0,0" FontSize="12" TextWrapping="Wrap" Opacity="0.75"
+                               Text="{Binding Status}" />
+                </StackPanel>
+            </ui:MyCard>
+
+            <ui:MyCard Margin="10,0,10,10" Title="{loc:Loc Tools.Terracotta.Host.Title}">
+                <StackPanel Margin="25,40,21,15">
+                    <TextBlock Margin="0,0,0,10"
+                               FontSize="13"
+                               LineHeight="22"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc Tools.Terracotta.Host.Description}" />
+                    <Grid ColumnDefinitions="150,*" Margin="0,0,0,10">
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Terracotta.Host.Port}" />
+                        <ui:MyTextBox Grid.Column="1"
+                                      Width="140"
+                                      HorizontalAlignment="Left"
+                                      Text="{Binding LocalPort, Mode=TwoWay}" />
+                    </Grid>
+                    <WrapPanel>
+                        <ui:MyButton x:Name="BtnHost" MinWidth="120" Margin="0,0,15,10" Padding="13,0"
+                                     Command="{Binding HostCommand}"
+                                     Text="{loc:Loc Tools.Terracotta.Host.Action}" />
+                        <ui:MyButton x:Name="BtnStopHost" MinWidth="120" Margin="0,0,0,10" Padding="13,0"
+                                     Command="{Binding StopHostCommand}"
+                                     IsEnabled="{Binding IsHosting}"
+                                     Text="{loc:Loc Tools.Terracotta.Host.Stop}" />
+                    </WrapPanel>
+                    <TextBlock Margin="0,6,0,0"
+                               FontSize="15"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding HostCode, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               Text="{Binding HostCode}" />
+                    <TextBlock Margin="0,4,0,0" FontSize="12" TextWrapping="Wrap" Opacity="0.75"
+                               Text="{Binding HostStatus}" />
+                </StackPanel>
+            </ui:MyCard>
+        </StackPanel>
+    </ui:MyScrollViewer>
+</UserControl>

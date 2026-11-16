@@ -1,0 +1,237 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="using:PCL.UI.Controls"
+             xmlns:loc="using:PCL.Core.UI"
+             x:CompileBindings="False"
+             x:Class="PCL.Views.Pages.Tools.PageToolsAstral">
+    <ui:MyScrollViewer HorizontalScrollBarVisibility="Disabled"
+                       VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="10">
+            <ui:MyCard Margin="10"
+                       Title="{loc:Loc Tools.Astral.Join.Title}">
+                <StackPanel Margin="25,40,21,15">
+                    <ui:MyTextBox x:Name="TextInput"
+                                  Text="{Binding Input, Mode=TwoWay}" />
+                    <TextBlock Margin="0,8,0,0"
+                               Opacity="0.6"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc Tools.Astral.Join.Hint}" />
+                    <TextBlock Margin="0,6,0,0"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Opacity="0.8"
+                               IsVisible="{Binding Preview, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               Text="{Binding Preview}" />
+                    <WrapPanel Margin="0,15,0,0">
+                        <ui:MyButton x:Name="BtnJoin"
+                                     MinWidth="120"
+                                     Margin="0,0,15,10"
+                                     Command="{Binding JoinCommand}"
+                                     IsEnabled="{Binding CanJoin}"
+                                     Text="{loc:Loc Tools.Astral.Join.Button}" />
+                        <ui:MyButton x:Name="BtnAdd"
+                                     MinWidth="120"
+                                     Margin="0,0,15,10"
+                                     Command="{Binding AddRoomCommand}"
+                                     IsEnabled="{Binding CanJoin}"
+                                     Text="{loc:Loc Tools.Astral.Add.Button}" />
+                        <ui:MyButton x:Name="BtnLeave"
+                                     MinWidth="100"
+                                     Margin="0,0,15,10"
+                                     Command="{Binding LeaveCommand}"
+                                     IsEnabled="{Binding CanLeave}"
+                                     Text="{loc:Loc Tools.Astral.Leave.Button}" />
+                    </WrapPanel>
+                    <TextBlock Margin="0,5,0,0"
+                               TextWrapping="Wrap"
+                               Opacity="0.75"
+                               FontSize="12"
+                               Text="{Binding Status}" />
+                    <TextBlock Margin="0,6,0,0"
+                               TextWrapping="Wrap"
+                               FontSize="12"
+                               IsVisible="{Binding HasRoom}"
+                               Text="{Binding RoomSummary}" />
+                </StackPanel>
+            </ui:MyCard>
+
+            <ui:MyCard Margin="10,0,10,10"
+                       Title="{loc:Loc Tools.Astral.List.Title}">
+                <StackPanel Margin="25,40,21,15">
+                    <TextBlock Margin="0,0,0,8"
+                               FontSize="12"
+                               Opacity="0.6"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc Tools.Astral.List.Hint}" />
+                    <ListBox x:Name="ListRooms"
+                             MaxHeight="160"
+                             ItemsSource="{Binding Rooms}"
+                             SelectedItem="{Binding SelectedRoom, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" />
+                                    <TextBlock FontSize="11"
+                                               Opacity="0.6"
+                                               Text="{Binding Summary}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <WrapPanel Margin="0,12,0,0">
+                        <ui:MyButton x:Name="BtnJoinSelected"
+                                     MinWidth="120"
+                                     Margin="0,0,15,10"
+                                     Command="{Binding JoinSelectedCommand}"
+                                     IsEnabled="{Binding CanJoinSelected}"
+                                     Text="{loc:Loc Tools.Astral.List.Join}" />
+                        <ui:MyButton x:Name="BtnRemoveRoom"
+                                     MinWidth="100"
+                                     Margin="0,0,15,10"
+                                     Command="{Binding RemoveRoomCommand}"
+                                     IsEnabled="{Binding CanJoinSelected}"
+                                     Text="{loc:Loc Tools.Astral.List.Remove}" />
+                    </WrapPanel>
+                </StackPanel>
+            </ui:MyCard>
+
+            <ui:MyCard Margin="10,0,10,10"
+                       IsVisible="{Binding HasMembers}"
+                       Title="{loc:Loc Tools.Astral.Members.Title}">
+                <ItemsControl x:Name="ListMembers"
+                              Margin="25,40,21,15"
+                              ItemsSource="{Binding Members}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,0,0,6">
+                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock FontSize="11"
+                                           Opacity="0.6"
+                                           Text="{Binding Summary}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ui:MyCard>
+
+            <ui:MyCard Margin="10,0,10,10"
+                       Title="{loc:Loc Tools.Astral.Host.Title}">
+                <StackPanel Margin="25,40,21,15">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Width="90"
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Astral.Host.Name}" />
+                        <ui:MyTextBox x:Name="TextRoomName"
+                                      MinWidth="260"
+                                      Text="{Binding NewRoomName, Mode=TwoWay}" />
+                    </StackPanel>
+                    <CheckBox x:Name="ChkProtected"
+                              Margin="0,12,0,0"
+                              IsChecked="{Binding IsProtectedRoom, Mode=TwoWay}"
+                              Content="{loc:Loc Tools.Astral.Host.Protected}" />
+                    <StackPanel Margin="0,10,0,0"
+                                Orientation="Horizontal"
+                                IsVisible="{Binding CanEditNetwork}">
+                        <TextBlock Width="90"
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Astral.Host.Network}" />
+                        <ui:MyTextBox x:Name="TextNetwork"
+                                      MinWidth="260"
+                                      Watermark="astral-xxxxxx"
+                                      Text="{Binding NewRoomNetwork, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,10,0,0"
+                                Orientation="Horizontal"
+                                IsVisible="{Binding CanEditNetwork}">
+                        <TextBlock Width="90"
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Astral.Host.Secret}" />
+                        <ui:MyTextBox x:Name="TextSecret"
+                                      MinWidth="260"
+                                      Text="{Binding NewRoomSecret, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <TextBlock Margin="0,14,0,6"
+                               FontSize="12"
+                               Opacity="0.6"
+                               Text="{loc:Loc Tools.Astral.Relay.Hint}" />
+                    <ItemsControl x:Name="ListRelays"
+                                  ItemsSource="{Binding RelayChoices}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          Content="{Binding Display}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <WrapPanel Margin="0,15,0,0">
+                        <ui:MyButton x:Name="BtnHost"
+                                     MinWidth="140"
+                                     Margin="0,0,15,10"
+                                     Command="{Binding HostCommand}"
+                                     IsEnabled="{Binding CanHost}"
+                                     Text="{loc:Loc Tools.Astral.Host.Button}" />
+                    </WrapPanel>
+                    <TextBlock Margin="0,5,0,0"
+                               TextWrapping="Wrap"
+                               Opacity="0.75"
+                               FontSize="12"
+                               Text="{Binding HostStatus}" />
+                </StackPanel>
+            </ui:MyCard>
+
+            <ui:MyCard Margin="10,0,10,10"
+                       IsVisible="{Binding HasShareLink}"
+                       Title="{loc:Loc Tools.Astral.Share.Title}">
+                <StackPanel Margin="25,40,21,15">
+                    <StackPanel Orientation="Horizontal"
+                                IsVisible="{Binding ShareShortLink, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Astral.Share.Short}" />
+                        <SelectableTextBlock x:Name="TxtShortLink"
+                                             MaxWidth="380"
+                                             Margin="8,0,0,0"
+                                             VerticalAlignment="Center"
+                                             TextTrimming="CharacterEllipsis"
+                                             Text="{Binding ShareShortLink}" />
+                        <ui:MyButton x:Name="BtnCopyShort"
+                                     MinWidth="80"
+                                     Margin="12,0,0,0"
+                                     Text="{loc:Loc Tools.Astral.Share.Copy}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,10,0,0"
+                                Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Astral.Share.Long}" />
+                        <SelectableTextBlock x:Name="TxtLongLink"
+                                             MaxWidth="380"
+                                             Margin="8,0,0,0"
+                                             VerticalAlignment="Center"
+                                             TextTrimming="CharacterEllipsis"
+                                             Text="{Binding ShareLongLink}" />
+                        <ui:MyButton x:Name="BtnCopyLong"
+                                     MinWidth="80"
+                                     Margin="12,0,0,0"
+                                     Text="{loc:Loc Tools.Astral.Share.Copy}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,10,0,0"
+                                Orientation="Horizontal"
+                                IsVisible="{Binding HasConnectAddress}">
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Astral.Ip.Label}" />
+                        <SelectableTextBlock x:Name="TxtConnectAddress"
+                                             Margin="8,0,0,0"
+                                             VerticalAlignment="Center"
+                                             Text="{Binding ConnectAddress}" />
+                        <ui:MyButton x:Name="BtnCopyIp"
+                                     MinWidth="80"
+                                     Margin="12,0,0,0"
+                                     Text="{loc:Loc Tools.Astral.Share.Copy}" />
+                    </StackPanel>
+                </StackPanel>
+            </ui:MyCard>
+        </StackPanel>
+    </ui:MyScrollViewer>
+</UserControl>

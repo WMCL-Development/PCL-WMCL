@@ -9,9 +9,33 @@
                        VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="25,10">
             <ui:MyCard Margin="0,15"
-                       Title="EasyTier">
+                       Title="{loc:Loc Setup.GameLink.Connection.Title}">
+                <StackPanel Margin="25,40,25,15">
+                    <TextBlock Margin="0,0,0,10"
+                               FontSize="12"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc Setup.GameLink.Connection.Hint}" />
+                    <ui:MyComboBox x:Name="ComboConnectionMethod"
+                                   HorizontalAlignment="Stretch"
+                                   SelectedIndex="{Binding ConnectionMethodIndex, Mode=TwoWay}">
+                        <ui:MyComboBoxItem Content="{loc:Loc Setup.GameLink.Connection.Lobby}" />
+                        <ui:MyComboBoxItem Content="{loc:Loc Setup.GameLink.Connection.Astral}" />
+                        <ui:MyComboBoxItem Content="{loc:Loc Setup.GameLink.Connection.Terracotta}" />
+                        <ui:MyComboBoxItem Content="{loc:Loc Setup.GameLink.Connection.EasyTier}" />
+                    </ui:MyComboBox>
+                </StackPanel>
+            </ui:MyCard>
+
+            <ui:MyCard x:Name="CardEasyTier" Margin="0,15"
+                       Title="{loc:Loc Setup.GameLink.EasyTier.Title}">
                 <StackPanel Margin="25,40,25,15"
                             Orientation="Vertical">
+                    <TextBlock Margin="0,0,0,10"
+                               FontSize="12"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc Setup.GameLink.EasyTier.Shared}" />
                     <ui:MyHint Margin="0,0,0,10"
                                Theme="Yellow"
                                Text="{loc:Loc Setup.GameLink.RestartRequired}" />
@@ -67,6 +91,71 @@
                                        Text="{loc:Loc Setup.GameLink.CliDebugOutput}"
                                        ToolTip.Tip="{loc:Loc Setup.GameLink.CliDebugOutput.ToolTip}" />
                     </Grid>
+                </StackPanel>
+            </ui:MyCard>
+
+            <ui:MyCard x:Name="CardAstral" Margin="0,0,0,15"
+                       Title="{loc:Loc Setup.GameLink.Astral.Title}">
+                <StackPanel Margin="25,40,25,15"
+                            Orientation="Vertical">
+                    <Grid ColumnDefinitions="Auto,8,*"
+                          RowDefinitions="28,8,28">
+                        <TextBlock Grid.Row="0"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,25,0"
+                                   Text="{loc:Loc Setup.GameLink.Astral.Username}" />
+                        <ui:MyTextBox Grid.Row="0"
+                                      Grid.Column="2"
+                                      Text="{Binding AstralUsername, Mode=TwoWay}"
+                                      ToolTip.Tip="{loc:Loc Setup.GameLink.Astral.Username.ToolTip}" />
+                        <TextBlock Grid.Row="2"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,25,0"
+                                   Text="{loc:Loc Setup.GameLink.Astral.VirtualIp}" />
+                        <ui:MyTextBox Grid.Row="2"
+                                      Grid.Column="2"
+                                      Text="{Binding AstralVirtualIp, Mode=TwoWay}"
+                                      ToolTip.Tip="{loc:Loc Setup.GameLink.Astral.VirtualIp.ToolTip}" />
+                    </Grid>
+
+                    <TextBlock Margin="0,16,0,6"
+                               FontSize="12"
+                               Opacity="0.6"
+                               Text="{loc:Loc Setup.GameLink.Astral.Relay.Hint}" />
+                    <ListBox x:Name="ListAstralRelays"
+                             MaxHeight="140"
+                             ItemsSource="{Binding AstralRelays}"
+                             SelectedItem="{Binding SelectedAstralRelay, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Display}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <WrapPanel Margin="0,10,0,0">
+                        <ui:MyTextBox x:Name="TextAstralRelayUri"
+                                      MinWidth="220"
+                                      Watermark="tcp://host:11010"
+                                      Text="{Binding NewAstralRelayUri, Mode=TwoWay}" />
+                        <ui:MyTextBox x:Name="TextAstralRelayName"
+                                      MinWidth="120"
+                                      Margin="8,0,0,0"
+                                      Watermark="{loc:Loc Setup.GameLink.Astral.Relay.Name}"
+                                      Text="{Binding NewAstralRelayName, Mode=TwoWay}" />
+                        <ui:MyButton x:Name="BtnAddAstralRelay"
+                                     MinWidth="90"
+                                     Padding="13,0"
+                                     Margin="8,0,0,0"
+                                     Command="{Binding AddAstralRelayCommand}"
+                                     Text="{loc:Loc Setup.GameLink.Astral.Relay.Add}" />
+                        <ui:MyButton x:Name="BtnRemoveAstralRelay"
+                                     MinWidth="90"
+                                     Padding="13,0"
+                                     Margin="8,0,0,0"
+                                     Command="{Binding RemoveAstralRelayCommand}"
+                                     IsEnabled="{Binding CanRemoveRelay}"
+                                     Text="{loc:Loc Setup.GameLink.Astral.Relay.Remove}" />
+                    </WrapPanel>
                 </StackPanel>
             </ui:MyCard>
 

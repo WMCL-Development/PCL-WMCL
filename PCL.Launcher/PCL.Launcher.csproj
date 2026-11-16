@@ -36,6 +36,9 @@
         <PackageReference Include="JAJ.Packages.MiniAudioEx" Version="4.0.1" />
     </ItemGroup>
     <ItemGroup>
+        <EmbeddedResource Include="Resources\Help\*.*">
+            <LogicalName>PCL.Resources.Help.%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
         <EmbeddedResource Include="Resources\metadata.json" Link="metadata.json">
             <LogicalName>PCL.metadata.json</LogicalName>
         </EmbeddedResource>

@@ -1,3 +1,4 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PCL.Core.App;
 using PCL.Core.App.Configuration;
@@ -11,6 +12,12 @@ namespace PCL;
 /// <summary>设置页面中「联机」页的视图模型。</summary>
 public partial class PageSetupGameLinkViewModel : ViewModelBase
 {
+
+    public PageSetupGameLinkViewModel()
+    {
+        LoadAstralRelays();
+    }
+
     [ObservableProperty] private bool _enableCliOutput = Config.Link.EnableCliOutput;
 
     [ObservableProperty] private bool _enableIPv6 = Config.Link.EnableIPv6;
@@ -24,6 +31,85 @@ public partial class PageSetupGameLinkViewModel : ViewModelBase
     [ObservableProperty] private bool _latencyFirstMode = Config.Link.UseLatencyFirstMode;
 
     [ObservableProperty] private string _linkUsername = Config.Link.Username;
+
+    /// <summary>0 大厅 / 1 Astral / 2 陶瓦 / 3 EasyTier 直连，写入 <c>Config.Link.ConnectionMethod</c>。</summary>
+    [ObservableProperty] private int _connectionMethodIndex = ConnectionMethodToIndex(Config.Link.ConnectionMethod);
+
+    private static readonly string[] _connectionMethods = ["lobby", "astral", "terracotta", "easytier"];
+
+    private static int ConnectionMethodToIndex(string? method) =>
+        Math.Max(0, Array.FindIndex(_connectionMethods,
+            item => string.Equals(item, method, StringComparison.OrdinalIgnoreCase)));
+
+    partial void OnConnectionMethodIndexChanged(int value)
+    {
+        if (value < 0 || value >= _connectionMethods.Length) return;
+        Config.Link.ConnectionMethod = _connectionMethods[value];
+    }
+
+    [ObservableProperty] private string _astralUsername = Config.Link.AstralUsername;
+
+    [ObservableProperty] private string _astralVirtualIp = Config.Link.AstralVirtualIp;
+
+    /// <summary>Astral 自定义中继节点。</summary>
+    public System.Collections.ObjectModel.ObservableCollection<PCL.Core.Link.Astral.AstralRelay> AstralRelays { get; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanRemoveRelay))]
+    private PCL.Core.Link.Astral.AstralRelay? _selectedAstralRelay;
+
+    [ObservableProperty] private string _newAstralRelayUri = "";
+
+    [ObservableProperty] private string _newAstralRelayName = "";
+
+    public bool CanRemoveRelay => SelectedAstralRelay is not null;
+
+    public bool HasAstralRelays => AstralRelays.Count > 0;
+
+    partial void OnAstralUsernameChanged(string value) => Config.Link.AstralUsername = value ?? "";
+
+    partial void OnAstralVirtualIpChanged(string value) => Config.Link.AstralVirtualIp = value ?? "";
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void AddAstralRelay()
+    {
+        var uri = NewAstralRelayUri.Trim();
+        if (!PCL.Core.Link.Astral.AstralRelay.IsValidUri(uri))
+        {
+            HintService.Show(Hints.Warning(Lang.Text("Setup.GameLink.Astral.Relay.Invalid")));
+            return;
+        }
+
+        if (AstralRelays.Any(item => string.Equals(item.Uri, uri, StringComparison.OrdinalIgnoreCase)))
+        {
+            HintService.Show(Hints.Warning(Lang.Text("Setup.GameLink.Astral.Relay.Exists")));
+            return;
+        }
+
+        AstralRelays.Add(new PCL.Core.Link.Astral.AstralRelay(uri, NewAstralRelayName.Trim()));
+        PCL.Core.Link.Astral.AstralProfileStore.SaveRelays([.. AstralRelays]);
+        NewAstralRelayUri = "";
+        NewAstralRelayName = "";
+        OnPropertyChanged(nameof(HasAstralRelays));
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void RemoveAstralRelay()
+    {
+        if (SelectedAstralRelay is not { } relay) return;
+        AstralRelays.Remove(relay);
+        PCL.Core.Link.Astral.AstralProfileStore.SaveRelays([.. AstralRelays]);
+        SelectedAstralRelay = null;
+        OnPropertyChanged(nameof(HasAstralRelays));
+    }
+
+    private void LoadAstralRelays()
+    {
+        AstralRelays.Clear();
+        foreach (var relay in PCL.Core.Link.Astral.AstralProfileStore.LoadRelays())
+            AstralRelays.Add(relay);
+        OnPropertyChanged(nameof(HasAstralRelays));
+    }
 
     [ObservableProperty] private string _netTestButtonText =
         Lang.Text("Setup.GameLink.NetworkTest.Start");

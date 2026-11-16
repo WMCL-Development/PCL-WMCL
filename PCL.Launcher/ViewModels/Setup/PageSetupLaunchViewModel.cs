@@ -465,6 +465,33 @@ public partial class PageSetupLaunchViewModel : ViewModelBase
     }
 
     #endregion
+
+    #region 启动器行为
+
+    [ObservableProperty] private bool _closeToTray = Config.Preference.CloseToTray;
+
+    /// <summary>0 保持、1 最小化、2 隐藏。</summary>
+    [ObservableProperty] private int _afterLaunchIndex = Config.Preference.LauncherAfterLaunch switch
+    {
+        "minimize" => 1,
+        "hide" => 2,
+        _ => 0
+    };
+
+    partial void OnCloseToTrayChanged(bool value) => Config.Preference.CloseToTray = value;
+
+    partial void OnAfterLaunchIndexChanged(int value)
+    {
+        if (value < 0) return;
+        Config.Preference.LauncherAfterLaunch = value switch
+        {
+            1 => "minimize",
+            2 => "hide",
+            _ => "keep"
+        };
+    }
+
+    #endregion
 }
 
 /// <summary>内存占用条中三段宽度的计算结果。</summary>

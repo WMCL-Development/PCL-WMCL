@@ -1,0 +1,30 @@
+<StackPanel Spacing="10">
+    <TextBlock FontSize="19" FontWeight="SemiBold" Text="联机" />
+    <TextBlock Opacity="0.7" TextWrapping="Wrap" Text="介绍联机大厅、Astral 与 EasyTier 直连三种方式的区别与使用条件。" />
+
+    <TextBlock TextWrapping="Wrap" Text="连接方式在「设置 › 联机 › 连接方式」里选择，联机页只显示选中的那一种，其余面板会隐藏。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="三种方式的区别" />
+    <TextBlock TextWrapping="Wrap" Text="联机大厅用编号换取组网参数，需要 Natayark 账号；Astral 把参数打包进邀请码，可离线解析；EasyTier 直连由双方自行约定网络名与密钥，不依赖任何服务端。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="联机大厅" />
+    <TextBlock TextWrapping="Wrap" Text="粘入编号即可加入，编号会自动识别为 PCL CE 大厅还是陶瓦房间，输入框下方会提示识别结果。" />
+    <TextBlock TextWrapping="Wrap" Text="创建大厅需要本机可用的 EasyTier 与 TUN 设备，并可能需要提权。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="陶瓦联机" />
+    <TextBlock TextWrapping="Wrap" Text="陶瓦编号是 25 位字符，分成五组、每组五位，中间用短横线连接，例如 ABCDE-FGHIJ-KLMNO-PQRST-UVWXY。输入时字母 I 与 O 会自动当作 1 和 0。" />
+    <TextBlock TextWrapping="Wrap" Text="编号里直接包含了网络名、密钥与游戏端口，所以加入陶瓦房间不需要账号，也不需要连服务器解析，断网状态下也能解析出参数。" />
+    <TextBlock TextWrapping="Wrap" Text="陶瓦房间与 PCL CE 大厅共用同一套 EasyTier 核心，区别只在网络名前缀与虚拟 IP：陶瓦使用 terracotta-mc- 前缀，网段为 10.144.144.x。" />
+    <TextBlock TextWrapping="Wrap" Text="创建房间时启动器在本地生成编号，并用 EasyTier 主机模式组网；编号里的端口由网络名推导，无法指定，因此启动器会在本机该端口上做一次转发，指向你填写的局域网端口。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="Astral 联机" />
+    <TextBlock TextWrapping="Wrap" Text="支持长链、短链与六位短码三种邀请形式。加入后可查看房间成员与中继列表，也可以自己开房并把邀请分享给别人。" />
+    <TextBlock TextWrapping="Wrap" Text="设置 › 联机 › Astral 联机可调整用户名、虚拟 IP 与中转服务器。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="EasyTier 直连" />
+    <TextBlock TextWrapping="Wrap" Text="在联机页的直连卡片里填写网络名与密钥，双方填写一致即可组网。中继留空时使用公共节点，也可以填入自建中继地址。" />
+    <TextBlock TextWrapping="Wrap" Text="直连不经过账号校验，适合小范围临时联机。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="常见问题" />
+    <TextBlock TextWrapping="Wrap" Text="若提示缺少 TUN 或权限不足，请确认系统存在 /dev/net/tun 并允许启动器提权；容器与部分受限环境无法使用联机功能。" />
+</StackPanel>

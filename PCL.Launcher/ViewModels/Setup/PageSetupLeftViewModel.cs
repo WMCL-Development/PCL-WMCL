@@ -3,6 +3,7 @@ using PCL.Core.App.Localization;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.ViewModel;
 using PCL.Navigation;
+using PCL.Views.Shell;
 
 namespace PCL;
 
@@ -33,6 +34,7 @@ public class PageSetupLeftViewModel : ViewModelBase
 
     public static PageSubType FirstVisible()
     {
+        if (HiddenFeatureState.ForceShow) return PageSubType.SetupLaunch;
         var hide = Config.Preference.Hide;
         if (!hide.SetupLaunch) return PageSubType.SetupLaunch;
         if (!hide.SetupJava) return PageSubType.SetupJava;
@@ -50,6 +52,7 @@ public class PageSetupLeftViewModel : ViewModelBase
 
     public static bool IsSubPageHidden(PageSubType sub)
     {
+        if (HiddenFeatureState.ForceShow) return false;
         var hide = Config.Preference.Hide;
         return sub switch
         {

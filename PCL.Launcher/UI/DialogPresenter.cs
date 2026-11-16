@@ -203,6 +203,7 @@ public sealed class DialogPresenter : IDialogPresenter
             DialogKind.Select => new MyMsgSelect(dialog),
             DialogKind.AuthServer => new MyMsgAuthServer(dialog),
             DialogKind.Login => new MyMsgLogin(dialog),
+            DialogKind.Content => new MyMsgContent(dialog),
             _ => new MyMsgText(dialog)
         };
     }

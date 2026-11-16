@@ -1,0 +1,21 @@
+<StackPanel Spacing="10">
+    <TextBlock FontSize="19" FontWeight="SemiBold" Text="命令行" />
+    <TextBlock Opacity="0.7" TextWrapping="Wrap" Text="PCL CE 附带的 pcl-cli 可在无图形界面下完成大部分操作。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="基础命令" />
+    <TextBlock TextWrapping="Wrap" Text="version 显示版本与运行时；paths 显示各类目录；instances 列出实例；info 显示单个实例的版本、主类、依赖库与 Mod 数量；java 扫描本机 Java。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="配置与校验" />
+    <TextBlock TextWrapping="Wrap" Text="config 支持 list、get、set 三个子命令，用于读写本地配置。" />
+    <TextBlock TextWrapping="Wrap" Text="verify 校验实例文件完整性，加 --fix 会按清单自动补齐缺失文件，适合批量修复或 CI 场景。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="启动与账号" />
+    <TextBlock TextWrapping="Wrap" Text="launch 按实例启动游戏，加 --wait 会等待游戏退出并返回退出码。login 使用 Microsoft 设备码登录，account 显示当前账号。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="联机" />
+    <TextBlock TextWrapping="Wrap" Text="lobby 提供 host、join、parse、leave、status 五个子命令；astral 提供邀请码编解码、短链、房间列表、加入与开房；easytier 提供参数查看与直连加入。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="其他" />
+    <TextBlock TextWrapping="Wrap" Text="speedtest 测试下载源速度；items 从原版与 Mod jar 中解析物品目录。" />
+    <TextBlock TextWrapping="Wrap" Text="全局选项：--data-dir 指定数据目录，--quiet 减少输出。退出码 0 表示成功，1 表示失败，2 表示参数错误。" />
+</StackPanel>

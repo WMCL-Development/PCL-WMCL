@@ -1,0 +1,24 @@
+<StackPanel Spacing="10">
+    <TextBlock FontSize="19" FontWeight="SemiBold" Text="启动与实例" />
+    <TextBlock Opacity="0.7" TextWrapping="Wrap" Text="介绍启动流程、启动参数、实例结构与版本隔离。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="启动流程" />
+    <TextBlock TextWrapping="Wrap" Text="点击「启动游戏」后，启动器依次执行：登录校验 → 定位 Java → 补全资源文件 → 生成启动参数 → 解压本地库 → 执行预启动命令 → 执行自定义命令 → 启动进程 → 等待游戏窗口出现 → 结束。" />
+    <TextBlock TextWrapping="Wrap" Text="任一阶段失败都会中止启动并给出提示，日志中可看到对应阶段的详细原因。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="Java 选择" />
+    <TextBlock TextWrapping="Wrap" Text="设置 › Java 可指定自动选择或固定路径。自动选择会按版本所需的 Java 主版本号匹配本机已安装的运行时，优先级为手动指定 > 版本要求 > 全局默认。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="内存与渲染器" />
+    <TextBlock TextWrapping="Wrap" Text="内存可在实例设置中单独覆盖全局值。渲染器支持自动、OpenGL、Vulkan 等选项，选择后会自动附加对应的 JVM 参数。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="实例结构" />
+    <TextBlock TextWrapping="Wrap" Text="每个实例对应 versions 下的一个目录，包含版本 JSON、客户端 jar、Mod、资源包、光影、存档与截图等子目录。" />
+    <TextBlock TextWrapping="Wrap" Text="实例设置可单独调整内存、Java、窗口、隔离方式、启动前命令等，不影响其他实例。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="版本隔离" />
+    <TextBlock TextWrapping="Wrap" Text="隔离决定 Mod、资源包、存档等目录的位置。全局提供五档预设，实例级开关可覆盖全局设置，用于把某个实例的 Mod 与其他实例彻底分开。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="检查并修复" />
+    <TextBlock TextWrapping="Wrap" Text="实例设置 › 检查并修复会按版本 JSON 的清单核对客户端 jar、依赖库与资源索引，缺失的文件自动下载补齐，修复结果会提示成功与失败数量。" />
+</StackPanel>

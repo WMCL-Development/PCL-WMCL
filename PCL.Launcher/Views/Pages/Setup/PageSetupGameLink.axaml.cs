@@ -17,6 +17,7 @@ public partial class PageSetupGameLink : MyPageRight, ISetupResetPage
         PanScroll = PanBack;
         DataContext = ViewModel;
 
+
         BtnNetTest.Click += async (_, _) =>
         {
             try
@@ -38,10 +39,18 @@ public partial class PageSetupGameLink : MyPageRight, ISetupResetPage
             if (_loaded) return;
             _loaded = true;
             Reload();
+            ApplyMethodVisibility();
+            ViewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(ViewModel.ConnectionMethodIndex)) ApplyMethodVisibility();
+            };
         };
     }
 
     public PageSetupGameLinkViewModel ViewModel { get; } = new();
+
+    /// <summary>Astral 设置卡只在 Astral 方式下显示；EasyTier 参数四种方式共用。</summary>
+    private void ApplyMethodVisibility() => CardAstral.IsVisible = ViewModel.ConnectionMethodIndex == 1;
 
     public void Reset()
     {

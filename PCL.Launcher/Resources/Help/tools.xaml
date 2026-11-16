@@ -1,0 +1,23 @@
+<StackPanel Spacing="10">
+    <TextBlock FontSize="19" FontWeight="SemiBold" Text="工具" />
+    <TextBlock Opacity="0.7" TextWrapping="Wrap" Text="更多 › 百宝箱中的各项工具及其用途。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="日常维护" />
+    <TextBlock TextWrapping="Wrap" Text="清理游戏垃圾：删除日志、缓存与临时文件，不影响存档与 Mod。" />
+    <TextBlock TextWrapping="Wrap" Text="目录入口：一键打开游戏目录、配置目录与日志目录。" />
+    <TextBlock TextWrapping="Wrap" Text="查看启动计数：显示本机累计启动次数。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="抽奖与收藏" />
+    <TextBlock TextWrapping="Wrap" Text="每次启动获得一次抽奖机会，支持单抽与十连。获得的物品进入收藏库，可查看进度与稀有度分布。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="3D 皮肤预览" />
+    <TextBlock TextWrapping="Wrap" Text="选择皮肤文件后自动识别经典或纤细模型，按住鼠标拖动可自由旋转视角。选择披风文件后会在模型背部叠加披风。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="皮肤与头像" />
+    <TextBlock TextWrapping="Wrap" Text="皮肤头像生成：从皮肤贴图裁切出头像。下载正版玩家皮肤：输入玩家名即可下载其当前皮肤。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="网络与下载" />
+    <TextBlock TextWrapping="Wrap" Text="镜像测速：分别测试 Mojang、BMCLAPI 与 Modrinth 的实际吞吐，结果用于选择下载源。" />
+    <TextBlock TextWrapping="Wrap" Text="下载自定义文件：填入任意 URL 与保存路径即可下载。" />
+    <TextBlock TextWrapping="Wrap" Text="瞅眼服务器：查询服务器在线状态与延迟。" />
+</StackPanel>

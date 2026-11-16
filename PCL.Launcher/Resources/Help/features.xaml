@@ -1,0 +1,39 @@
+<StackPanel Spacing="10">
+    <TextBlock FontSize="19" FontWeight="SemiBold" Text="功能总览" />
+    <TextBlock Opacity="0.7" TextWrapping="Wrap" Text="本页按模块列出 PCL CE 的主要功能与入口位置，内容随版本更新。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="一、启动与实例" />
+    <TextBlock TextWrapping="Wrap" Text="启动游戏：启动页左侧「启动游戏」。流程为组装参数 → 选择 Java → 登录校验 → 启动进程 → 等待窗口。" />
+    <TextBlock TextWrapping="Wrap" Text="启动阶段可在日志中看到：Login、GetJava、CompleteFiles、GetArguments、ExtractNatives、PreLaunch、CustomCommand、StartProcess、WaitWindow、End。" />
+    <TextBlock TextWrapping="Wrap" Text="启动后行为：设置 › 启动 › 启动器行为，可设为保持、最小化或隐藏；关闭按钮也可设为隐藏到系统托盘。" />
+    <TextBlock TextWrapping="Wrap" Text="实例管理：启动页「实例选择」，每个实例包含概览、设置、导出、存档、截图、Mod、资源包、光影、结构、安装、服务器、资源等子页。" />
+    <TextBlock TextWrapping="Wrap" Text="版本隔离：全局五档设置，每个实例另有独立开关覆盖。" />
+    <TextBlock TextWrapping="Wrap" Text="实例修复：实例设置 › 检查并修复，按官方清单核对客户端 jar、依赖库与资源索引，缺失项自动补齐。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="二、下载与安装" />
+    <TextBlock TextWrapping="Wrap" Text="下载页提供原版、整合包、Mod、资源包、光影、世界、数据包与收藏夹等分类。" />
+    <TextBlock TextWrapping="Wrap" Text="支持的安装器：Fabric、Quilt、LegacyFabric、Forge、NeoForge、OptiFine、OptiFabric、LiteLoader、Cleanroom、LabyMod。" />
+    <TextBlock TextWrapping="Wrap" Text="下载设置可调整源、协议、并发连接数、单文件连接数、限速、文件名格式与快速下载行为；内置 WebServer 可加速大文件。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="三、联机" />
+    <TextBlock TextWrapping="Wrap" Text="联机大厅：使用 Natayark 账号，粘入编号即可加入；编号会自动识别为 PCL CE 大厅或陶瓦房间。陶瓦编号为 25 位、分五组，自带网络参数，加入时不需要账号。" />
+    <TextBlock TextWrapping="Wrap" Text="Astral 联机：支持长链、短链与六位短码，可加入、开房、查看房间与成员、选择中继。" />
+    <TextBlock TextWrapping="Wrap" Text="EasyTier 直连：双方约定网络名与密钥即可组网，不依赖账号或服务端；中继留空时使用公共节点。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="四、工具（更多 › 百宝箱）" />
+    <TextBlock TextWrapping="Wrap" Text="清理游戏垃圾、今日人品、创建快捷方式、查看启动计数、抽奖与收藏库。" />
+    <TextBlock TextWrapping="Wrap" Text="3D 皮肤预览支持经典与纤细模型自动识别、披风叠加，按住鼠标可自由旋转。" />
+    <TextBlock TextWrapping="Wrap" Text="其他：皮肤头像生成、下载正版玩家皮肤、服务器查询、自定义成就图片、目录入口、镜像测速、下载自定义文件。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="五、设置" />
+    <TextBlock TextWrapping="Wrap" Text="设置包含启动、Java、管理、联机、个性化、语言、杂项、日志、更新、关于、反馈十一个子页。" />
+    <TextBlock TextWrapping="Wrap" Text="个性化支持界面缩放（80%–150%）、主题微调（色相、明度、色度）、字体、背景与功能隐藏。" />
+    <TextBlock TextWrapping="Wrap" Text="杂项包含公告、实时日志行数、HTTP 代理、动画速度、Linux 显示协议与 Niri 窗口规则写入。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="六、命令行" />
+    <TextBlock TextWrapping="Wrap" Text="PCL CE 附带独立命令行工具 pcl-cli，可在无图形界面下查看实例、扫描 Java、读写配置、校验与修复文件、启动游戏。" />
+    <TextBlock TextWrapping="Wrap" Text="联机相关命令包括 lobby、astral 与 easytier 三组，覆盖大厅、Astral 与直连三种方式。" />
+
+    <TextBlock FontSize="15" FontWeight="SemiBold" Text="七、已知限制" />
+    <TextBlock TextWrapping="Wrap" Text="联机功能需要 TUN 设备与提权；陶瓦为协议兼容，复用 EasyTier 核心而非独立客户端；皮肤上传尚未提供。" />
+</StackPanel>

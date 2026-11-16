@@ -22,13 +22,6 @@ namespace PCL.Views.Pages.Setup;
 /// </summary>
 public partial class PageSetupUI : MyPageRight, ISetupResetPage
 {
-    private static readonly (string Tag, string Key)[] ThemeColorKeys =
-    [
-        (nameof(ColorTheme.SkyBlue), "Setup.Ui.Theme.Color.SkyBlue"),
-        (nameof(ColorTheme.CatBlue), "Setup.Ui.Theme.Color.CatBlue"),
-        (nameof(ColorTheme.DeathBlue), "Setup.Ui.Theme.Color.CrashBlue"),
-        (nameof(ColorTheme.HmclBlue), "Setup.Ui.Theme.Color.Hmcl")
-    ];
 
     private readonly List<MyCheckBox> _hideChecks = [];
     private readonly MyRadioBox[] _homepageRadios;
@@ -135,7 +128,6 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         ComboUiMotdFont.SelectionChanged += (_, _) =>
             WriteIfReady(() => Config.Preference.MotdFont = ComboUiMotdFont.SelectedFontTag);
 
-        BtnLauncherDonate.Click += (_, _) => Basics.OpenPath("https://afdian.com/a/LTCat");
         BtnLogoChange.Click += (_, _) => OnChangeLogo();
         BtnLogoDelete.Click += (_, _) => OnDeleteLogo();
         BtnBackgroundOpen.Click += (_, _) => OpenBackgroundFolder();
@@ -303,7 +295,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
 
     private void BuildThemeColorItems()
     {
-        var count = Basics.IsAprilFool ? ThemeColorKeys.Length : ThemeColorKeys.Length - 1;
+        var presets = PCL.Core.UI.Theme.ThemePresetCatalog.Visible(Basics.IsAprilFool);
         foreach (var combo in new[]
                  {
                      ComboLightColor,
@@ -311,12 +303,8 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                  })
         {
             combo.Items.Clear();
-            for (var i = 0; i < count; i++)
-                combo.Items.Add(
-                    new MyComboBoxItem
-                    {
-                        Content = Lang.Text(ThemeColorKeys[i].Key)
-                    });
+            foreach (var preset in presets)
+                combo.Items.Add(new MyComboBoxItem { Content = Lang.Text(preset.NameKey) });
         }
     }
 

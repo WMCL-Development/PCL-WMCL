@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -8,9 +10,14 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using PCL.Core.App.IoC;
 using PCL.Core.App.Localization;
+using PCL.Core.App;
 using PCL.Core.Logging;
+using PCL.Core.UI;
+using PCL.UI.SystemIntegration;
 using PCL.Navigation;
 using PCL.UI;
+using PCL.Core.UI;
+using PCL.Views.Pages;
 using PCL.UI.SystemIntegration;
 using PCL.Views.Shell;
 
@@ -83,6 +90,10 @@ public partial class MainWindow : Window
         _titleBar.HelpRequested += OpenHelp;
         _titleBar.MinimizeRequested += () => WindowState = WindowState.Minimized;
         _titleBar.CloseRequested += Close;
+        Closing += OnWindowClosing;
+        ApplyUiScale();
+        SizeChanged += OnWindowSizeChangedForScale;
+        GameLaunch.GameProcessStarted += OnGameProcessStarted;
 
         if (this.FindControl<Panel>("PanHint") is { } hintLayer)
             HintPresenter.Instance.Attach(this, hintLayer);
@@ -114,6 +125,8 @@ public partial class MainWindow : Window
 
     public static MainWindow? Current { get; private set; }
 
+    /// <summary>取标题栏，供外部在隐藏配置变化后刷新主标签。</summary>
+    public PCL.Views.Shell.TitleBar? GetTitleBar() => _titleBar;
     /// <summary>
     ///     在窗口显示前预创建启动页，避免首屏导航时再同步实例化页面。
     /// </summary>
@@ -300,6 +313,60 @@ public partial class MainWindow : Window
         if (ReferenceEquals(Current, this)) Current = null;
     }
 
+    private TrayService? _tray;
+    private bool _exitingFromTray;
+
+    /// <summary>关闭窗口：开了「关闭到托盘」就藏起来，否则真正退出。</summary>
+    private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (_exitingFromTray) return;
+        if (!Config.Preference.CloseToTray) return;
+
+        _tray ??= TrayService.Attach(this);
+        if (!_tray.IsAvailable) return;
+
+        e.Cancel = true;
+        Hide();
+    }
+
+    /// <summary>游戏启动后按设置处理启动器窗口：保持 / 最小化 / 隐藏。</summary>
+    private void OnGameProcessStarted(int processId)
+    {
+        switch (Config.Preference.LauncherAfterLaunch)
+        {
+            case "minimize":
+                WindowState = WindowState.Minimized;
+                break;
+            case "hide":
+                Hide();
+                break;
+        }
+    }
+
+    /// <summary>
+    ///     按配置应用界面缩放（80%–150%）。只缩放内容，不改窗口尺寸；
+    ///     窗口装不下放大后的内容时按可用空间收敛，避免被裁掉。
+    /// </summary>
+    public void ApplyUiScale()
+    {
+        var requested = Math.Clamp(Config.Preference.UiScalePercent, 80, 150) / 100d;
+        var availableWidth = Math.Max(Bounds.Width, 1d) / BaseWidth;
+        var availableHeight = Math.Max(Bounds.Height, 1d) / BaseHeight;
+        var fit = Math.Min(availableWidth, availableHeight);
+        var scale = Math.Clamp(Math.Min(requested, Math.Max(fit, 0.8d)), 0.8d, 1.5d);
+
+        PanScale.LayoutTransform = Math.Abs(scale - 1d) < 0.001
+            ? null
+            : new ScaleTransform(scale, scale);
+    }
+
+    private void OnWindowSizeChangedForScale(object? sender, SizeChangedEventArgs e) => ApplyUiScale();
+
+    /// <summary>未缩放时的基准内容尺寸，用于判断窗口能否装下放大后的内容。</summary>
+    private const double BaseWidth = 850d;
+
+    private const double BaseHeight = 500d;
+
     private void ApplyWindowIcon()
     {
         try
@@ -318,11 +385,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            Process.Start(
-                new ProcessStartInfo("https://www.bilibili.com/video/BV1uT4y1P7CX")
-                {
-                    UseShellExecute = true
-                });
+            Basics.OpenUrl(Basics.HelpUrl);
         }
         catch (Exception ex)
         {

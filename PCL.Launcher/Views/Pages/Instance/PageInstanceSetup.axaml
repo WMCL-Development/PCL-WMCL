@@ -367,6 +367,13 @@
                                  HorizontalAlignment="Left"
                                  IsVisible="False"
                                  Text="{loc:Loc Instance.Setup.Server.LockLoginMethod}" />
+                    <ui:MyButton x:Name="BtnRepairVersion"
+                                 MinWidth="140"
+                                 Padding="13,0"
+                                 Margin="0,0,12,0"
+                                 Command="{Binding RepairVersionCommand}"
+                                 Text="{loc:Loc Instance.Setup.Repair.Button}"
+                                 ToolTip.Tip="{loc:Loc Instance.Setup.Repair.ToolTip}" />
                     <ui:MyButton x:Name="BtnServerNewProfile"
                                  Height="35"
                                  MinWidth="150"

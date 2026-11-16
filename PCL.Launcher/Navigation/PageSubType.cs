@@ -56,5 +56,12 @@ public enum PageSubType
     VersionServer = 11,
 
     VersionSavesInfo = 0,
-    VersionSavesDatapack = 1
+    VersionSavesDatapack = 1,
+
+    MoreToolbox = 20,
+    MoreAbout = 21,
+    MoreFeedback = 22,
+
+    /// <summary>更多 › 帮助索引。</summary>
+    MoreHelp = 23
 }

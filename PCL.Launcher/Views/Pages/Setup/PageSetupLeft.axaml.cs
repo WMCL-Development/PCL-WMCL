@@ -22,19 +22,17 @@ public partial class PageSetupLeft : MyPageLeft
         AnimatedControl = PanItem;
 
         var hide = Config.Preference.Hide;
-        _items.Add((PageSubType.SetupLaunch, ItemLaunch, () => hide.SetupLaunch));
-        _items.Add((PageSubType.SetupJava, ItemJava, () => hide.SetupJava));
-        _items.Add((PageSubType.SetupGameManage, ItemGameManage, () => hide.SetupGameManage));
-        _items.Add((PageSubType.SetupGameLink, ItemGameLink, () => hide.SetupGameLink));
-        _items.Add((PageSubType.SetupUi, ItemUI, () => hide.SetupUi));
+        _items.Add((PageSubType.SetupLaunch, ItemLaunch, () => !HiddenFeatureState.ForceShow && hide.SetupLaunch));
+        _items.Add((PageSubType.SetupJava, ItemJava, () => !HiddenFeatureState.ForceShow && hide.SetupJava));
+        _items.Add((PageSubType.SetupGameManage, ItemGameManage, () => !HiddenFeatureState.ForceShow && hide.SetupGameManage));
+        _items.Add((PageSubType.SetupGameLink, ItemGameLink, () => !HiddenFeatureState.ForceShow && hide.SetupGameLink));
+        _items.Add((PageSubType.SetupUi, ItemUI, () => !HiddenFeatureState.ForceShow && hide.SetupUi));
         _items.Add(
             (PageSubType.SetupLauncherLanguage, ItemLauncherLanguage,
-                () => hide.SetupLauncherLanguage));
-        _items.Add((PageSubType.SetupLauncherMisc, ItemLauncherMisc, () => hide.SetupLauncherMisc));
-        _items.Add((PageSubType.SetupAbout, ItemAbout, () => hide.SetupAbout));
-        _items.Add((PageSubType.SetupUpdate, ItemUpdate, () => hide.SetupUpdate));
-        _items.Add((PageSubType.SetupFeedback, ItemFeedback, () => hide.SetupFeedback));
-        _items.Add((PageSubType.SetupLog, ItemLog, () => hide.SetupLog));
+                () => !HiddenFeatureState.ForceShow && hide.SetupLauncherLanguage));
+        _items.Add((PageSubType.SetupLauncherMisc, ItemLauncherMisc, () => !HiddenFeatureState.ForceShow && hide.SetupLauncherMisc));
+        _items.Add((PageSubType.SetupUpdate, ItemUpdate, () => !HiddenFeatureState.ForceShow && hide.SetupUpdate));
+        _items.Add((PageSubType.SetupLog, ItemLog, () => !HiddenFeatureState.ForceShow && hide.SetupLog));
 
         _categories.Add(
             (TextGameCategory,
@@ -52,9 +50,7 @@ public partial class PageSetupLeft : MyPageLeft
         _categories.Add(
             (TextAboutCategory,
                 () => AllHidden(
-                    PageSubType.SetupAbout,
                     PageSubType.SetupUpdate,
-                    PageSubType.SetupFeedback,
                     PageSubType.SetupLog)));
 
         foreach (var (sub, item, _) in _items)
@@ -140,6 +136,9 @@ public partial class PageSetupLeft : MyPageLeft
     public static void NotifyHiddenSettingChanged()
     {
         HiddenSettingChanged?.Invoke();
+        // 主标签的可见性由同一批配置决定，改完立刻重算。
+        if (MainWindow.Current?.GetTitleBar() is { } titleBar)
+            titleBar.ApplyHiddenPages();
     }
 
     private void OnItemChecked(PageSubType sub, MyListItem item)
@@ -185,10 +184,6 @@ public partial class PageSetupLeft : MyPageLeft
         ItemJava.Buttons =
         [
             CreateRefreshButton(PageSubType.SetupJava)
-        ];
-        ItemFeedback.Buttons =
-        [
-            CreateRefreshButton(PageSubType.SetupFeedback)
         ];
     }
 

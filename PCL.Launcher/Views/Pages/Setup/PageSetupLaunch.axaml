@@ -474,6 +474,31 @@
                 </Grid>
             </ui:MyCard>
 
+
+            <ui:MyCard Margin="0,0,0,15"
+                       Title="{loc:Loc Setup.Launch.Behavior.Title}">
+                <StackPanel Margin="25,40,25,15"
+                            Orientation="Vertical">
+                    <ui:MyCheckBox x:Name="CheckCloseToTray"
+                                   Height="28"
+                                   Checked="{Binding CloseToTray, Mode=TwoWay}"
+                                   Text="{loc:Loc Setup.Launch.Behavior.CloseToTray}"
+                                   ToolTip.Tip="{loc:Loc Setup.Launch.Behavior.CloseToTray.ToolTip}" />
+                    <StackPanel Margin="0,14,0,0"
+                                Orientation="Horizontal">
+                        <TextBlock Width="150"
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc Setup.Launch.Behavior.AfterLaunch}" />
+                        <ui:MyComboBox x:Name="ComboAfterLaunch"
+                                       MinWidth="180"
+                                       SelectedIndex="{Binding AfterLaunchIndex, Mode=TwoWay}">
+                            <ui:MyComboBoxItem Content="{loc:Loc Setup.Launch.Behavior.AfterLaunch.Keep}" />
+                            <ui:MyComboBoxItem Content="{loc:Loc Setup.Launch.Behavior.AfterLaunch.Minimize}" />
+                            <ui:MyComboBoxItem Content="{loc:Loc Setup.Launch.Behavior.AfterLaunch.Hide}" />
+                        </ui:MyComboBox>
+                    </StackPanel>
+                </StackPanel>
+            </ui:MyCard>
             <ui:MyExtraTextButton x:Name="BtnSwitch"
                                   Margin="0,-5,0,15"
                                   HorizontalAlignment="Center"

@@ -188,14 +188,7 @@ public sealed class MySkin : Grid
 
     private void BuildContextMenu()
     {
-        _menuSave = new MyMenuItem
-        {
-            Header = Lang.Text("Launch.Skin.SaveAs"),
-            SvgIcon = "lucide/download",
-            IsEnabled = ViewModel.CanSave
-        };
-        _menuSave.Click += (_, _) => _ = SaveSkinAsync();
-
+        // 与 WMCL 一致：右键只有「刷新」与「皮肤」两项，其余操作都收进皮肤窗口。
         var refreshItem = new MyMenuItem
         {
             Header = Lang.Text("Common.Action.Refresh"),
@@ -203,23 +196,30 @@ public sealed class MySkin : Grid
         };
         refreshItem.Click += (_, _) => RefreshSource();
 
-        _menuCape = new MyMenuItem
+        var skinItem = new MyMenuItem
         {
-            Header = Lang.Text("Launch.Skin.ChangeCape"),
-            SvgIcon = "lucide/shirt",
-            IsVisible = ViewModel.HasCape
+            Header = Lang.Text("Launch.Skin.Title"),
+            SvgIcon = "lucide/shirt"
         };
-        _menuCape.Click += (_, _) => ViewModel.ChangeCapeCommand.Execute(null);
+        skinItem.Click += (_, _) => OpenSkinWindow();
 
         ContextMenu = new ContextMenu
         {
-            ItemsSource = new List<MyMenuItem>
-            {
-                _menuSave,
-                refreshItem,
-                _menuCape
-            }
+            ItemsSource = new List<MyMenuItem> { refreshItem, skinItem },
+            HorizontalOffset = 10d,
+            VerticalOffset = 18d
         };
+    }
+
+    /// <summary>打开皮肤窗口（3D 预览、上传与编辑器入口）。</summary>
+    private void OpenSkinWindow()
+    {
+        _ = PCL.Core.UI.Dialogs.DialogService.Instance.ShowAsync(
+            new PCL.UI.Dialogs.ContentDialogRequest
+            {
+                Title = Lang.Text("Launch.Skin.Title"),
+                ContentFactory = () => new SkinPanel()
+            });
     }
 
     private void ApplyShadowColor()

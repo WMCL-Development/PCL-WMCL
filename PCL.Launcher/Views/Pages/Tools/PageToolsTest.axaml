@@ -1,51 +1,113 @@
 <ui:MyPageRight xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:ui="using:PCL.UI.Controls"
+               xmlns:skin="using:PCL.UI.Controls.Skin"
+               xmlns:vm="using:PCL.ViewModels.Pages"
                 xmlns:loc="using:PCL.Core.UI"
+        xmlns:conv="using:PCL.UI.Converters"
+        xmlns:mc="using:PCL.UI.Controls.Mc"
                 x:CompileBindings="False"
                 x:Class="PCL.Views.Pages.Tools.PageToolsTest">
+    <Panel>
     <ui:MyScrollViewer x:Name="PanBack"
                        HorizontalScrollBarVisibility="Disabled"
                        VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="25,10">
             <ui:MyCard Margin="0,15"
                        Title="{loc:Loc Tools.Test.Title}">
-                <WrapPanel Margin="25,40,21,5"
-                           ItemHeight="50">
-                    <ui:MyButton x:Name="BtnClean"
-                                 MinWidth="120"
-                                 Margin="0,0,15,15"
-                                 Command="{Binding CleanCommand}"
-                                 IsEnabled="{Binding CleanEnabled}"
-                                 Text="{loc:Loc Tools.Test.Clean.Title}"
-                                 ToolTip.Tip="{loc:Loc Tools.Test.Clean.ToolTip}" />
-                    <ui:MyButton x:Name="BtnLuck"
-                                 MinWidth="100"
-                                 Margin="0,0,15,15"
-                                 Command="{Binding ShowDailyFortuneCommand}"
-                                 Text="{loc:Loc Tools.Test.Luck.Title}" />
-                    <ui:MyButton x:Name="BtnCrash"
-                                 MinWidth="100"
-                                 Margin="0,0,15,15"
-                                 ColorType="Red"
-                                 Command="{Binding CrashCommand}"
-                                 IsVisible="{Binding CrashButtonVisible}"
-                                 Text="{loc:Loc Tools.Test.Crash.Title}"
-                                 ToolTip.Tip="{loc:Loc Tools.Test.Crash.ManualCrash}" />
-                    <ui:MyButton x:Name="BtnShortcut"
-                                 MinWidth="120"
-                                 Margin="0,0,15,15"
-                                 Command="{Binding CreateShortcutCommand}"
-                                 IsEnabled="{Binding ShortcutEnabled}"
-                                 Text="{loc:Loc Tools.Test.Shortcut.Title}"
-                                 ToolTip.Tip="{loc:Loc Tools.Test.Shortcut.ToolTip}" />
-                    <ui:MyButton x:Name="BtnLaunchCount"
-                                 MinWidth="120"
-                                 Margin="0,0,15,15"
-                                 Command="{Binding ShowLaunchCountCommand}"
-                                 IsEnabled="{Binding LaunchCountEnabled}"
-                                 Text="{loc:Loc Tools.Test.LaunchCount.Title}" />
-                </WrapPanel>
+                <StackPanel Margin="25,40,21,5" Spacing="12">
+                    <!-- 上排：直接执行的功能 -->
+                    <UniformGrid Columns="4">
+                        <ui:MyButton x:Name="BtnClean"
+                                     Height="40"
+                                     Margin="0,0,12,0"
+                                     HorizontalAlignment="Stretch"
+                                     Command="{Binding CleanCommand}"
+                                     IsEnabled="{Binding CleanEnabled}"
+                                     Text="{loc:Loc Tools.Test.Clean.Title}"
+                                     ToolTip.Tip="{loc:Loc Tools.Test.Clean.ToolTip}" />
+                        <ui:MyButton x:Name="BtnLuck"
+                                     Height="40"
+                                     Margin="0,0,12,0"
+                                     HorizontalAlignment="Stretch"
+                                     Command="{Binding ShowDailyFortuneCommand}"
+                                     Text="{loc:Loc Tools.Test.Luck.Title}" />
+                        <ui:MyButton x:Name="BtnShortcut"
+                                     Height="40"
+                                     Margin="0,0,12,0"
+                                     HorizontalAlignment="Stretch"
+                                     Command="{Binding CreateShortcutCommand}"
+                                     IsEnabled="{Binding ShortcutEnabled}"
+                                     Text="{loc:Loc Tools.Test.Shortcut.Title}"
+                                     ToolTip.Tip="{loc:Loc Tools.Test.Shortcut.ToolTip}" />
+                        <ui:MyButton x:Name="BtnLaunchCount"
+                                     Height="40"
+                                     HorizontalAlignment="Stretch"
+                                     Command="{Binding ShowLaunchCountCommand}"
+                                     IsEnabled="{Binding LaunchCountEnabled}"
+                                     Text="{loc:Loc Tools.Test.LaunchCount.Title}" />
+                    </UniformGrid>
+
+                    <!-- 下排：会弹出窗口的功能 -->
+                    <UniformGrid Columns="4">
+                        <ui:MyButton x:Name="BtnOpenLottery"
+                                     Height="40"
+                                     Margin="0,0,12,0"
+                                     HorizontalAlignment="Stretch"
+                                     Text="{loc:Loc Tools.Test.Lottery.Title}" />
+                        <ui:MyButton x:Name="BtnOpenAvatar"
+                                     Height="40"
+                                     Margin="0,0,12,0"
+                                     HorizontalAlignment="Stretch"
+                                     Text="{loc:Loc Tools.Test.Avatar.Title}" />
+                        <ui:MyButton x:Name="BtnOpenAchievement"
+                                     Height="40"
+                                     Margin="0,0,12,0"
+                                     HorizontalAlignment="Stretch"
+                                     Text="{loc:Loc Tools.Test.Achievement.Title}" />
+                        <ui:MyButton x:Name="BtnCrash"
+                                     Height="40"
+                                     HorizontalAlignment="Stretch"
+                                     ColorType="Red"
+                                     Command="{Binding CrashCommand}"
+                                     IsVisible="{Binding CrashButtonVisible}"
+                                     Text="{loc:Loc Tools.Test.Crash.Title}"
+                                     ToolTip.Tip="{loc:Loc Tools.Test.Crash.ManualCrash}" />
+                    </UniformGrid>
+                </StackPanel>
+            </ui:MyCard>
+
+            <ui:MyCard x:Name="CardOfficialSkin"
+                       Margin="0,0,0,15"
+                       Title="{loc:Loc Tools.Test.Skin.Title}">
+                <StackPanel Margin="25,40,25,20"
+                            Orientation="Vertical">
+                    <TextBlock Text="{loc:Loc Tools.Test.Skin.Description}"
+                               TextWrapping="Wrap" />
+                    <Grid Margin="0,10,0,0"
+                          ColumnDefinitions="Auto,*,Auto"
+                          RowDefinitions="Auto"
+                          ColumnSpacing="25">
+                        <TextBlock Grid.Row="0"
+                                   Grid.Column="0"
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Test.Skin.PlayerName}" />
+                        <ui:MyTextBox x:Name="TextSkinID"
+                                      Grid.Row="0"
+                                      Grid.Column="1"
+                                      Margin="0,10"
+                                      MaxLength="50"
+                                      Text="{Binding SkinId, Mode=TwoWay}" />
+                        <ui:MyTextButton x:Name="BtnSkinSave"
+                                         Grid.Row="0"
+                                         Grid.Column="2"
+                                         Margin="10,0,5,0"
+                                         VerticalAlignment="Center"
+                                         Command="{Binding SavePlayerSkinCommand}"
+                                         IsEnabled="{Binding SkinSaveEnabled}"
+                                         Text="{loc:Loc Tools.Test.Skin.Save}" />
+                    </Grid>
+                </StackPanel>
             </ui:MyCard>
 
             <ui:MyCard Margin="0,0,0,15"
@@ -119,48 +181,13 @@
                 </StackPanel>
             </ui:MyCard>
 
-            <ui:MyCard x:Name="CardSkin"
-                       Margin="0,0,0,15"
-                       Title="{loc:Loc Tools.Test.Skin.Title}">
-                <StackPanel Margin="25,40,25,15">
-                    <Grid Margin="0,14,0,2"
-                          ColumnDefinitions="Auto,*"
-                          RowDefinitions="Auto,Auto">
-                        <TextBlock Grid.Row="0"
-                                   Grid.Column="0"
-                                   Margin="0,0,25,0"
-                                   VerticalAlignment="Center"
-                                   Text="{loc:Loc Tools.Test.Skin.PlayerName}" />
-                        <ui:MyTextBox x:Name="TextSkinID"
-                                      Grid.Row="0"
-                                      Grid.Column="1"
-                                      MaxLength="50"
-                                      Text="{Binding SkinId, Mode=TwoWay}" />
-                        <Grid Grid.Row="1"
-                              Grid.ColumnSpan="2"
-                              Height="35"
-                              Margin="0,14,0,0"
-                              ColumnDefinitions="Auto,*">
-                            <ui:MyButton x:Name="BtnSkinSave"
-                                         Grid.Column="0"
-                                         MinWidth="140"
-                                         Padding="13,0"
-                                         Margin="0,0,20,0"
-                                         HorizontalAlignment="Left"
-                                         Command="{Binding SavePlayerSkinCommand}"
-                                         IsEnabled="{Binding SkinSaveEnabled}"
-                                         Text="{loc:Loc Tools.Test.Skin.Save}" />
-                        </Grid>
-                    </Grid>
-                </StackPanel>
-            </ui:MyCard>
-
             <ui:MyCard Margin="0,0,0,15"
                        Title="{loc:Loc Tools.Test.ServerQuery.Title}">
                 <ui:MinecraftServerQuery Margin="15,40,15,15" />
             </ui:MyCard>
 
             <ui:MyCard x:Name="CardAchievement"
+                       IsVisible="False"
                        Margin="0,0,0,15"
                        CanSwap="True"
                        IsSwapped="True"
@@ -174,10 +201,19 @@
                                    Margin="0,0,25,0"
                                    VerticalAlignment="Center"
                                    Text="{loc:Loc Tools.Test.Achievement.ItemId}" />
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    Spacing="8"
+                                    VerticalAlignment="Center"
+                                    Margin="10,0,5,0">
+                            <ui:MyTextButton x:Name="BtnPickAchievementItem"
+                                             Text="{loc:Loc Tools.Test.Achievement.Pick}" />
+                            <ui:MyTextButton x:Name="BtnPickAchievementImage"
+                                             Text="{loc:Loc Tools.Test.Achievement.LocalImage}" />
+                        </StackPanel>
                         <ui:MyTextBox x:Name="TextAchievementItem"
                                       Grid.Row="0"
                                       Grid.Column="1"
-                                      Grid.ColumnSpan="2"
                                       MaxLength="50"
                                       Margin="0,10"
                                       Text="{Binding AchievementItem, Mode=TwoWay}" />
@@ -240,17 +276,75 @@
                                      IsEnabled="{Binding AchievementButtonsEnabled}"
                                      Text="{loc:Loc Tools.Test.Achievement.Save}" />
                     </Grid>
-                    <ui:MyImage x:Name="ImgAchievement"
-                                Width="320"
-                                Height="64"
-                                HorizontalAlignment="Center"
-                                IsVisible="{Binding AchievementImageVisible}"
-                                Source="{Binding AchievementImagePath}"
-                                Stretch="Uniform" />
+                    <!-- 本地渲染的成就卡片：直接用控件绘制，中英文都能正常显示。 -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8"
+                                IsVisible="{Binding AchievementResourceBusy}">
+                        <ui:MyLoading Width="16" Height="16" Margin="0,0,8,0" />
+                        <TextBlock VerticalAlignment="Center" FontSize="12"
+                                   Text="{Binding AchievementResourceStatus}" />
+                    </StackPanel>
+                    <Border x:Name="PanAchievementToast"
+                            Width="320"
+                            Height="64"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Center"
+                            Background="{Binding AchievementBackground}"
+                            BorderBrush="#8B8B8B"
+                            BorderThickness="2"
+                            CornerRadius="2"
+                            IsVisible="{Binding AchievementImageVisible}">
+                        <Grid ColumnDefinitions="Auto,*" Margin="7">
+                            <Border Width="32" Height="32"
+                                    VerticalAlignment="Center"
+                                    Background="#3C3C3C"
+                                    BorderBrush="#8B8B8B"
+                                    BorderThickness="1">
+                                <ui:MyImage x:Name="ImgAchievementIcon"
+                                            Stretch="UniformToFill"
+                                            Source="{Binding AchievementIconPath}" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                <ui:McPixelText PixelScale="1"
+                                                Foreground="#FFFF55"
+                                                Text="{Binding AchievementPreviewTitle}" />
+                                <ui:McPixelText Margin="0,3,0,0"
+                                                PixelScale="1"
+                                                Foreground="#FFFFFF"
+                                                Text="{Binding AchievementPreviewLine}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ui:MyCard>
+
+            <ui:MyCard x:Name="CardCollection"
+                       IsVisible="False"
+                       Margin="0"
+                       Title="{loc:Loc Tools.Test.Lottery.CollectionHeader}">
+                <StackPanel Margin="14,30,14,8">
+                    <TextBlock Margin="0,0,0,6"
+                               FontSize="12"
+                               Opacity="0.7"
+                               Text="{Binding LotteryCollectionText}" />
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Disabled">
+                        <mc:McCreativeInventory x:Name="PanInventory"
+                                                Scale="2"
+                                                Width="390"
+                                                Height="384"
+                                                HorizontalAlignment="Center"
+                                                Margin="0,4,0,0" />
+                    </ScrollViewer>
+                    <TextBlock x:Name="LabInventoryHover"
+                               Margin="0,10,0,0"
+                               MinHeight="18"
+                               FontSize="12"
+                               Opacity="0.8" />
                 </StackPanel>
             </ui:MyCard>
 
             <ui:MyCard x:Name="CardAvatar"
+                       IsVisible="False"
                        Margin="0,0,0,15"
                        CanSwap="True"
                        IsSwapped="True"
@@ -295,6 +389,209 @@
                     </Border>
                 </StackPanel>
             </ui:MyCard>
+
+
+
+
+            <ui:MyCard x:Name="CardLottery"
+                       IsVisible="False"
+                       Margin="0,0,0,15"
+                       Title="{loc:Loc Tools.Test.Lottery.Title}">
+                <StackPanel Margin="25,40,25,15">
+                    <TextBlock Margin="0,0,0,6"
+                               FontSize="12"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               Text="{Binding LotteryAvailableText}" />
+                    <TextBlock Margin="0,0,0,10"
+                               FontSize="12"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               Text="{Binding LotteryCollectionText}" />
+                    <Grid x:Name="PanReel"
+                          Height="196"
+                          Margin="0,0,0,10"
+                          IsVisible="False">
+                        <Border Height="196" ClipToBounds="True" Background="Transparent">
+                            <StackPanel x:Name="ReelStrip"
+                                        Orientation="Horizontal"
+                                        Spacing="8"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Left" />
+                        </Border>
+                        <Grid IsHitTestVisible="False">
+                            <Border Width="2"
+                                    HorizontalAlignment="Center"
+                                    Background="{DynamicResource ColorBrush2}" />
+                        </Grid>
+                    </Grid>
+                    <ui:MyButton x:Name="BtnSkipReel"
+                                 MinWidth="90"
+                                 Margin="0,0,0,10"
+                                 Padding="13,0"
+                                 HorizontalAlignment="Right"
+                                 IsVisible="False"
+                                 Text="{loc:Loc Tools.Test.Lottery.Skip}" />
+                    <WrapPanel>
+                        <ui:MyButton x:Name="BtnDrawOne"
+                                     MinWidth="110"
+                                     Padding="13,0"
+                                     Margin="0,0,12,0"
+                                     IsEnabled="{Binding CanDrawOne}"
+                                     Text="{loc:Loc Tools.Test.Lottery.DrawOne}" />
+                        <ui:MyButton x:Name="BtnDrawTen"
+                                     MinWidth="110"
+                                     Padding="13,0"
+                                     IsEnabled="{Binding CanDrawTen}"
+                                     Text="{loc:Loc Tools.Test.Lottery.DrawTen}" />
+                    </WrapPanel>
+                    <ItemsControl x:Name="ListLotteryResults"
+                                  Margin="0,12,0,0"
+                                  ItemsSource="{Binding LotteryResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,4"
+                                      ColumnDefinitions="Auto,*">
+                                    <Image Width="24"
+                                           Height="24"
+                                           Margin="0,0,8,0"
+                                           Source="{Binding ImageUri, Converter={x:Static conv:PathToBitmapConverter.Instance}}"
+                                           IsVisible="{Binding HasIcon}" />
+                                    <TextBlock Grid.Column="1"
+                                               VerticalAlignment="Center"
+                                               Foreground="{Binding RarityColorHex}"
+                                               Text="{Binding Name}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Margin="0,6,0,0"
+                               FontSize="12"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               Text="{Binding LotteryStatus}" />
+                    <StackPanel Margin="0,10,0,0"
+                                Orientation="Horizontal"
+                                IsVisible="{Binding IsLotteryLoading}">
+                        <ui:MyLoading Width="18" Height="18" Margin="0,0,8,0" />
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="12"
+                                   Opacity="0.75"
+                                   Text="{Binding LotteryLoadStatus}" />
+                    </StackPanel>
+                </StackPanel>
+            </ui:MyCard>
+            <ui:MyCard x:Name="CardDirectories"
+                       Margin="0,0,0,15"
+                       Title="{loc:Loc Tools.Test.Directories.Title}">
+                <StackPanel Margin="25,40,25,15">
+                    <TextBlock Margin="0,0,0,10"
+                               FontSize="12"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc Tools.Test.Directories.Hint}" />
+                    <ItemsControl x:Name="ListDirectories"
+                                  ItemsSource="{Binding Directories}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,6"
+                                      ColumnDefinitions="130,*,Auto">
+                                    <TextBlock VerticalAlignment="Center"
+                                               Text="{Binding Name}" />
+                                    <TextBlock Grid.Column="1"
+                                               VerticalAlignment="Center"
+                                               Opacity="0.7"
+                                               FontSize="12"
+                                               TextTrimming="CharacterEllipsis"
+                                               Text="{Binding Path}" />
+                                    <ui:MyButton Grid.Column="2"
+                                                 MinWidth="90"
+                                                 Padding="13,0"
+                                                 Command="{Binding $parent[ItemsControl].DataContext.OpenDirectoryCommand}"
+                                                 CommandParameter="{Binding}"
+                                                 Text="{loc:Loc Tools.Test.Directories.Open}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ui:MyCard>
+            <ui:MyCard x:Name="CardSpeedTest"
+                       Margin="0,0,0,15"
+                       Title="{loc:Loc Tools.Test.SpeedTest.Title}">
+                <StackPanel Margin="25,40,25,15">
+                    <TextBlock Margin="0,0,0,10"
+                               FontSize="12"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc Tools.Test.SpeedTest.Hint}" />
+                    <WrapPanel>
+                        <ui:MyButton x:Name="BtnSpeedTest"
+                                     MinWidth="120"
+                                     Command="{Binding RunSpeedTestCommand}"
+                                     IsEnabled="{Binding CanRunSpeedTest}"
+                                     Text="{loc:Loc Tools.Test.SpeedTest.Start}" />
+                    </WrapPanel>
+                    <ItemsControl x:Name="ListSpeedResults"
+                                  Margin="0,12,0,0"
+                                  ItemsSource="{Binding SpeedResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,4"
+                                      ColumnDefinitions="160,*">
+                                    <TextBlock Text="{Binding Name}" />
+                                    <TextBlock Grid.Column="1"
+                                               Opacity="0.75"
+                                               Text="{Binding Summary}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Margin="0,6,0,0"
+                               FontSize="12"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               Text="{Binding SpeedTestStatus}" />
+                </StackPanel>
+            </ui:MyCard>
         </StackPanel>
     </ui:MyScrollViewer>
+
+    <!-- 工具弹窗：点击顶部按钮时把对应卡片搬进这里显示。 -->
+    <Border x:Name="PanToolDialog"
+            IsVisible="False"
+            Background="#66000000">
+        <Border MinWidth="560"
+                MaxWidth="820"
+                Margin="12"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{DynamicResource ColorBrushBg1}"
+                CornerRadius="6"
+                BoxShadow="0 8 24 0 #33000000">
+            <Grid RowDefinitions="Auto,*">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="20,14,12,6">
+                    <TextBlock x:Name="LabToolDialogTitle"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               FontWeight="SemiBold" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <ui:MyTextButton x:Name="BtnOpenCollection"
+                                         IsVisible="False"
+                                         Text="{loc:Loc Tools.Test.Lottery.CollectionHeader}" />
+                        <ui:MyTextButton x:Name="BtnToolDialogClose"
+                                         Text="关闭" />
+                    </StackPanel>
+                </Grid>
+                <ScrollViewer Grid.Row="1"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <ContentControl x:Name="HostToolDialog"
+                                    Margin="10,0,10,10"
+                                    HorizontalContentAlignment="Stretch" />
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Border>
+    </Panel>
 </ui:MyPageRight>

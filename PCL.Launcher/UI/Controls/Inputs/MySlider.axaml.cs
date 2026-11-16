@@ -619,6 +619,8 @@ public partial class MySlider : UserControl
         ActualThemeVariantChanged += OnActualThemeVariantChanged;
         PointerEntered += OnPointerEntered;
         PointerExited += OnPointerExited;
+        // 切换配色主题时色板会整体重写，这里要跟着重取一次强调色。
+        PCL.Core.UI.Theme.ThemeService.ColorThemeChanged += OnColorThemeChanged;
         RefreshColor(false);
         RefreshLayout();
     }
@@ -628,9 +630,12 @@ public partial class MySlider : UserControl
         ActualThemeVariantChanged -= OnActualThemeVariantChanged;
         PointerEntered -= OnPointerEntered;
         PointerExited -= OnPointerExited;
+        PCL.Core.UI.Theme.ThemeService.ColorThemeChanged -= OnColorThemeChanged;
         StopAnimations();
         base.OnDetachedFromVisualTree(e);
     }
+
+    private void OnColorThemeChanged(PCL.Core.App.ColorTheme theme) => RefreshColor(false);
 
     private void OnPointerEntered(object? sender, PointerEventArgs e)
     {

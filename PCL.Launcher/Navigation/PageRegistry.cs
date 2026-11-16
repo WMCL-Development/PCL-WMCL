@@ -56,7 +56,8 @@ public static class PageRegistry
             MainTab.Launch => PageType.Launch,
             MainTab.Download => PageType.Download,
             MainTab.Setup => PageType.Setup,
-            MainTab.Tools => PageType.Tools,
+            MainTab.Link => PageType.Link,
+            MainTab.More => PageType.More,
             _ => PageType.Launch
         };
     }
@@ -68,7 +69,8 @@ public static class PageRegistry
             PageType.Launch => MainTab.Launch,
             PageType.Download => MainTab.Download,
             PageType.Setup => MainTab.Setup,
-            PageType.Tools => MainTab.Tools,
+            PageType.Link => MainTab.Link,
+            PageType.More => MainTab.More,
             _ => null
         };
     }

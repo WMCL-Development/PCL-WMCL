@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="using:PCL.UI.Controls"
+        xmlns:loc="using:PCL.Core.UI"
+        x:Class="PCL.Views.Pages.Instance.ResourceUpdateReviewPanel"
+        MinWidth="560" MinHeight="380">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="16">
+        <StackPanel Grid.Row="0" Spacing="8">
+            <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                       Text="{loc:Loc Instance.Comp.Update.Review.Hint}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <ui:MyButton x:Name="BtnSelectAll" MinWidth="90" Padding="13,0"
+                             Text="{loc:Loc Instance.Comp.Update.Review.SelectAll}" />
+                <ui:MyButton x:Name="BtnSelectNone" MinWidth="90" Padding="13,0"
+                             Text="{loc:Loc Instance.Comp.Update.Review.SelectNone}" />
+                <TextBlock x:Name="LabCount" VerticalAlignment="Center" FontSize="12" Opacity="0.75" />
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" Margin="0,12,0,12" VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="PanItems" />
+        </ScrollViewer>
+
+
+    </Grid>
+</UserControl>

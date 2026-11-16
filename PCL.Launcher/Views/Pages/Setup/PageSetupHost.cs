@@ -32,9 +32,7 @@ public sealed class PageSetupHost : IPageHost
             PageSubType.SetupUi => Lang.Text("Setup.Left.Item.Ui"),
             PageSubType.SetupLauncherLanguage => Lang.Text("Setup.Language.Title"),
             PageSubType.SetupLauncherMisc => Lang.Text("Setup.Left.Item.Misc"),
-            PageSubType.SetupAbout => Lang.Text("Setup.Left.Item.About"),
             PageSubType.SetupUpdate => Lang.Text("Setup.Left.Item.Update"),
-            PageSubType.SetupFeedback => Lang.Text("Setup.Left.Item.Feedback"),
             PageSubType.SetupLog => Lang.Text("Setup.Left.Item.Log"),
             _ => Lang.Text("Setup.Left.Item.Launch")
         };
@@ -77,9 +75,7 @@ public sealed class PageSetupHost : IPageHost
         {
             PageSubType.SetupUi => new PageSetupUI(),
             PageSubType.SetupGameManage => new PageSetupGameManage(),
-            PageSubType.SetupAbout => new PageSetupAbout(),
             PageSubType.SetupLog => new PageSetupLog(),
-            PageSubType.SetupFeedback => new PageSetupFeedback(),
             PageSubType.SetupGameLink => new PageSetupGameLink(),
             PageSubType.SetupUpdate => new PageSetupUpdate(),
             PageSubType.SetupJava => new PageSetupJava(),

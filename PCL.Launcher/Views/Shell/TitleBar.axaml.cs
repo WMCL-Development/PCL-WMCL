@@ -47,6 +47,10 @@ public partial class TitleBar : UserControl
             ThemeService.ColorThemeChanged -= _OnColorThemeChanged;
             ThemeService.ColorModeChanged -= _OnColorModeChanged;
         };
+        HiddenFeatureState.Changed += OnHiddenFeatureChanged;
+        ApplyHiddenPages();
+        DetachedFromVisualTree += (_, _) => HiddenFeatureState.Changed -= OnHiddenFeatureChanged;
+
     }
 
     private bool CanAnimateShell =>
@@ -250,12 +254,45 @@ public partial class TitleBar : UserControl
         if (control.RenderTransform is TranslateTransform transform) transform.X = 0d;
     }
 
+    /// <summary>
+    ///     按「功能隐藏」配置显示/隐藏主标签；F12 打开临时显示时全部可见。
+    ///     当前停留的标签被隐藏时退回启动页。
+    /// </summary>
+    public void ApplyHiddenPages()
+    {
+        var hide = Config.Preference.Hide;
+        var force = HiddenFeatureState.ForceShow;
+
+        var downloadVisible = force || !hide.PageDownload;
+        var setupVisible = force || !hide.PageSetup;
+        var moreVisible = force || !hide.PageTools;
+        var linkVisible = force || !hide.ToolsGameLink;
+
+        BtnTitleSelect1.IsVisible = downloadVisible;
+        BtnTitleSelect2.IsVisible = linkVisible;
+        BtnTitleSelect3.IsVisible = setupVisible;
+        BtnTitleSelect4.IsVisible = moreVisible;
+
+        if (_currentTab is { } tab
+            && ((tab == MainTab.Download && !downloadVisible)
+                || (tab == MainTab.Link && !linkVisible)
+                || (tab == MainTab.Setup && !setupVisible)
+                || (tab == MainTab.More && !moreVisible)))
+            PageRouter.Navigate(MainTab.Launch);
+    }
+
+    private MainTab? _currentTab;
+
+    private void OnHiddenFeatureChanged() => ApplyHiddenPages();
+
     private void SetTabChecked(MainTab tab)
     {
+        _currentTab = tab;
         BtnTitleSelect0.Checked = tab == MainTab.Launch;
         BtnTitleSelect1.Checked = tab == MainTab.Download;
-        BtnTitleSelect2.Checked = tab == MainTab.Setup;
-        BtnTitleSelect3.Checked = tab == MainTab.Tools;
+        BtnTitleSelect2.Checked = tab == MainTab.Link;
+        BtnTitleSelect3.Checked = tab == MainTab.Setup;
+        BtnTitleSelect4.Checked = tab == MainTab.More;
     }
 
     private void Tab_OnCheck(MyRadioButton sender, bool raiseByMouse)
@@ -263,8 +300,9 @@ public partial class TitleBar : UserControl
         if (_updating || !raiseByMouse) return;
         TabSelected?.Invoke(
             ReferenceEquals(sender, BtnTitleSelect1) ? MainTab.Download
-            : ReferenceEquals(sender, BtnTitleSelect2) ? MainTab.Setup
-            : ReferenceEquals(sender, BtnTitleSelect3) ? MainTab.Tools
+            : ReferenceEquals(sender, BtnTitleSelect2) ? MainTab.Link
+            : ReferenceEquals(sender, BtnTitleSelect3) ? MainTab.Setup
+            : ReferenceEquals(sender, BtnTitleSelect4) ? MainTab.More
             : MainTab.Launch);
     }
 
