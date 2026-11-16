@@ -37,7 +37,19 @@ public enum ColorTheme
     SkyBlue = 0,
     CatBlue = 1,
     DeathBlue = 2,
-    HmclBlue = 3
+    HmclBlue = 3,
+
+    /// <summary>薄荷绿。</summary>
+    Mint = 4,
+
+    /// <summary>琥珀橙。</summary>
+    Amber = 5,
+
+    /// <summary>玫瑰红。</summary>
+    Rose = 6,
+
+    /// <summary>紫罗兰。</summary>
+    Violet = 7
 }
 
 /// <summary>

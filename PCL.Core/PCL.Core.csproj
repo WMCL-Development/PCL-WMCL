@@ -54,6 +54,8 @@
         <PackageReference Include="PlainToolkit.CngProtectedData" Version="2.1.0" />
         <!-- 归档文件 -->
         <PackageReference Include="SharpZipLib" Version="1.4.2" />
+        <!-- 抽奖奖池需要把物品模型渲染成图标；版本与 Avalonia.Skia 传递引入的一致。 -->
+        <PackageReference Include="SkiaSharp" Version="3.119.4" />
         <!-- 配置文件和数据库 -->
         <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />

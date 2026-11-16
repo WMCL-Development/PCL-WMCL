@@ -139,6 +139,10 @@ public static partial class Config
         /// </summary>
         [ConfigItem<string>("LinkUsername", "")] public partial string Username { get; set; }
 
+        /// <summary>联机页展示的连接方式：lobby / astral / terracotta / easytier。</summary>
+        [ConfigItem<string>("LinkConnectionMethod", "lobby", ConfigSource.Local)]
+        public partial string ConnectionMethod { get; set; }
+
         /// <summary>
         /// 中继方式。
         /// </summary>
@@ -173,6 +177,16 @@ public static partial class Config
         /// 启用 IPv6。
         /// </summary>
         [ConfigItem<bool>("LinkEnableIPv6", true)] public partial bool EnableIPv6 { get; set; }
+
+        /// <summary>
+        /// Astral 联机使用的用户名；留空则用系统用户名。
+        /// </summary>
+        [ConfigItem<string>("AstralUsername", "")] public partial string AstralUsername { get; set; }
+
+        /// <summary>
+        /// Astral 联机指定的虚拟 IP；留空由 EasyTier 自动分配。
+        /// </summary>
+        [ConfigItem<string>("AstralVirtualIp", "")] public partial string AstralVirtualIp { get; set; }
         
         /// <summary>
         /// 在日志中输出 Cli 信息以用于调试。
@@ -185,6 +199,22 @@ public static partial class Config
     /// </summary>
     [ConfigGroup("Preference")] partial class PreferenceConfigGroup
     {
+        /// <summary>
+        /// <summary>
+        /// 界面缩放百分比（80–150，100 为原始大小）。
+        /// </summary>
+        [ConfigItem<int>("UiScalePercent", 100, ConfigSource.Local)] public partial int UiScalePercent { get; set; }
+
+        /// <summary>
+        /// 关闭窗口时隐藏到托盘而不是退出。
+        /// </summary>
+        [ConfigItem<bool>("UiCloseToTray", false, ConfigSource.Local)] public partial bool CloseToTray { get; set; }
+
+        /// <summary>
+        /// 启动游戏后启动器的行为：keep 保持、minimize 最小化、hide 隐藏。
+        /// </summary>
+        [ConfigItem<string>("UiLauncherAfterLaunch", "keep", ConfigSource.Local)] public partial string LauncherAfterLaunch { get; set; }
+
         /// <summary>
         /// 锁定窗口大小。
         /// </summary>
@@ -270,6 +300,21 @@ public static partial class Config
             /// 窗口透明度。
             /// </summary>
             [ConfigItem<int>("UiLauncherTransparent", 600, ConfigSource.Local)] public partial int WindowOpacity { get; set; }
+
+            /// <summary>
+            /// 主题微调：色相偏移（0–100，50 为不变）。
+            /// </summary>
+            [ConfigItem<int>("UiThemeHueOffset", 50, ConfigSource.Local)] public partial int ThemeHueOffset { get; set; }
+
+            /// <summary>
+            /// 主题微调：明度偏移（0–100，50 为不变）。
+            /// </summary>
+            [ConfigItem<int>("UiThemeLightOffset", 50, ConfigSource.Local)] public partial int ThemeLightOffset { get; set; }
+
+            /// <summary>
+            /// 主题微调：色度偏移（0–100，50 为不变）。
+            /// </summary>
+            [ConfigItem<int>("UiThemeChromaOffset", 50, ConfigSource.Local)] public partial int ThemeChromaOffset { get; set; }
 
             /// <summary>
             /// 自定义主题：色相 (H)。

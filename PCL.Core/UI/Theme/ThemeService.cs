@@ -36,7 +36,14 @@ public sealed partial class ThemeService
 
     [RegisterConfigEvent]
     public static ConfigEventRegistry OnColorThemeConfigChanged => new(
-        scope: [Config.Preference.Theme.DarkColorConfig, Config.Preference.Theme.LightColorConfig],
+        scope:
+        [
+            Config.Preference.Theme.DarkColorConfig,
+            Config.Preference.Theme.LightColorConfig,
+            Config.Preference.Theme.ThemeHueOffsetConfig,
+            Config.Preference.Theme.ThemeLightOffsetConfig,
+            Config.Preference.Theme.ThemeChromaOffsetConfig
+        ],
         trigger: ConfigEvent.Update,
         handler: e =>
         {
@@ -165,19 +172,26 @@ public sealed partial class ThemeService
     /// </summary>
     public static (int Hue, double LightAdjust, double ChromaAdjust) GetCurrentThemeArgs()
     {
-        var theme = CurrentTheme;
-        return theme switch
-        {
-            ColorTheme.SkyBlue => (235, 0.36, 0.2),
-            ColorTheme.CatBlue => (255, 0, -0.2),
-            ColorTheme.DeathBlue => (268, -0.05, -0.1),
-            ColorTheme.HmclBlue => (275, -0.03, -0.35),
-#if DEBUG
-            _ => ((int)theme, 0, 0)
-#else
-            _ => throw new IndexOutOfRangeException($"Invalid theme index: {(int)theme}")
-#endif
-        };
+        return ApplyThemeTweaks(ThemePresetCatalog.ArgsOf(CurrentTheme));
+    }
+
+    /// <summary>
+    ///     把用户在「主题微调」里的三项偏移叠加到预设参数上。
+    ///     偏移量以 50 为中性点：色相 ±180°、明度 ±0.2、色度 ±0.3，避免拉出无法阅读的配色。
+    /// </summary>
+    private static (int Hue, double LightAdjust, double ChromaAdjust) ApplyThemeTweaks(
+        (int Hue, double LightAdjust, double ChromaAdjust) baseArgs)
+    {
+        var theme = Config.Preference.Theme;
+        var hueShift = (Math.Clamp(theme.ThemeHueOffset, 0, 100) - 50) * 3.6;
+        var lightShift = (Math.Clamp(theme.ThemeLightOffset, 0, 100) - 50) / 50d * 0.2;
+        var chromaShift = (Math.Clamp(theme.ThemeChromaOffset, 0, 100) - 50) / 50d * 0.3;
+
+        var hue = (int)Math.Round((baseArgs.Hue + hueShift) % 360);
+        if (hue < 0) hue += 360;
+        return (hue,
+            Math.Clamp(baseArgs.LightAdjust + lightShift, -1d, 1d),
+            Math.Clamp(baseArgs.ChromaAdjust + chromaShift, -1d, 1d));
     }
 
     private static double _AdjustLinear(double value, double adjustment)

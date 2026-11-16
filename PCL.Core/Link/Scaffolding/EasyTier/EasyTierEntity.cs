@@ -32,9 +32,11 @@ public enum EtState
 /// <summary>
 ///     An EasyTier entity that manages the EasyTier process and its interactions.
 /// </summary>
-public class EasyTierEntity
+public class EasyTierEntity : IEasyTierProcess
 {
     private readonly Process _etProcess;
+
+    private readonly EasyTierOptions _options;
 
     private readonly string[] _fallbackNodeLinks =
     [
@@ -62,10 +64,37 @@ public class EasyTierEntity
         int minecraftPort,
         int scfPort,
         bool asHost)
+        : this(new EasyTierOptions
+        {
+            NetworkName = lobby.NetworkName,
+            NetworkSecret = lobby.NetworkSecret,
+            FullCode = lobby.FullCode,
+            AsHost = asHost,
+            MinecraftPort = minecraftPort,
+            ControlPort = scfPort,
+            VirtualIp = asHost ? EasyTierArguments.ScaffoldingHostIp : null,
+            NoTun = true,
+            PrivateMode = true,
+            P2POnly = true,
+            MachineId = Identify.LauncherId,
+            DisableHolePunching = !Config.Link.TryPunchSym,
+            DisableIpv6 = !Config.Link.EnableIPv6,
+            LatencyFirst = Config.Link.UseLatencyFirstMode,
+            DefaultProtocol = Config.Link.ProtocolPreference.ToString().ToLowerInvariant()
+        })
     {
-        Lobby = lobby;
-        MinecraftPort = minecraftPort;
-        _scfPort = scfPort;
+    }
+
+    /// <summary>
+    ///     用显式参数构造实体（Astral 等非大厅场景使用）。
+    /// </summary>
+    public EasyTierEntity(EasyTierOptions options)
+    {
+        _options = options;
+        Lobby = new LobbyInfo(
+            options.FullCode ?? "", options.NetworkName, options.NetworkSecret);
+        MinecraftPort = options.MinecraftPort;
+        _scfPort = options.ControlPort;
         State = EtState.Stopped;
 
         var existEntities = Process.GetProcessesByName(
@@ -91,13 +120,16 @@ public class EasyTierEntity
 
         ForwardPort = NetworkHelper.NewTcpPort();
 
-        _etProcess = _BuildProcessAsync(asHost).GetAwaiter().GetResult();
+        _etProcess = _BuildProcessAsync(options.AsHost).GetAwaiter().GetResult();
     }
 
     public int ForwardPort { get; private set; }
     public int MinecraftPort { get; init; }
     public EtState State { get; private set; }
     public LobbyInfo Lobby { get; }
+
+    /// <summary>当前生效的启动参数。</summary>
+    public EasyTierOptions Options => _options;
 
     public event Action? EasyTierProcessExisted;
 
@@ -138,6 +170,24 @@ public class EasyTierEntity
     ///     - 1 means failed to stop EasyTier.<br />
     ///     - 0 means successful stop.
     /// </returns>
+    /// <summary>读取 EasyTier 的 peer 表（Markdown 表格文本）。</summary>
+    public async Task<string?> QueryPeersAsync()
+    {
+        if (State is EtState.Stopped) return null;
+        try
+        {
+            var result = await EasyTierCli
+                .RunAsync($"--rpc-portal 127.0.0.1:{_rpcPort} peer", TimeSpan.FromSeconds(5))
+                .ConfigureAwait(false);
+            return result.Output;
+        }
+        catch (Exception exception)
+        {
+            LogWrapper.Warn("EasyTier", "查询 peer 表失败：" + exception.Message);
+            return null;
+        }
+    }
+
     public Task<int> StopAsync()
     {
         return Task.Run(() =>
@@ -175,53 +225,13 @@ public class EasyTierEntity
             }
         };
 
-        var args = new ArgumentsBuilder();
+        // Astral 会自带节点；大厅则回退到中继 + 公共节点列表。
+        IReadOnlyList<string> peers = _options.Peers.Count > 0
+            ? _options.Peers
+            : await _GetEtRelayListAsync().ConfigureAwait(false);
 
-        args
-            .AddFlag("no-tun")
-            .AddFlag("multi-thread")
-            .AddFlag("enable-kcp-proxy")
-            .AddFlag("enable-quic-proxy")
-            .AddFlagIf(!Config.Link.TryPunchSym, "disable-sys-hole-punching")
-            .AddFlagIf(!Config.Link.EnableIPv6, "disable-ipv6")
-            .AddFlagIf(Config.Link.UseLatencyFirstMode, "latency-first")
-            .Add("encryption-algorithm", "aes-gcm")
-            .Add("compression", "zstd")
-            .Add("default-protocol", Config.Link.ProtocolPreference.ToString().ToLowerInvariant())
-            .Add("network-name", Lobby.NetworkName)
-            .Add("network-secret", Lobby.NetworkSecret)
-            .Add("machine-id", Identify.LauncherId)
-            .Add("rpc-portal", _rpcPort.ToString())
-            .Add("private-mode", "true")
-            .AddFlag("p2p-only");
-
-
-        if (asHost)
-            args
-                .AddWithSpace("i", "10.114.51.41")
-                .Add("hostname", $"scaffolding-mc-server-{_scfPort}")
-                .Add("tcp-whitelist", _scfPort.ToString())
-                .Add("udp-whitelist", _scfPort.ToString())
-                .Add("tcp-whitelist", MinecraftPort.ToString())
-                .Add("udp-whitelist", MinecraftPort.ToString())
-                .Add("l", "tcp://0.0.0.0:0")
-                .Add("l", "udp://0.0.0.0:0");
-        else
-            args
-                .AddFlag("d")
-                .Add("hostname", Guid.NewGuid().ToString())
-                .Add("tcp-whitelist", "0")
-                .Add("udp-whitelist", "0")
-                .Add("l", "tcp://0.0.0.0:0")
-                .Add("l", "udp://0.0.0.0:0");
-
-        foreach (var address in ETRelay
-                     .RelayList
-                     .Select(static x => x.Url)
-                     .Concat(_fallbackNodeLinks))
-            args.Add("p", address);
-
-        process.StartInfo.Arguments = args.GetResult();
+        var options = _options with { AsHost = asHost, Peers = peers };
+        process.StartInfo.Arguments = EasyTierArguments.Build(options, _rpcPort);
 
         LogWrapper.Debug("EasyTier", process.StartInfo.Arguments);
 

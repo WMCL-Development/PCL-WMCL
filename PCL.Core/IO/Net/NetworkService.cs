@@ -28,7 +28,11 @@ public partial class NetworkService
     
     private const string MojangSessionServer = "https://sessionserver.mojang.com/";
 
+    /// <summary>官方 CurseForge API 地址。</summary>
     private const string CurseForgeApiServer = "https://api.curseforge.com/v1/";
+
+    /// <summary>无 API Key 时使用的 CurseForge 镜像（协议兼容官方 v1）。</summary>
+    private const string CurseForgeMirrorApiServer = "https://mod.mcimirror.top/curseforge/v1/";
 
     private const string ModrinthApiServer = "https://api.modrinth.com/v2/";
 
@@ -61,7 +65,10 @@ public partial class NetworkService
     private static IHttpClientFactory? _factory;
 
     [LifecycleStart]
-    private static void _Start()
+    private static void _Start() => Initialize();
+
+    /// <summary>无界面场景（CLI、测试）可直接调用的初始化入口，重复调用安全。</summary>
+    public static void Initialize()
     {
         
         var services = new ServiceCollection();
@@ -77,10 +84,14 @@ public partial class NetworkService
         
         // CurseForge
 
+        // 有 API Key 时走官方接口；没有则降级到镜像，避免 403。
         services.AddHttpClient(CurseForgeApi).ConfigureHttpClient(c =>
         {
-            c.DefaultRequestHeaders.Add("x-api-key", Secrets.CurseForgeAPIKey);
-            c.BaseAddress = new Uri(CurseForgeApiServer);
+            if (!string.IsNullOrWhiteSpace(Secrets.CurseForgeAPIKey))
+                c.DefaultRequestHeaders.Add("x-api-key", Secrets.CurseForgeAPIKey);
+            c.BaseAddress = new Uri(string.IsNullOrWhiteSpace(Secrets.CurseForgeAPIKey)
+                ? CurseForgeMirrorApiServer
+                : CurseForgeApiServer);
         });
         
         // Modrinth

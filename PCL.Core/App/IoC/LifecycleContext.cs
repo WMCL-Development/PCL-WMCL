@@ -15,7 +15,8 @@ partial class Lifecycle
     /// <summary>
     ///     系统默认上下文，无特殊需求请勿使用。
     /// </summary>
-    internal static readonly LifecycleContext SystemContext = GetContext(_SystemService);
+    /// <summary>生命周期尚未初始化时使用的兜底上下文：日志照常落到系统日志，不做界面提示。</summary>
+    public static LifecycleContext SystemContext { get; } = GetContext(_SystemService);
 
     /// <summary>
     ///     获取指定服务项对应的上下文实例用于日志输出、多任务通信等。一般情况下只推荐获取自身上下文。

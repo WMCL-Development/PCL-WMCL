@@ -26,6 +26,15 @@ namespace PCL.Core.Link.Lobby;
 [LifecycleService(LifecycleState.Loaded)]
 public class LobbyService() : GeneralService("lobby", "LobbyService")
 {
+    /// <summary>注册所有联机方式；新增方式在这里登记即可被输入框自动识别。</summary>
+    static LobbyService()
+    {
+        LobbyProviderRegistry.Register(new ScaffoldingLobbyProvider());
+        LobbyProviderRegistry.Register(new PCL.Core.Link.Astral.AstralLobbyProvider());
+        LobbyConnector.Register(new ScaffoldingLobbyTransport());
+        LobbyConnector.Register(new PCL.Core.Link.Astral.AstralLobbyTransport());
+    }
+
     private static readonly LobbyController _LobbyController = new();
     private static CancellationTokenSource _lobbyCts = new();
 
@@ -581,6 +590,52 @@ public class LobbyService() : GeneralService("lobby", "LobbyService")
     public static event Action? OnServerStarted;
 
     public static event Action<Exception>? OnServerException;
+
+    #endregion
+
+    #region 多方式联机（Provider 抽象）
+
+    /// <summary>
+    ///     解析联机输入：大厅编号、Astral 长链/短链/短码都能识别。
+    ///     界面可先调用它做输入预览，再决定是否真的加入。
+    /// </summary>
+    public static Task<LobbyResolution> ResolveInputAsync(
+        string input,
+        CancellationToken ct = default) =>
+        LobbyProviderRegistry.ResolveAsync(input ?? "", ct);
+
+    /// <summary>
+    ///     按输入自动分派：大厅沿用原有流程（心跳/玩家列表），Astral 走 tun 直连。
+    /// </summary>
+    public static async Task<LobbyConnectResult> JoinByInputAsync(
+        string input,
+        string username,
+        CancellationToken ct = default)
+    {
+        var resolution = await LobbyProviderRegistry.ResolveAsync(input ?? "", ct)
+            .ConfigureAwait(false);
+
+        if (!resolution.Success || resolution.Room is null)
+            return LobbyConnectResult.Fail(resolution.Error ?? "无法识别该联机编号或链接。");
+
+        var room = resolution.Room;
+        if (room.ProviderId == "scaffolding")
+        {
+            var joined = await JoinLobbyAsync(room.Code ?? input, username).ConfigureAwait(false);
+            return joined
+                ? LobbyConnectResult.Ok()
+                : LobbyConnectResult.Fail(Lang.Text("Link.Lobby.JoinFailed"));
+        }
+
+        _SetState(LobbyState.Joining);
+        var result = await LobbyConnector.JoinAsync(room, username, ct).ConfigureAwait(false);
+        _SetState(result.Success ? LobbyState.Connected : LobbyState.Error);
+        return result;
+    }
+
+    /// <summary>退出非大厅方式的联机（大厅请用 <see cref="LeaveLobbyAsync" />）。</summary>
+    public static Task LeaveAllTransportsAsync(CancellationToken ct = default) =>
+        LobbyConnector.LeaveAllAsync(ct);
 
     #endregion
 }

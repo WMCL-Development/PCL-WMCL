@@ -15,7 +15,10 @@ public enum DialogKind
     Input,
     Select,
     AuthServer,
-    Login
+    Login,
+
+    /// <summary>承载自定义内容的弹窗，用于皮肤、编辑器等需要复杂交互的界面。</summary>
+    Content
 }
 
 /// <summary>弹窗请求的公共部分。具体内容由各子类型提供。</summary>

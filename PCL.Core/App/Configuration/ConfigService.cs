@@ -261,7 +261,25 @@ public sealed partial class ConfigService
     private static bool _isConfigItemsInitialized = false;
 
     [LifecycleStart]
-    private static void _Start()
+    private static void _Start() => Initialize();
+
+    /// <summary>
+    ///     注册阶段：只枚举并登记配置项，不读配置文件、不建观察者。
+    ///     配置分组（如 <c>Config.System</c>）在静态构造时会查询配置项，
+    ///     无界面场景必须先调用本方法，否则会陷入静态初始化环。重复调用安全。
+    /// </summary>
+    public static void BeginRegistration()
+    {
+        if (_isConfigItemsInitialized) return;
+        _InitializeConfigItems();
+        _isConfigItemsInitialized = true;
+    }
+
+    /// <summary>
+    ///     不依赖生命周期的初始化入口：命令行、测试等无界面场景可直接调用。
+    ///     重复调用安全。
+    /// </summary>
+    public static void Initialize()
     {
         if (IsInitialized) return;
 #if TRACE
@@ -272,9 +290,8 @@ public sealed partial class ConfigService
         try
         {
             Context.Trace("Initializing config items...");
-            _InitializeConfigItems();
+            BeginRegistration();
             Context.Debug($"Finished initialize {_Items.Count} item(s)");
-            _isConfigItemsInitialized = true;
             Context.Trace("Initializing providers...");
             _InitializeProviders();
             _isProvidersInitialized = true;
