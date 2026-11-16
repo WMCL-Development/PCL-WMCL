@@ -51,12 +51,14 @@ public class NavigationModelTest
         Assert.AreEqual(PageType.Launch, PageRegistry.PageOfTab(MainTab.Launch));
         Assert.AreEqual(PageType.Download, PageRegistry.PageOfTab(MainTab.Download));
         Assert.AreEqual(PageType.Setup, PageRegistry.PageOfTab(MainTab.Setup));
-        Assert.AreEqual(PageType.Tools, PageRegistry.PageOfTab(MainTab.Tools));
+        Assert.AreEqual(PageType.Link, PageRegistry.PageOfTab(MainTab.Link));
+        Assert.AreEqual(PageType.More, PageRegistry.PageOfTab(MainTab.More));
 
         Assert.AreEqual(MainTab.Launch, PageRegistry.TabOfPage(PageType.Launch));
         Assert.AreEqual(MainTab.Download, PageRegistry.TabOfPage(PageType.Download));
         Assert.AreEqual(MainTab.Setup, PageRegistry.TabOfPage(PageType.Setup));
-        Assert.AreEqual(MainTab.Tools, PageRegistry.TabOfPage(PageType.Tools));
+        Assert.AreEqual(MainTab.Link, PageRegistry.TabOfPage(PageType.Link));
+        Assert.AreEqual(MainTab.More, PageRegistry.TabOfPage(PageType.More));
 
         Assert.IsNull(PageRegistry.TabOfPage(PageType.TaskManager));
         Assert.IsNull(PageRegistry.TabOfPage(PageType.InstanceSelect));
