@@ -1,7 +1,7 @@
 name: easytier-android
 
 # 交叉编译 EasyTier 的官方 Android JNI 模块，产出 libeasytier_android_jni.so。
-# 只有手动触发或改动本文件时运行，不影响日常构建。
+# 手动触发或改动本文件时运行；失败时会把构建日志作为产物上传，便于排查。
 
 on:
   workflow_dispatch:
@@ -33,6 +33,13 @@ jobs:
         with:
           ndk-version: r26b
 
+      - name: 安装构建依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler cmake clang pkg-config
+          protoc --version
+          cmake --version | head -1
+
       - name: 安装 cargo-ndk
         run: cargo install cargo-ndk --locked
 
@@ -50,8 +57,19 @@ jobs:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.ndk.outputs.ndk-path }}
         run: |
+          set -o pipefail
+          echo "NDK=$ANDROID_NDK_HOME"
+          ls "$ANDROID_NDK_HOME" | head -5
           cd EasyTier/easytier-contrib/easytier-android-jni
-          cargo ndk -t arm64-v8a build --release
+          cargo ndk -t arm64-v8a build --release 2>&1 | tee /tmp/build.log
+
+      - name: 上传构建日志
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: /tmp/build.log
+          if-no-files-found: warn
 
       - name: 上传产物
         uses: actions/upload-artifact@v4
