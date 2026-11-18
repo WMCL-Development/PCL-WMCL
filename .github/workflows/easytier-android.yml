@@ -12,7 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
 
     steps:
       - name: 拉取 EasyTier 源码
@@ -24,8 +24,6 @@ jobs:
 
       - name: 安装 Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android
 
       - name: 安装 Android NDK
         uses: nttld/setup-ndk@v1
@@ -38,10 +36,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler cmake clang pkg-config
           protoc --version
-          cmake --version | head -1
 
       - name: 安装 cargo-ndk
         run: cargo install cargo-ndk --locked
+
+      - name: 安装 Android target
+        run: |
+          cd EasyTier
+          rustup show active-toolchain || true
+          rustup target add aarch64-linux-android
+          rustup target list --installed | grep android
 
       - name: 缓存 cargo
         uses: actions/cache@v4
@@ -59,7 +63,6 @@ jobs:
         run: |
           set -o pipefail
           echo "NDK=$ANDROID_NDK_HOME"
-          ls "$ANDROID_NDK_HOME" | head -5
           cd EasyTier/easytier-contrib/easytier-android-jni
           cargo ndk -t arm64-v8a build --release 2>&1 | tee /tmp/build.log
 
