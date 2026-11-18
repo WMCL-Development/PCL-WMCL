@@ -50,6 +50,8 @@ public static class EasyTierPlatform
             PlatformKind.Windows => "windows",
             PlatformKind.Linux => "linux",
             PlatformKind.MacOs => "macos",
+            // Android 没有 EasyTier 官方依赖包，这里给出占位值让模块初始化不中断。
+            PlatformKind.Android => "android",
             _ => throw new ArgumentOutOfRangeException(nameof(os), os, "未知的 EasyTier 宿主平台")
         };
 

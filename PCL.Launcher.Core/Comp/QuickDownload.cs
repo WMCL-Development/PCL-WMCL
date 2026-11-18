@@ -193,8 +193,8 @@ public static partial class Comp
             return;
         }
 
-        var saveFolder = LauncherCommon.RunInUiWait(() =>
-            SystemDialogs.SelectFolder(Lang.Text("Download.Comp.QuickDownload.Hint.SelectFolder")));
+        var saveFolder = SystemDialogs.SelectFolderBlocking(
+            Lang.Text("Download.Comp.QuickDownload.Hint.SelectFolder"));
         if (string.IsNullOrWhiteSpace(saveFolder)) return;
         var target = Path.Combine(saveFolder, CompFileNameGet(project, file));
         _StartQuickDownload(file, target);

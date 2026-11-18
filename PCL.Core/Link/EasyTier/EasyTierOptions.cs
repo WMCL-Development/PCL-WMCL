@@ -63,6 +63,24 @@ public sealed record EasyTierOptions
     /// <summary>加入方若不指定 hostname，则由宿主生成随机值。</summary>
     public string? Hostname { get; init; }
 
+    /// <summary>
+    ///     端口转发规则，形如 <c>tcp://127.0.0.1:25565/10.126.126.1:25565</c>。
+    ///     无 tun 的平台（Android）靠它把本地端口映射到虚拟网络里的房主端口。
+    /// </summary>
+    public IReadOnlyList<string> PortForwards { get; init; } = [];
+
+    /// <summary>
+    ///     加入方自动端口转发的本地端口；为 null 表示不自动转发。
+    ///     无 tun 的平台（Android）靠它把本地端口接到房主的 Minecraft 端口。
+    /// </summary>
+    public int? AutoForwardLocalPort { get; init; }
+
+    /// <summary>有 tun 能力时使用的虚拟 IPv4（Android JNI 模式）。</summary>
+    public string? AutoTunIpv4 { get; init; } = "10.126.126.2";
+
+    /// <summary>自动转发的远端端口，默认 Minecraft 的 25565。</summary>
+    public int AutoForwardRemotePort { get; init; } = 25565;
+
     /// <summary>房间原始编号，仅用于回显（大厅编号 / Astral 短码或长链）。</summary>
     public string? FullCode { get; init; }
 }

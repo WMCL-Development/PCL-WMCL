@@ -14,11 +14,17 @@ public static partial class Modpack
     /// </summary>
     public static void ModpackInstall()
     {
+        _ = ModpackInstallAsync();
+    }
+
+    /// <summary>异步版本：Android 上不会阻塞 UI 线程。</summary>
+    public static async Task ModpackInstallAsync()
+    {
         if (!RestrictedFeatures.Check("modpack-install"))
             return;
-        var file = SystemDialogs.SelectFile(
+        var file = await SystemDialogs.SelectFileAsync(
             Lang.Text("Minecraft.Download.Modpack.FileDialog.Filter"),
-            Lang.Text("Minecraft.Download.Modpack.FileDialog.Title"));
+            Lang.Text("Minecraft.Download.Modpack.FileDialog.Title")).ConfigureAwait(true);
         if (string.IsNullOrEmpty(file))
             return;
         LauncherCommon.RunInNewThread(() =>

@@ -41,7 +41,7 @@ public sealed class AstralLobbyHost
         Func<AstralRoom, CancellationToken, Task<string>>? createCode = null,
         IReadOnlyList<string>? peers = null)
     {
-        _factory = factory ?? (options => new Scaffolding.EasyTier.EasyTierEntity(options));
+        _factory = factory ?? EasyTierProcessFactory.Create;
         _createCode = createCode;
         _peers = peers;
     }

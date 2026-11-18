@@ -72,6 +72,11 @@ public static class EasyTierArguments
             if (!string.IsNullOrWhiteSpace(peer))
                 args.Add("p", peer);
 
+        // 无 tun 的平台（Android）靠端口转发把本地端口接到虚拟网络里的房主。
+        foreach (var forward in options.PortForwards)
+            if (!string.IsNullOrWhiteSpace(forward))
+                args.Add("port-forward", forward);
+
         return args.GetResult();
     }
 

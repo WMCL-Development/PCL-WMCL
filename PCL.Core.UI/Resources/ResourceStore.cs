@@ -35,6 +35,15 @@ public sealed class ResourceStore : IResourceStore
                 return stream;
         }
 
+        // 宿主程序集与资源所在程序集可能不同（如 Android 宿主持有界面程序集），
+        // 因此再扫描一次已加载程序集，避免内置资源在非桌面入口下找不到。
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            var candidate = ManifestRoot + normalized.Replace('/', '.');
+            if (assembly.GetManifestResourceStream(candidate) is { } fallback)
+                return fallback;
+        }
+
         if (TryOpenAvares(assemblyName, normalized) is { } direct)
             return direct;
         if (!normalized.StartsWith(AssetRoot, StringComparison.OrdinalIgnoreCase)

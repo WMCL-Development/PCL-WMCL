@@ -95,6 +95,11 @@ public static class LauncherPaths
 
     private static string _GetDefaultMinecraftDirectory()
     {
+        // Android 上可执行目录是 /system/bin（只读），默认游戏目录落到应用私有目录。
+        if (OperatingSystem.IsAndroid())
+            return Path.TrimEndingDirectorySeparator(
+                Path.Combine(PCL.Core.App.Paths.Data, "minecraft"));
+
         var minecraftDirectory = Environment.GetEnvironmentVariable("PCL_MINECRAFT_DIR");
         if (!string.IsNullOrWhiteSpace(minecraftDirectory))
             return Path.TrimEndingDirectorySeparator(

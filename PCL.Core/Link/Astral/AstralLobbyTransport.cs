@@ -21,7 +21,7 @@ public sealed class AstralLobbyTransport : ILobbyTransport
 
     public AstralLobbyTransport(Func<EasyTierOptions, IEasyTierProcess>? factory = null)
     {
-        _factory = factory ?? (options => new EasyTierEntity(options));
+        _factory = factory ?? EasyTierProcessFactory.Create;
     }
 
     public string ProviderId => "astral";

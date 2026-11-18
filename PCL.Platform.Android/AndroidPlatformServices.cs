@@ -4,6 +4,7 @@ using PCL.Core.App.Region;
 using PCL.Core.Minecraft.Java;
 using PCL.Core.Minecraft.Java.Parser;
 using PCL.Core.Minecraft.Java.Scanner;
+using PCL.Core.App;
 using PCL.Core.Platform;
 using PCL.Core.Utils.OS;
 using PCL.Core.Utils.Secret;
@@ -41,14 +42,93 @@ public sealed class AndroidShortcutService : IShortcutService
 }
 
 /// <summary>Android 没有回收站语义。</summary>
+/// <summary>
+///     Android 没有系统回收站，这里用应用数据目录下的 recyclebin 充当：
+///     删除的文件被移动到该目录，仍可手动找回，避免误删即永久丢失。
+/// </summary>
 public sealed class AndroidRecycleBinService : IRecycleBinService
 {
-    public bool IsSupported(string? path) => false;
+    private static string RecycleRoot =>
+        Path.Combine(Paths.Data, "recyclebin");
+
+    public bool IsSupported(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        return File.Exists(path) || Directory.Exists(path);
+    }
 
     public RecycleBinOutcome Move(string? path, out string? error)
     {
-        error = "当前平台不支持回收站";
-        return RecycleBinOutcome.Unsupported;
+        error = null;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            error = "路径为空";
+            return RecycleBinOutcome.Failed;
+        }
+
+        try
+        {
+            var isFolder = Directory.Exists(path);
+            if (!isFolder && !File.Exists(path))
+            {
+                error = "文件不存在：" + path;
+                return RecycleBinOutcome.Failed;
+            }
+
+            Directory.CreateDirectory(RecycleRoot);
+            var name = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar));
+            var target = Path.Combine(
+                RecycleRoot,
+                DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") + "_" + name);
+
+            if (isFolder)
+                MoveFolder(path, target);
+            else
+                MoveFile(path, target);
+
+            return RecycleBinOutcome.Moved;
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            return RecycleBinOutcome.Failed;
+        }
+    }
+
+    private static void MoveFile(string source, string target)
+    {
+        try
+        {
+            File.Move(source, target);
+        }
+        catch (IOException)
+        {
+            // 跨卷移动会失败，退化成复制后删除。
+            File.Copy(source, target, true);
+            File.Delete(source);
+        }
+    }
+
+    private static void MoveFolder(string source, string target)
+    {
+        try
+        {
+            Directory.Move(source, target);
+        }
+        catch (IOException)
+        {
+            CopyFolder(source, target);
+            Directory.Delete(source, true);
+        }
+    }
+
+    private static void CopyFolder(string source, string target)
+    {
+        Directory.CreateDirectory(target);
+        foreach (var file in Directory.GetFiles(source))
+            File.Copy(file, Path.Combine(target, Path.GetFileName(file)), true);
+        foreach (var folder in Directory.GetDirectories(source))
+            CopyFolder(folder, Path.Combine(target, Path.GetFileName(folder)));
     }
 }
 

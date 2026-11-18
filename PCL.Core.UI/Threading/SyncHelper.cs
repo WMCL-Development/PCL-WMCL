@@ -39,7 +39,10 @@ internal static class SyncHelper
             TaskContinuationOptions.ExecuteSynchronously,
             TaskScheduler.Default);
 
-        if (!task.IsCompleted)
-            Dispatcher.UIThread.PushFrame(frame);
+        if (task.IsCompleted) return;
+
+        // 单视图平台（Android）不支持嵌套消息循环，这里不再强行抽队列：
+        // 阻塞 UI 线程会让系统回调无法处理，最终 ANR。调用方应改用异步 API。
+        Dispatcher.UIThread.PushFrame(frame);
     }
 }
