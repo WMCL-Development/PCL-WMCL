@@ -57,6 +57,11 @@ public partial class MyButton : Border
     private bool _isCommandRunning;
     private bool _isMouseDown;
 
+    private bool _touchHover;
+
+    /// <summary>触摸按下时也算悬停，让配色与鼠标悬停一致。</summary>
+    private bool IsHovered => this.IsHoveredState() || _touchHover;
+
     public MyButton()
     {
         using var controlScope = AnimationService.SuspendControl();
@@ -74,6 +79,9 @@ public partial class MyButton : Border
             });
         _ApplyColorClasses();
 
+        PointerPressed += (_, e) => SetTouchHover(e);
+        PointerReleased += (_, e) => ClearTouchHover(e);
+        PointerCaptureLost += (_, _) => ClearTouchHover(null);
         PointerPressed += _OnPointerPressed;
         PointerReleased += _OnPointerReleased;
         PointerEntered += (_, _) => RefreshColor(true);
@@ -178,14 +186,14 @@ public partial class MyButton : Border
             return ("ColorBrushHalfWhite", "ColorBrushGray4");
 
         if (_colorType == ColorState.Red)
-            return (IsPointerOver ? "ColorBrushRedBack" : "ColorBrushHalfWhite",
-                IsPointerOver ? "ColorBrushRedLight" : "ColorBrushRedDark");
+            return (IsHovered ? "ColorBrushRedBack" : "ColorBrushHalfWhite",
+                IsHovered ? "ColorBrushRedLight" : "ColorBrushRedDark");
 
         if (_colorType == ColorState.Highlight)
-            return (IsPointerOver ? "ColorBrush7" : "ColorBrushHalfWhite",
-                IsPointerOver ? "ColorBrush3" : "ColorBrush2");
+            return (IsHovered ? "ColorBrush7" : "ColorBrushHalfWhite",
+                IsHovered ? "ColorBrush3" : "ColorBrush2");
 
-        return IsPointerOver
+        return IsHovered
             ? ("ColorBrush7", "ColorBrush3")
             : ("ColorBrushHalfWhite", "ColorBrush1");
     }
@@ -199,7 +207,7 @@ public partial class MyButton : Border
         try
         {
             var (background, border) = GetColorKeys();
-            var time = IsPointerOver ? AnimationColorIn : AnimationColorOut;
+            var time = IsHovered ? AnimationColorIn : AnimationColorOut;
 
             ButtonAnimation.ApplyColor(
                 PanFore,
@@ -240,8 +248,26 @@ public partial class MyButton : Border
         AnimationService.CancelAnimationByName(ScaleKey);
     }
 
+    /// <summary>触摸按下时按悬停配色显示，抬起后恢复。</summary>
+    private void SetTouchHover(PointerPressedEventArgs e)
+    {
+        if (e.Pointer.Type == PointerType.Mouse || _touchHover) return;
+        _touchHover = true;
+        RefreshColor(true);
+    }
+
+    private void ClearTouchHover(PointerEventArgs? e)
+    {
+        if (e is not null && e.Pointer.Type == PointerType.Mouse) return;
+        if (!_touchHover) return;
+        _touchHover = false;
+        RefreshColor(false);
+    }
+
     private void _OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        PCL.Core.Logging.LogWrapper.Debug(
+            "[Touch] button press type=" + e.Pointer.Type + " over=" + IsHovered);
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             return;
 

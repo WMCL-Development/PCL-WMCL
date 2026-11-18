@@ -492,7 +492,7 @@ public partial class MyCheckBox : UserControl
 
     private void AnimateBackground(int time, bool animate)
     {
-        var key = _mouseDowned || IsPointerOver
+        var key = _mouseDowned || this.IsHoveredState()
             ? InputTheme.CheckPressedKey
             : InputTheme.CheckFillKey;
         InputAnimation.Color(
@@ -502,7 +502,7 @@ public partial class MyCheckBox : UserControl
             InputTheme.Brush(
                 this,
                 key,
-                _mouseDowned || IsPointerOver ? Brushes.LightBlue : Brushes.WhiteSmoke),
+                _mouseDowned || this.IsHoveredState() ? Brushes.LightBlue : Brushes.WhiteSmoke),
             time,
             BackgroundKey,
             animate);
@@ -515,7 +515,7 @@ public partial class MyCheckBox : UserControl
 
         var animate = time > 0 && InputAnimation.CanAnimate(this);
         var isChecked = GetFinalState(Checked, IsThreeState);
-        var hover = IsPointerOver;
+        var hover = this.IsHoveredState();
 
         string borderKey;
         if (!IsEnabled)

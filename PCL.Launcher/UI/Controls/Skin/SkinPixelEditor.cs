@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using PCL.UI;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -166,6 +167,12 @@ public sealed class SkinPixelEditor : Control
         brush = new SolidColorBrush(color).ToImmutable();
         _brushCache[color] = brush;
         return brush;
+    }
+
+    /// <summary>触屏：长按等同右键（进入拖动视图模式）。</summary>
+    private void OnTouchRightClick()
+    {
+        _isPanning = true;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

@@ -217,6 +217,18 @@ public class MyPageRight : Decorator, IPageView
     ///     需要切换到当前页面，并且原本的 Loaded 事件已执行完成。
     ///     需要根据加载器状态，从 Empty 切换到 ContentEnter、LoaderWait、LoaderEnter。
     /// </summary>
+    /// <summary>
+    ///     注册页面内容容器（无加载器的页面用）：进入/退出动画会作用在这个容器上，
+    ///     与走 <see cref="PageLoaderInit" /> 的页面保持一致。
+    /// </summary>
+    protected void SetPageContent(Control panContent, Control? panAlways = null)
+    {
+        _panContent = panContent;
+        _panAlways = panAlways;
+        // 不在这里隐藏内容：动画未执行完（或动画服务停摆）时会让页面变成白屏。
+        panAlways?.SetCurrentValue(IsVisibleProperty, false);
+    }
+
     public void PageOnEnter()
     {
         if (LauncherCommon.ModeDebug)
@@ -1007,7 +1019,6 @@ public class MyPageRight : Decorator, IPageView
             switch (element)
             {
                 case MyListItem:
-                case MyCard:
                 case MyHint:
                 case MyExtraTextButton:
                 case TextBlock:
@@ -1041,6 +1052,11 @@ public class MyPageRight : Decorator, IPageView
 
                 case Panel panel:
                 {
+                    // 卡片本身参与动画，同时继续下探到卡片内容，
+                    // 这样卡片里的列表项也能逐个浮现（与桌面原版一致）。
+                    if (panel is MyCard card)
+                        allControls.Add(card);
+
                     foreach (var child in panel.Children.OfType<Control>())
                         _GetAllAnimControls(child, allControls, ignoreInvisibility);
                     break;

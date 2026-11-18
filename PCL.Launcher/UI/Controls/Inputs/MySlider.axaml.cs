@@ -277,7 +277,7 @@ public partial class MySlider : UserControl
             fallback = InputTheme.Brush(this, key, Brushes.LightGray);
             time = 200;
         }
-        else if (_isDragging || IsPointerOver)
+        else if (_isDragging || this.IsHoveredState())
         {
             key = InputTheme.AccentKey;
             fallback = InputTheme.Accent(this);

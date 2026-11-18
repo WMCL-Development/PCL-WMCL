@@ -154,7 +154,7 @@ public class MyMenuItem : MenuItem
     private (string Background, string Foreground, int Time) GetVisualState()
     {
         return !IsEnabled ? ("ColorBrushTransparent", "ColorBrushGray5", AnimationTimeOut) :
-            IsPointerOver ? ("ColorBrush6", "ColorBrush2", AnimationTimeIn) :
+            this.IsHoveredState() ? ("ColorBrush6", "ColorBrush2", AnimationTimeIn) :
             ("ColorBrushTransparent", "ColorBrush1", AnimationTimeOut);
     }
 

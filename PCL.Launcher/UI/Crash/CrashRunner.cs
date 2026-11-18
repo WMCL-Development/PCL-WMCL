@@ -188,7 +188,7 @@ internal static class CrashPresenter
     private static string? SelectReportSavePath()
     {
         string? fileAddress = null;
-        LauncherCommon.RunInUiWait(() => fileAddress = SystemDialogs.SelectSaveFile(
+        LauncherCommon.RunInUiWait(() => fileAddress = SystemDialogs.SelectSaveFileBlocking(
             Lang.Text("Crash.Report.SaveDialog.Title"),
             GetDefaultReportFileName(),
             Lang.Text("Crash.Report.SaveDialog.Filter")));

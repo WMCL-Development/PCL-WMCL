@@ -280,7 +280,7 @@ public class MyComboBox : ComboBox
                 backgroundFallback = InputTheme.AccentLight(this);
                 time = 10;
             }
-            else if (IsPointerOver)
+            else if (this.IsHoveredState())
             {
                 foregroundKey = InputTheme.AccentHoverKey;
                 foregroundFallback = InputTheme.AccentHover(this);

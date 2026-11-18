@@ -55,6 +55,7 @@ public partial class MainWindow : Window
         BackgroundHost.Attach(_background);
         _ = new FileDragHandler(this);
         _ = new KeyboardHandler(this, PageLeftHost);
+        TouchHover.Install(this);
         _ = new ExitFlow(this);
 
         PageRouter.Attach(PageLeftHost, PageRightHost);

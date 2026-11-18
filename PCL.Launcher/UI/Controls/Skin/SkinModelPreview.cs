@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
+using PCL.UI;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -209,8 +210,10 @@ public sealed class SkinModelPreview : Control
         }
         else
         {
-            SetCurrentValue(YawProperty, _dragYaw + delta.X * 0.75);
-            SetCurrentValue(PitchProperty, _dragPitch - delta.Y * 0.5);
+            // 拖动方向与模型转动方向相反：向右拖，模型向右转（更符合直觉）。
+            SetCurrentValue(YawProperty, _dragYaw - delta.X * 0.75);
+            // 上下同向翻转：向上拖，模型向上仰。
+            SetCurrentValue(PitchProperty, _dragPitch + delta.Y * 0.5);
         }
         _dragStart = e.GetPosition(this);
         _dragYaw = Yaw;
@@ -280,10 +283,15 @@ public sealed class SkinModelPreview : Control
     {
         try
         {
-            using var stream = AssetLoader.Open(new Uri("avares://WMCL.UI/Assets/Skins/Steve.png"));
+            using var stream = AssetLoader.Open(
+                new Uri("avares://PCL.Launcher/Assets/Images/Skins/Steve.png"));
             return new Bitmap(stream);
         }
-        catch (IOException) { return null; }
-        catch (InvalidOperationException) { return null; }
+        catch (Exception ex)
+        {
+            // 资源缺失时预览会整块空白，这里留一条日志方便定位。
+            PCL.Core.Logging.LogWrapper.Warn("UI", $"加载默认皮肤失败：{ex.Message}");
+            return null;
+        }
     }
 }

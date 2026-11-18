@@ -467,7 +467,7 @@ public partial class MyRadioBox : UserControl, IMyRadio
 
     private void AnimateBackground(int time, bool animate)
     {
-        var key = _mouseDowned || IsPointerOver
+        var key = _mouseDowned || this.IsHoveredState()
             ? InputTheme.CheckPressedKey
             : InputTheme.CheckFillKey;
         InputAnimation.Color(
@@ -477,7 +477,7 @@ public partial class MyRadioBox : UserControl, IMyRadio
             InputTheme.Brush(
                 this,
                 key,
-                _mouseDowned || IsPointerOver ? Brushes.LightBlue : Brushes.WhiteSmoke),
+                _mouseDowned || this.IsHoveredState() ? Brushes.LightBlue : Brushes.WhiteSmoke),
             Math.Max(time, 1),
             BackgroundKey,
             animate);
@@ -489,7 +489,7 @@ public partial class MyRadioBox : UserControl, IMyRadio
             return;
 
         var animate = time > 0 && InputAnimation.CanAnimate(this);
-        var hover = IsPointerOver;
+        var hover = this.IsHoveredState();
 
         var borderKey = !IsEnabled
             ? InputTheme.DisabledTextKey

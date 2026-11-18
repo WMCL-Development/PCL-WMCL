@@ -201,7 +201,7 @@ public partial class MyIconTextButton : Border
 
         var foreground = !IsEnabled
             ? "ColorBrushGray5"
-            : IsPointerOver || ColorType == ColorState.Highlight
+            : this.IsHoveredState() || ColorType == ColorState.Highlight
                 ? "ColorBrush3"
                 : "ColorBrush1";
 
@@ -209,11 +209,11 @@ public partial class MyIconTextButton : Border
             ? "ColorBrushTransparent"
             : _isMouseDown
                 ? "ColorBrush6"
-                : IsPointerOver
+                : this.IsHoveredState()
                     ? "ColorBrushBg1"
                     : "ColorBrushSemiTransparent";
 
-        var time = _isMouseDown ? 70 : IsPointerOver ? 100 : 150;
+        var time = _isMouseDown ? 70 : this.IsHoveredState() ? 100 : 150;
 
         ButtonAnimation.ApplyColor(
             this,
