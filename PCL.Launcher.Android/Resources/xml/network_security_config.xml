@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Astral 短码服务是明文 HTTP，单独放行该地址，其余仍强制 HTTPS。 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">103.194.107.25</domain>
+    </domain-config>
+</network-security-config>

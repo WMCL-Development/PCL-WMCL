@@ -6,8 +6,18 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- 添加已有游戏文件夹需要按路径访问共享存储，SAF 授权只覆盖 URI 不覆盖路径 -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- 实例页截图/皮肤等图片与视频读取（Android 13+ 细分权限） -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <application android:label="PCL CE"
+                 android:extractNativeLibs="true"
                  android:supportsRtl="true"
-                 android:usesCleartextTraffic="false" />
+                 android:usesCleartextTraffic="false"
+                 android:networkSecurityConfig="@xml/network_security_config">
+    </application>
 </manifest>

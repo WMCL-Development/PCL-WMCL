@@ -6,6 +6,7 @@
         <Company>PCL Community</Company>
         <Product>PCL CE</Product>
         <RootNamespace>PCL.Android</RootNamespace>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net11.0-android</TargetFramework>
         <LangVersion>15.0</LangVersion>
         <Nullable>enable</Nullable>
@@ -13,16 +14,30 @@
         <Configurations>Debug;Release</Configurations>
         <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
         <ApplicationId>com.pclcommunity.pclce</ApplicationId>
-        <ApplicationVersion>1</ApplicationVersion>
-        <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>3</ApplicationVersion>
+        <ApplicationDisplayVersion>0.3.0</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
-        <RunAOTCompilation>false</RunAOTCompilation>
+        <PublishReadyToRun>false</PublishReadyToRun>
         <NoWarn>$(NoWarn);CA1416</NoWarn>
     </PropertyGroup>
+    <!-- CoreCLR 运行时要求程序集不压缩；Sentry 的构建目标会硬性阻止该配置，
+         这里用同名空目标覆盖它（仅影响打包检查，不影响 Sentry 功能）。 -->
+    <Target Name="_SentryEnsureAndroidEnableAssemblyCompressionDisabled" />
+
     <ItemGroup>
         <PackageReference Include="Avalonia.Android" Version="12.1.6" />
+        <!-- Sentry 的 buildTransitive 会禁止 AndroidEnableAssemblyCompression=false，
+             而 CoreCLR 运行时需要未压缩的程序集，这里只取程序集本身、跳过其构建目标。 -->
+        <PackageReference Include="Sentry" Version="6.6.0" ExcludeAssets="build;buildTransitive" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- EasyTier 的 aarch64 静态二进制：以 lib*.so 形式打进 lib/arm64-v8a，
+             安装后位于 nativeLibraryDir，具备可执行权限（Android 不允许执行应用数据目录里的文件）。 -->
+        <AndroidNativeLibrary Include="NativeLibs/arm64-v8a/libeasytier-core.so" />
+        <AndroidNativeLibrary Include="NativeLibs/arm64-v8a/libeasytier-cli.so" />
+        <AndroidNativeLibrary Include="NativeLibs/arm64-v8a/libeasytier_android_jni.so" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\PCL.Core\PCL.Core.csproj" />
@@ -30,5 +45,11 @@
         <ProjectReference Include="..\PCL.Launcher.Core\PCL.Launcher.Core.csproj" />
         <ProjectReference Include="..\PCL.Localization\PCL.Localization.csproj" />
         <ProjectReference Include="..\PCL.Platform.Android\PCL.Platform.Android.csproj" />
+        <!-- 直接复用桌面端 UI：页面、视图模型与样式都来自 PCL.Launcher。
+             桌面端是 Exe，不能作为工程引用，这里直接引用其产物程序集。 -->
+        <Reference Include="PCL.Launcher">
+            <HintPath>..\PCL.Launcher\bin\Debug\net11.0\PCL.Launcher.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
     </ItemGroup>
 </Project>
