@@ -211,15 +211,10 @@ public sealed class MySkin : Grid
         };
     }
 
-    /// <summary>打开皮肤窗口（3D 预览、上传与编辑器入口）。</summary>
+    /// <summary>进入皮肤管理子页（3D 预览、上传与编辑器入口）。</summary>
     private void OpenSkinWindow()
     {
-        _ = PCL.Core.UI.Dialogs.DialogService.Instance.ShowAsync(
-            new PCL.UI.Dialogs.ContentDialogRequest
-            {
-                Title = Lang.Text("Launch.Skin.Title"),
-                ContentFactory = () => new SkinPanel()
-            });
+        PCL.Navigation.PageRouter.Navigate(PCL.Navigation.PageType.LaunchSkin);
     }
 
     private void ApplyShadowColor()

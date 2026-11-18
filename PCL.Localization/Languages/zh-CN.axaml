@@ -3583,6 +3583,7 @@
     <sys:String x:Key="Tools.Astral.List.Join">加入选中</sys:String>
     <sys:String x:Key="Tools.Astral.List.Remove">移除</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Title">分享给朋友</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.ShortCode">短码</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Short">短链</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Long">长链</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Copy">复制</sys:String>

@@ -331,14 +331,10 @@ public partial class PageToolsAstralViewModel : ViewModelBase
             var peers = RelayChoices.Where(choice => choice.IsSelected).Select(choice => choice.Uri).ToList();
             if (peers.Count == 0) peers = [.. AstralCode.DefaultPeers()];
 
-            var room = new AstralRoom(
-                string.IsNullOrWhiteSpace(NewRoomName) ? "我的房间 " + suffix : NewRoomName.Trim(),
-                IsProtectedRoom || string.IsNullOrWhiteSpace(NewRoomNetwork)
-                    ? "astral-" + suffix.ToLowerInvariant()
-                    : NewRoomNetwork.Trim(),
-                IsProtectedRoom ? Guid.NewGuid().ToString("N")[..16] : NewRoomSecret.Trim(),
-                peers,
-                "Astral")
+            var roomName = string.IsNullOrWhiteSpace(NewRoomName) ? "我的房间" : NewRoomName.Trim();
+            // 未勾选「受保护房间」时按房间名派生网络参数：
+            // 只要双方填同一个房间名，就会进同一个 EasyTier 网络。
+            var room = AstralRoomFactory.Create(roomName, peers) with
             {
                 IsProtected = IsProtectedRoom
             };
@@ -383,8 +379,12 @@ public partial class PageToolsAstralViewModel : ViewModelBase
                 RelayChoices.Add(new AstralRelayChoice(uri));
     }
 
+    /// <summary>6 位短码；短链不可用但短码存在时也展示。</summary>
+    [ObservableProperty] private string _shareShortCode = "";
+
     private void ApplyJoined(string name, string network, string? shortCode, int port)
     {
+        ShareShortCode = shortCode ?? "";
         _joined = true;
         _joinedNetwork = network;
         RoomSummary = $"房间：{name}　网络：{network}" +

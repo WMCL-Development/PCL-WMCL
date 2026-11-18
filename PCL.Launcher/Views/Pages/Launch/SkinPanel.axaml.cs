@@ -30,11 +30,11 @@ public partial class SkinPanel : UserControl
         InitializeComponent();
         _model = this.FindControl<SkinModelPreview>("Model")!;
 
-        BtnPickSkin.Click += (_, _) => PickSkin();
-        BtnPickCape.Click += (_, _) => PickCape();
+        BtnPickSkin.Click += async (_, _) => await PickSkinAsync().ConfigureAwait(true);
         BtnUploadSkin.Click += async (_, _) => await UploadSkinAsync().ConfigureAwait(true);
-        BtnUploadCape.Click += (_, _) => UploadCape();
         BtnSaveSkin.Click += async (_, _) => await SaveSkinAsync().ConfigureAwait(true);
+
+        ApplyCapabilities();
         BtnOpenEditor.Click += (_, _) => OpenEditor();
 
         this.FindControl<MyButton>("BtnFront").Click += OnFront;
@@ -65,11 +65,11 @@ public partial class SkinPanel : UserControl
         }
     }
 
-    private void PickSkin()
+    private async Task PickSkinAsync()
     {
-        var path = SystemDialogs.SelectFile(
+        var path = await SystemDialogs.SelectFileAsync(
             Lang.Text("Tools.Test.Avatar.FileFilter"),
-            Lang.Text("Launch.Skin.PickSkin"));
+            Lang.Text("Launch.Skin.PickSkin")).ConfigureAwait(true);
         if (string.IsNullOrWhiteSpace(path)) return;
 
         try
@@ -88,25 +88,15 @@ public partial class SkinPanel : UserControl
         }
     }
 
-    private void PickCape()
+    /// <summary>
+    ///     按账号能力显示入口：只有微软账号能在启动器里上传皮肤；
+    ///     披风既不支持本地自定义也不支持上传（Mojang 未开放接口），因此不提供入口。
+    /// </summary>
+    private void ApplyCapabilities()
     {
-        var path = SystemDialogs.SelectFile(
-            Lang.Text("Tools.Test.Avatar.FileFilter"),
-            Lang.Text("Launch.Skin.PickCape"));
-        if (string.IsNullOrWhiteSpace(path)) return;
-
-        try
-        {
-            _localCapePath = path;
-            using var stream = File.OpenRead(path);
-            _model.Cape = new Bitmap(stream);
-            LabStatus.Text = string.Empty;
-        }
-        catch (Exception exception)
-        {
-            LogWrapper.Warn("Skin", "加载披风失败：" + exception.Message);
-            LabStatus.Text = Lang.Text("Tools.Test.Avatar.LoadFailed");
-        }
+        var isMicrosoft = ProfileService.Current?.ProfileType == ProfileType.Microsoft;
+        BtnUploadSkin.IsVisible = isMicrosoft;
+        LabAccount.IsVisible = isMicrosoft;
     }
 
     private async Task UploadSkinAsync()
@@ -143,19 +133,6 @@ public partial class SkinPanel : UserControl
         LabStatus.Text = Lang.Text(ok ? "Launch.Skin.Uploaded" : "Launch.Skin.UploadFailed");
     }
 
-    private void UploadCape()
-    {
-        // Mojang 不开放披风上传，只能刷新；第三方账号跳个人中心。
-        var profile = ProfileService.Current;
-        if (profile is { ProfileType: not ProfileType.Microsoft, Server: { Length: > 0 } server })
-        {
-            Basics.OpenUrl(server.TrimEnd('/') + "/user/closet");
-            return;
-        }
-
-        LabStatus.Text = Lang.Text("Launch.Skin.CapeUnsupported");
-    }
-
     private async Task SaveSkinAsync()
     {
         var profile = ProfileService.Current;
@@ -167,9 +144,9 @@ public partial class SkinPanel : UserControl
             return;
         }
 
-        var target = SystemDialogs.SelectSaveFile(
+        var target = await SystemDialogs.SelectSaveFileAsync(
             Lang.Text("Launch.Skin.SaveAs"), "skin.png",
-            Lang.Text("Tools.Test.Achievement.FileFilter"));
+            Lang.Text("Tools.Test.Achievement.FileFilter")).ConfigureAwait(true);
         if (string.IsNullOrWhiteSpace(target)) return;
 
         await using var input = File.OpenRead(source);

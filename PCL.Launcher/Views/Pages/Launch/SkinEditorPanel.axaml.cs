@@ -106,7 +106,7 @@ public partial class SkinEditorPanel : UserControl
             return;
         }
 
-        var path = SystemDialogs.SelectSaveFile(
+        var path = SystemDialogs.SelectSaveFileBlocking(
             Lang.Text("Skin.Editor.Save"), "skin.png",
             Lang.Text("Tools.Test.Achievement.FileFilter"));
         if (string.IsNullOrWhiteSpace(path)) return;

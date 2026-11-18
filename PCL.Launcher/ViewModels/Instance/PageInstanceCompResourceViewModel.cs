@@ -1426,7 +1426,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
                 return;
 
             var isCsv = mode.Button == 2;
-            var savePath = SystemDialogs.SelectSaveFile(
+            var savePath = SystemDialogs.SelectSaveFileBlocking(
                 Lang.Text("Instance.Resource.Export.SelectSaveLocation"),
                 isCsv ? "resource.csv" : "resource.txt",
                 Lang.Text("Instance.Resource.Export.FilesFilter"));

@@ -16,9 +16,15 @@ namespace PCL;
 /// <summary>联机页的 EasyTier 直连与编号识别：不经过大厅或 Astral 也能组网。</summary>
 public partial class PageToolsGameLinkViewModel
 {
-    private EasyTierEntity? _directEntity;
+    private PCL.Core.Link.EasyTier.IEasyTierProcess? _directEntity;
 
     [ObservableProperty] public partial string DirectNetworkName { get; set; } = string.Empty;
+
+    /// <summary>房主的虚拟 IP（无 tun 平台用端口转发时需要）。</summary>
+    [ObservableProperty] public partial string DirectHostIp { get; set; } = string.Empty;
+
+    /// <summary>本地转发端口，Minecraft 连 127.0.0.1:该端口 即可。</summary>
+    [ObservableProperty] public partial int DirectLocalPort { get; set; } = 25565;
 
     [ObservableProperty] public partial string DirectNetworkSecret { get; set; } = string.Empty;
 
@@ -67,8 +73,15 @@ public partial class PageToolsGameLinkViewModel
                 ? AstralCode.DefaultPeers().ToList()
                 : DirectPeers.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
 
-            _directEntity = new EasyTierEntity(new EasyTierOptions
+            var forwards = new List<string>();
+            if (!string.IsNullOrWhiteSpace(DirectHostIp) && DirectLocalPort is > 0 and < 65536)
+                forwards.Add($"tcp://127.0.0.1:{DirectLocalPort}/{DirectHostIp.Trim()}:25565");
+
+            _directEntity = PCL.Core.Link.EasyTier.EasyTierProcessFactory.Create(new EasyTierOptions
             {
+                PortForwards = forwards,
+                // 没填房主 IP 时交给平台自动发现（Android 无 tun，靠端口转发连游戏）。
+                AutoForwardLocalPort = forwards.Count == 0 ? DirectLocalPort : null,
                 NetworkName = DirectNetworkName.Trim(),
                 NetworkSecret = DirectNetworkSecret.Trim(),
                 Peers = peers,
@@ -78,9 +91,11 @@ public partial class PageToolsGameLinkViewModel
                 MachineId = Environment.MachineName
             });
 
-            var port = _directEntity.Launch();
-            DirectRunning = true;
-            DirectStatus = Lang.Text("Tools.GameLink.Direct.Running", port);
+            var code = _directEntity.Launch();
+            DirectRunning = code == 0;
+            DirectStatus = code == 0
+                ? Lang.Text("Tools.GameLink.Direct.Running", forwards.Count > 0 ? DirectLocalPort : 0)
+                : Lang.Text("Tools.GameLink.Direct.Failed");
         }
         catch (Exception exception)
         {

@@ -425,10 +425,10 @@ public partial class PageDownloadCompFavoritesViewModel : ViewModelBase
                 [
                     new Loading.LoaderTask<List<string>, List<DownloadFile>>(
                         Lang.Text("Download.Comp.Favorites.LoaderName.QueryInfo"),
-                        task => task.output = BuildBatchDownloadFiles(
+                        async task => task.output = await BuildBatchDownloadFilesAsync(
                             task,
                             projects,
-                            desiredLoader))
+                            desiredLoader).ConfigureAwait(false))
                     {
                         ProgressWeight = 2d
                     },
@@ -834,7 +834,7 @@ public partial class PageDownloadCompFavoritesViewModel : ViewModelBase
         SelectionChanged?.Invoke();
     }
 
-    private static List<DownloadFile> BuildBatchDownloadFiles(
+    private static async Task<List<DownloadFile>> BuildBatchDownloadFilesAsync(
         Loading.LoaderTask<List<string>, List<DownloadFile>> task,
         List<Comp.CompProject> projects,
         Comp.CompLoaderType desiredLoader)
@@ -913,7 +913,7 @@ public partial class PageDownloadCompFavoritesViewModel : ViewModelBase
         }
 
         var selectedVersion = commonVersions[versionResult.SelectedIndex.Value];
-        var saveFolder = LauncherCommon.RunInUiWait(() => SystemDialogs.SelectFolder());
+        var saveFolder = await SystemDialogs.SelectFolderAsync();
         if (string.IsNullOrWhiteSpace(saveFolder))
         {
             task.Abort();

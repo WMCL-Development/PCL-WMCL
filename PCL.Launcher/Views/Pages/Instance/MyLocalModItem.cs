@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using PCL.UI;
 using PCL.UI.Controls;
 
 namespace PCL.Views.Pages.Instance;
@@ -66,6 +67,10 @@ public partial class MyLocalModItem : Grid
                 ViewModel.ShowUpdateLogCommand.Execute(null);
             }
         };
+
+        // 触屏：长按等同右键
+        TouchRightClick.Subscribe(BtnUpdate, () => ViewModel.ShowUpdateLogCommand.Execute(null));
+        TouchRightClick.Subscribe(this, () => InfoRequested?.Invoke(this));
 
         PointerEntered += (_, _) => RefreshColors();
         PointerExited += (_, _) =>
@@ -297,7 +302,7 @@ public partial class MyLocalModItem : Grid
     {
         var stateNew = _isMouseDown
             ? "MouseDown"
-            : IsPointerOver
+            : this.IsHoveredState()
                 ? "MouseOver"
                 : Checked
                     ? "Checked"
@@ -307,7 +312,7 @@ public partial class MyLocalModItem : Grid
         _stateLast = stateNew;
 
         var showButtons = stateNew is "MouseOver" or "MouseDown";
-        var time = IsPointerOver ? 120 : 180;
+        var time = this.IsHoveredState() ? 120 : 180;
         if (!ContainerAnimation.CanAnimate(this))
         {
             ApplyColorStateInstant(stateNew, showButtons);

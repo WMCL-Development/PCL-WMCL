@@ -1,11 +1,11 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:ui="using:PCL.UI.Controls"
-             xmlns:loc="using:PCL.Core.UI"
-             x:Class="PCL.Views.Pages.More.PageMoreHelp"
-             x:Name="Root">
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="25,25,25,25">
+<ui:MyPageRight xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:ui="using:PCL.UI.Controls"
+                xmlns:loc="using:PCL.Core.UI"
+                x:Class="PCL.Views.Pages.More.PageMoreHelp"
+                x:Name="Root">
+    <ui:MyScrollViewer x:Name="PanBack" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel x:Name="PanMain" Margin="25,25,25,25">
             <ui:MyCard Title="{loc:Loc More.Help.Title}">
                 <StackPanel Margin="25,35,25,20">
                     <UniformGrid Columns="2">
@@ -49,5 +49,5 @@
                 </StackPanel>
             </ui:MyCard>
         </StackPanel>
-    </ScrollViewer>
-</UserControl>
+    </ui:MyScrollViewer>
+</ui:MyPageRight>

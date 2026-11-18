@@ -83,13 +83,13 @@ public partial class MySkinViewModel : ViewModelBase
             if (string.IsNullOrEmpty(localPath))
                 throw new InvalidDataException("皮肤文件不存在");
 
-            var target = SystemDialogs.SelectSaveFile(
+            var target = await SystemDialogs.SelectSaveFileAsync(
                 Lang.Text("Launch.Skin.SaveDialog.Title"),
                 Path.GetFileName(
                     address.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
                         ? address
                         : "Skin.png"),
-                Lang.Text("Launch.Skin.SaveDialog.Filter"));
+                Lang.Text("Launch.Skin.SaveDialog.Filter")).ConfigureAwait(true);
             if (string.IsNullOrWhiteSpace(target))
                 return;
 

@@ -51,6 +51,8 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
             new Func<object, object>(PageSetupUIViewModel.FormatSamplingRateHint);
         SliderMusicVolume.getHintText =
             new Func<object, object>(PageSetupUIViewModel.FormatMusicVolumeHint);
+        // 拖动时在滑块上方显示百分比数值。
+        SliderUiScale.getHintText = new Func<object, object>(value => $"{Convert.ToInt32(value) + 80}%");
 
         TextCustomNet.ValidateRules.Add(
             new HttpValidator
@@ -128,7 +130,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         ComboUiMotdFont.SelectionChanged += (_, _) =>
             WriteIfReady(() => Config.Preference.MotdFont = ComboUiMotdFont.SelectedFontTag);
 
-        BtnLogoChange.Click += (_, _) => OnChangeLogo();
+        BtnLogoChange.Click += async (_, _) => await OnChangeLogoAsync();
         BtnLogoDelete.Click += (_, _) => OnDeleteLogo();
         BtnBackgroundOpen.Click += (_, _) => OpenBackgroundFolder();
         BtnBackgroundRefresh.Click += (_, _) =>
@@ -498,9 +500,9 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
 
     private static string LogoPath => Path.Combine(Paths.Data, "Logo.png");
 
-    private static void OnChangeLogo()
+    private static async Task OnChangeLogoAsync()
     {
-        var fileName = SystemDialogs.SelectFile(
+        var fileName = await SystemDialogs.SelectFileAsync(
             Lang.Text("Setup.Ui.ImageFile.Filter"),
             Lang.Text("Setup.Ui.ImageFile.SelectTitle"));
         if (string.IsNullOrEmpty(fileName)) return;
@@ -528,32 +530,33 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
             return;
         }
 
+        // 选文件是异步的，无法在事件里同步决定是否拦截切换：
+        // 先拦住，选到文件后再手动切到「自定义图片」。
+        e.handled = true;
         _selectingLogo = true;
+        _ = PickLogoAsync();
+    }
+
+    private async Task PickLogoAsync()
+    {
         try
         {
-            var fileName = SystemDialogs.SelectFile(
+            var fileName = await SystemDialogs.SelectFileAsync(
                 Lang.Text("Setup.Ui.ImageFile.Filter"),
-                Lang.Text("Setup.Ui.ImageFile.SelectTitle"));
-            if (string.IsNullOrEmpty(fileName))
-            {
-                e.handled = true;
-                return;
-            }
+                Lang.Text("Setup.Ui.ImageFile.SelectTitle")).ConfigureAwait(true);
+            if (string.IsNullOrEmpty(fileName)) return;
 
-            try
-            {
-                File.Copy(fileName, LogoPath, true);
-                RefreshTitleBar();
-            }
-            catch (Exception ex)
-            {
-                LauncherCommon.Log(
-                    ex,
-                    "复制标题栏图片失败",
-                    LauncherLogLevel.Msgbox,
-                    userSummary: Lang.Text("Setup.Ui.Error.OperationFailed"));
-                e.handled = true;
-            }
+            File.Copy(fileName, LogoPath, true);
+            RefreshTitleBar();
+            RadioLogoType3.SetChecked(true, true);
+        }
+        catch (Exception ex)
+        {
+            LauncherCommon.Log(
+                ex,
+                "复制标题栏图片失败",
+                LauncherLogLevel.Msgbox,
+                userSummary: Lang.Text("Setup.Ui.Error.OperationFailed"));
         }
         finally
         {

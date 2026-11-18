@@ -59,6 +59,7 @@ public partial class PageToolsGameLink : MyPageRight
     {
         InitializeComponent();
         PanScroll = PanContent;
+        SetPageContent(PanMain);
         DataContext = ViewModel;
 
         _load = this.FindControl<MyLoading>("Load")!;

@@ -18,7 +18,7 @@ namespace PCL.ViewModels.Pages;
 /// </summary>
 public partial class PageToolsTerracottaViewModel : ViewModelBase
 {
-    private EasyTierEntity? _entity;
+    private PCL.Core.Link.EasyTier.IEasyTierProcess? _entity;
     private TerracottaTunnel? _tunnel;
 
     [ObservableProperty] public partial string Code { get; set; } = string.Empty;
@@ -117,7 +117,7 @@ public partial class PageToolsTerracottaViewModel : ViewModelBase
         {
             var code = TerracottaCode.Create(out var name, out var secret, out var port);
 
-            _entity = new EasyTierEntity(new EasyTierOptions
+            _entity = PCL.Core.Link.EasyTier.EasyTierProcessFactory.Create(new EasyTierOptions
             {
                 NetworkName = "terracotta-mc-" + name,
                 NetworkSecret = secret,

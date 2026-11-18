@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using PCL.UI;
 using PCL.UI.Controls;
 
 namespace PCL.Views.Pages.Download;
@@ -58,14 +59,15 @@ public sealed partial class MyCompItem : Grid
         UpdatePanButtons();
 
         LabInfo.PointerEntered += (_, _) => UpdateDescriptionToolTip();
+        // 触摸屏没有悬停，按钮透明度一直是 0，不能拿它当可点击门槛。
         BtnDownload.Click += (_, _) =>
         {
-            if (CanInteraction && PanButtons is { Opacity: > 0d })
+            if (CanInteraction)
                 Comp.QuickDownload(Project);
         };
         BtnFavorite.Click += (_, _) =>
         {
-            if (CanInteraction && PanButtons is { Opacity: > 0d })
+            if (CanInteraction)
                 CompFavoritesMenu.Show(Project, BtnFavorite, RefreshFavoriteStatus);
         };
 
@@ -239,7 +241,7 @@ public sealed partial class MyCompItem : Grid
             return;
         }
 
-        var stateNew = IsPointerOver
+        var stateNew = this.IsHoveredState()
             ? _isMouseDown ? "MouseDown" : "MouseOver"
             : "Idle";
         if ((_stateLast ?? string.Empty) == stateNew)

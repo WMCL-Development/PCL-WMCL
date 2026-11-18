@@ -3514,6 +3514,7 @@
     <sys:String x:Key="Tools.Astral.List.Join">Join selected</sys:String>
     <sys:String x:Key="Tools.Astral.List.Remove">Remove</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Title">Share with friends</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.ShortCode">Short code</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Short">Short link</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Long">Long link</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Copy">Copy</sys:String>

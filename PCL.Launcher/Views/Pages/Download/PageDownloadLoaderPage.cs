@@ -410,7 +410,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
                 return;
             }
 
-            var target = SystemDialogs.SelectSaveFile(
+            var target = SystemDialogs.SelectSaveFileBlocking(
                 Lang.Text("Download.Version.SelectSaveLocation"),
                 fileName,
                 filterKey is null ? "*.jar|*.jar" : Lang.Text(filterKey));

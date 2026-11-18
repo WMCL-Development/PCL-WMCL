@@ -477,7 +477,7 @@ public partial class PageDownloadCompDetail : MyPageRight
             var defaultFolder = isModpack
                 ? null
                 : GetDefaultSaveFolder(file, project, subFolder);
-            var target = SystemDialogs.SelectSaveFile(
+            var target = await SystemDialogs.SelectSaveFileAsync(
                 Lang.Text("Download.Comp.Detail.SelectSaveLocation"),
                 Comp.CompFileNameGet(project, file),
                 BuildSaveFilter(file, desc),
@@ -1243,7 +1243,7 @@ public partial class PageDownloadCompDetail : MyPageRight
         try
         {
             var defaultFolder = GetWorldDefaultFolder();
-            var target = SystemDialogs.SelectSaveFile(
+            var target = await SystemDialogs.SelectSaveFileAsync(
                 Lang.Text("Download.Comp.Detail.SelectWorldInstallLocation"),
                 file.FileName ?? "",
                 Lang.Text("Download.Comp.Detail.WorldFile.Filter"),

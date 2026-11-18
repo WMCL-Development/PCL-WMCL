@@ -1101,7 +1101,7 @@ public partial class PageInstanceCompResource
                     "Instance.Resource.Install.FileDialog.Mod.Filter",
                     "Instance.Resource.Install.FileDialog.Mod.Title")
             };
-            var files = SystemDialogs.SelectFiles(
+            var files = SystemDialogs.SelectFilesBlocking(
                 Lang.Text(filterKey),
                 Lang.Text(titleKey));
             if (files.Length != 0)
