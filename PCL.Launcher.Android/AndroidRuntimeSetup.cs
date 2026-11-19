@@ -68,8 +68,11 @@ public static class AndroidRuntimeSetup
         Host = new AndroidApplicationHost();
         Lifecycle.CurrentApplication = Host;
 
-        var localization = PCL.Core.Platform.ApplicationRuntime.Current.Ui.Localization;
-        localization.ApplyLanguageResources("zh-CN", "zh-CN");
+        // 先加载基础语言，保证首帧中文案可用；用户配置的语言在外壳首帧后应用。
+        PCL.Core.Platform.ApplicationRuntime.Current.Ui.Localization
+            .ApplyLanguageResources(
+                PCL.Core.App.Localization.LocalizationService.DefaultLanguageCode,
+                null);
     }
 
     /// <summary>Activity 销毁时结束宿主循环。</summary>

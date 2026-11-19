@@ -2784,6 +2784,8 @@
 
     <sys:String x:Key="Setup.Language.CardTitle">語言</sys:String>
     <sys:String x:Key="Setup.Language.Changed">語言設定已更新</sys:String>
+    <sys:String x:Key="Setup.Language.PartialSuffix">（部分翻譯）</sys:String>
+    <sys:String x:Key="Setup.Language.Partial.Hint">該語言翻譯還不完整，未翻譯的內容會顯示英文。</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture">區域格式</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture.Auto">跟隨系統區域格式</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture.FollowLanguage">同步介面語言</sys:String>

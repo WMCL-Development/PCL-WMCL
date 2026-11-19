@@ -37,8 +37,19 @@ public sealed class DesktopShell : UserControl
 
     public DesktopShell()
     {
-        // Avalonia 首帧渲染完成后撤掉原生启动遮罩。
-        Loaded += (_, _) => MainActivity.HideSplash();
+        // Avalonia 首帧渲染完成后撤掉原生启动遮罩，并按用户配置应用界面语言。
+        Loaded += (_, _) =>
+        {
+            MainActivity.HideSplash();
+            try
+            {
+                PCL.Core.App.Localization.LocalizationService.ApplyFromConfig();
+            }
+            catch (Exception exception)
+            {
+                PCL.Core.Logging.LogWrapper.Warn(exception, "Android", "应用界面语言失败");
+            }
+        };
         var panMain = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("Auto,*"),

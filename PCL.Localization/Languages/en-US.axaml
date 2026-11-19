@@ -2859,6 +2859,8 @@
     <sys:String x:Key="Setup.Language.Banner.TranslateWebsite">Visit translation platform</sys:String>
     <sys:String x:Key="Setup.Language.CardTitle">Language</sys:String>
     <sys:String x:Key="Setup.Language.Changed">Language settings updated</sys:String>
+    <sys:String x:Key="Setup.Language.PartialSuffix"> (partial)</sys:String>
+    <sys:String x:Key="Setup.Language.Partial.Hint">This language is not fully translated yet; untranslated text falls back to English.</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture">Regional format</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture.Auto">Follow system regional format</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture.FollowLanguage">Follow UI language</sys:String>

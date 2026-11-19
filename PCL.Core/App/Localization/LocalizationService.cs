@@ -24,6 +24,25 @@ public sealed partial class LocalizationService
     /// <summary>默认语言，也是语言资源的完整兜底。</summary>
     public const string DefaultLanguageCode = "zh-CN";
 
+    /// <summary>非中文语言的英文兜底：缺译的键回退英文，避免在非中文界面里显示中文。</summary>
+    public const string FallbackLanguageCode = "en-US";
+
+    /// <summary>翻译尚不完整的语言：未翻译内容会回退英文，界面上会给出提示。</summary>
+    public static IReadOnlySet<string> PartialTranslationLanguages { get; } =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "ja-JP",
+            "fr-FR",
+            "es-ES"
+        };
+
+    /// <summary>判断指定语言是否尚未翻译完整。</summary>
+    public static bool IsPartialTranslation(string? languageCode)
+    {
+        return !string.IsNullOrWhiteSpace(languageCode)
+               && PartialTranslationLanguages.Contains(languageCode);
+    }
+
     private static readonly LocalizationLanguage _DefaultLanguage = new(
         DefaultLanguageCode,
         "简体中文（中国大陆）",

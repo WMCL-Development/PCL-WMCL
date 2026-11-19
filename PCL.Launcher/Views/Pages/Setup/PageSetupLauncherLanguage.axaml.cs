@@ -107,7 +107,10 @@ public partial class PageSetupLauncherLanguage : MyPageRight, ISetupResetPage
             ComboUiLanguage.Items.Add(
                 new MyComboBoxItem
                 {
-                    Content = language.NativeName,
+                    Content = language.NativeName
+                              + (LocalizationService.IsPartialTranslation(language.Code)
+                                  ? Lang.Text("Setup.Language.PartialSuffix")
+                                  : string.Empty),
                     Tag = language.Code,
                     FontFamily = LaunchFonts.BuildRepresentativeFontFamily(language)
                 });
@@ -170,8 +173,18 @@ public partial class PageSetupLauncherLanguage : MyPageRight, ISetupResetPage
                 StringComparison.OrdinalIgnoreCase))
             return;
         Config.Preference.Localization.Language = value;
-        HintService.Show(Hints.Success(Lang.Text("Setup.Language.Changed"), false));
+        if (LocalizationService.IsPartialTranslation(ResolveSelectedLanguageCode(value)))
+            HintService.Show(Hints.Info(Lang.Text("Setup.Language.Partial.Hint"), false));
+        else
+            HintService.Show(Hints.Success(Lang.Text("Setup.Language.Changed"), false));
         Dispatcher.UIThread.Post(Reload);
+    }
+
+    private static string ResolveSelectedLanguageCode(string value)
+    {
+        return string.Equals(value, LocalizationService.Auto, StringComparison.OrdinalIgnoreCase)
+            ? LocalizationService.ResolveLanguage(value).Code
+            : value;
     }
 
     private void OnFormatCultureChanged()

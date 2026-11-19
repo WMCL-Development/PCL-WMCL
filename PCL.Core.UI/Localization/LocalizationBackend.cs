@@ -85,8 +85,15 @@ public sealed class LocalizationBackend(IUiDispatcher dispatcher) : ILocalizatio
                 app.Resources.MergedDictionaries.Remove(provider);
             _languageProviders.Clear();
 
-            // 基础语言先合并、当前语言后合并；资源字典按逆序查找，保证当前语言覆盖基础语言
+            // 基础语言先合并、当前语言最后合并；资源字典按逆序查找，保证当前语言覆盖基础语言。
+            // 非中文语言（es/fr/ja 等）尚未完整翻译时再插入英文层，避免缺译处显示中文。
             var isBaseLoaded = _TryAddLanguage(app, baseLanguageCode);
+            if (currentLanguageCode is { Length: > 0 } requestedLanguage
+                && !requestedLanguage.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                && !requestedLanguage.StartsWith("en", StringComparison.OrdinalIgnoreCase)
+                && !baseLanguageCode.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+                _TryAddLanguage(app, LocalizationService.FallbackLanguageCode);
+
             var isCurrentLoaded = !string.IsNullOrWhiteSpace(currentLanguageCode)
                 && !string.Equals(
                     baseLanguageCode,

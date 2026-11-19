@@ -2859,6 +2859,8 @@
     <sys:String x:Key="Setup.Language.Banner.TranslateWebsite">前往翻译平台</sys:String>
     <sys:String x:Key="Setup.Language.CardTitle">语言</sys:String>
     <sys:String x:Key="Setup.Language.Changed">语言设置已更新</sys:String>
+    <sys:String x:Key="Setup.Language.PartialSuffix">（部分翻译）</sys:String>
+    <sys:String x:Key="Setup.Language.Partial.Hint">该语言翻译还不完整，未翻译的内容会显示英文。</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture">区域格式</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture.Auto">跟随系统区域格式</sys:String>
     <sys:String x:Key="Setup.Language.FormatCulture.FollowLanguage">同步界面语言</sys:String>
