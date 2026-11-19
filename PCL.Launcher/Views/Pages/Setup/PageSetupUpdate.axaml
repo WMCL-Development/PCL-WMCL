@@ -36,8 +36,7 @@
                             <ui:MyComboBoxItem Content="{loc:Loc Setup.Update.Channel.Beta}"
                                                ToolTip.Tip="{loc:Loc Setup.Update.Channel.Beta.ToolTip}" />
                             <ui:MyComboBoxItem Content="{loc:Loc Setup.Update.Channel.Dev}"
-                                               ToolTip.Tip="{loc:Loc Setup.Update.Channel.Dev.ToolTip}"
-                                               IsVisible="False" />
+                                               ToolTip.Tip="{loc:Loc Setup.Update.Channel.Dev.ToolTip}" />
                         </ui:MyComboBox>
 
                         <TextBlock Grid.Row="2"

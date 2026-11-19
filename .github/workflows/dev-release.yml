@@ -1,0 +1,107 @@
+name: Dev release
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: dev-release
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build (${{ matrix.rid }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: windows_x64
+            runner: windows-latest
+            rid: win-x64
+            platform: x64
+          - target: windows_ARM64
+            runner: windows-latest
+            rid: win-arm64
+            platform: ARM64
+          - target: linux_x64
+            runner: ubuntu-latest
+            rid: linux-x64
+            platform: x64
+          - target: linux_ARM64
+            runner: ubuntu-24.04-arm
+            rid: linux-arm64
+            platform: ARM64
+          - target: macos_ARM64
+            runner: macos-latest
+            rid: osx-arm64
+            platform: ARM64
+          - target: macos_x64
+            runner: macos-latest
+            rid: osx-x64
+            platform: x64
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      configuration: Beta
+      target: ${{ matrix.target }}
+      rid: ${{ matrix.rid }}
+      platform: ${{ matrix.platform }}
+      runner: ${{ matrix.runner }}
+      version: 1.0.0-dev.${{ github.run_number }}
+      version_suffix: dev.${{ github.run_number }}
+      include_secrets: true
+    secrets: inherit
+
+  build_android_arm64:
+    name: build (android-arm64)
+    uses: ./.github/workflows/reusable-android.yml
+    with:
+      configuration: Beta
+      abi: arm64
+      version_code: ${{ 1000000 + github.run_number }}
+      version_suffix: dev.${{ github.run_number }}
+    secrets: inherit
+
+  build_android_x86_64:
+    name: build (android-x86_64)
+    uses: ./.github/workflows/reusable-android.yml
+    with:
+      configuration: Beta
+      abi: x86_64
+      version_code: ${{ 1000000 + github.run_number }}
+      version_suffix: dev.${{ github.run_number }}
+    secrets: inherit
+
+  publish:
+    name: publish dev release
+    needs: [ build, build_android_arm64, build_android_x86_64 ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: PCL2_CE_Beta_*
+          path: ./release
+          merge-multiple: true
+
+      - name: Generate dev update manifest
+        run: |
+          python3 scripts/generate-update-manifest.py Beta "1.0.0-dev.${{ github.run_number }}" release Dev "dev.${{ github.run_number }}" wmcl-dev
+
+      - name: Publish wmcl-dev release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NOTES="WMCL nightly build dev.${{ github.run_number }} (commit ${{ github.sha }})"
+          if gh release view wmcl-dev >/dev/null 2>&1; then
+            gh release edit wmcl-dev --prerelease --title "WMCL Dev" --notes "$NOTES"
+          else
+            gh release create wmcl-dev --prerelease --title "WMCL Dev" --notes "$NOTES"
+          fi
+          gh release upload wmcl-dev release/* --clobber

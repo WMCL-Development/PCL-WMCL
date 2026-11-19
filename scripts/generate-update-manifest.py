@@ -8,13 +8,16 @@ import sys
 
 
 def main() -> int:
-    if len(sys.argv) != 4:
+    if len(sys.argv) < 4:
         print("usage: generate-update-manifest.py <configuration> <version> <release-dir>",
               file=sys.stderr)
         return 2
 
     config, version = sys.argv[1], sys.argv[2]
     release_dir = pathlib.Path(sys.argv[3])
+    channel = sys.argv[4] if len(sys.argv) > 4 else config
+    suffix = sys.argv[5] if len(sys.argv) > 5 else ""
+    tag = sys.argv[6] if len(sys.argv) > 6 else f"v{version}"
     repo = os.environ.get("GITHUB_REPOSITORY", "wenxiangL521/PCL-WMCL")
 
     metadata = json.loads(
@@ -40,15 +43,16 @@ def main() -> int:
             continue
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         assets[key] = {
-            "url": f"https://github.com/{repo}/releases/download/v{version}/{name}",
+            "url": f"https://github.com/{repo}/releases/download/{tag}/{name}",
             "sha256": digest,
         }
 
+    display_version = base + (f"-{suffix}" if suffix else "")
     manifest = {
-        "version": base,
+        "version": display_version,
         "code": code,
-        "channel": config,
-        "notes": f"WMCL {base}（{config}）的更新说明请查看 GitHub Release 页面。",
+        "channel": channel,
+        "notes": f"WMCL {display_version}（{channel}）的更新说明请查看 GitHub Release 页面。",
         "assets": assets,
     }
     output = release_dir / "wmcl-update.json"

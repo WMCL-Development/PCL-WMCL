@@ -170,6 +170,9 @@ public sealed class WmclUpdateSource : IUpdateSource
 
     private static string ResolveManifestUrl(UpdateSourceChannel channel)
     {
+        if (channel == UpdateSourceChannel.Dev)
+            return $"https://github.com/{Repository}/releases/download/wmcl-dev/{ManifestAssetName}";
+
         if (channel != UpdateSourceChannel.Beta)
             return $"https://github.com/{Repository}/releases/latest/download/{ManifestAssetName}";
 

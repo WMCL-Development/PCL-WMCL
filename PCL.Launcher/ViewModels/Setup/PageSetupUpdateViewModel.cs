@@ -112,9 +112,7 @@ public partial class PageSetupUpdateViewModel : ViewModelBase
         CheckAgainEnabled = false;
         try
         {
-            var channel = UpdateManager.IsCurrentVersionBeta
-                ? UpdateSourceChannel.Beta
-                : UpdateSourceChannel.Stable;
+            var channel = UpdateManager.CurrentUpdateChannel;
             var arch = SystemInfo.IsArm64System ? UpdateArch.Arm64 : UpdateArch.X64;
             var isLatest = await UpdateManager.remoteServer.IsLatestAsync(
                 channel,
