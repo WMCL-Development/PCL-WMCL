@@ -441,7 +441,6 @@ public partial class PageDownloadCompDetail : MyPageRight
 
         if (action == CompFileAction.Save)
         {
-            item.TouchRevealButtons = true;
             item.Buttons = [saveButton];
             item.Click += async (_, _) => await SaveFileAsync(file);
             return item;
@@ -453,7 +452,6 @@ public partial class PageDownloadCompDetail : MyPageRight
         };
         installButton.SetLocalizedValue(ToolTip.TipProperty, "Common.Action.Install");
         installButton.Click += async (_, _) => await RunInstallAsync(action, file);
-        item.TouchRevealButtons = true;
         item.Buttons = [installButton, saveButton];
         item.Click += async (_, _) => await RunInstallAsync(action, file);
         return item;

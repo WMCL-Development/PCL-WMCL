@@ -99,7 +99,7 @@ public partial class PageSetupLauncherMisc : MyPageRight, ISetupResetPage
         RadioHttpProxyType2.Check += (_, _) => WriteProxyType(2);
 
         BtnApplyHttpProxy.Click += (_, _) => ViewModel.ApplyHttpProxy();
-        BtnSystemSettingExp.Click += async (_, _) => await ExportSettingsAsync();
+        BtnSystemSettingExp.Click += (_, _) => ExportSettings();
         BtnSystemSettingImp.Click += async (_, _) => await ImportSettingsAsync();
         BtnSystemStopUsingPclCe.Click += async (_, _) => await StopUsingPclCeAsync();
 

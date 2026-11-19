@@ -29,7 +29,6 @@ public partial class PageInstanceScreenshot : MyPageRight, IRefreshable
         BtnOpenFolder.Click += (_, _) => ViewModel.OpenFolder();
         BtnOpenFolderTop.Click += (_, _) => ViewModel.OpenFolder();
         BtnErrorRetry.Click += (_, _) => Reload();
-        BtnViewerClose.Click += (_, _) => HideViewer();
         PanBack.ScrollChanged += (_, _) => RequireAppend();
         PanLoad.PropertyChanged += (_, change) =>
         {
@@ -126,7 +125,7 @@ public partial class PageInstanceScreenshot : MyPageRight, IRefreshable
         {
             ViewModel.SelectedScreenshot = item;
             item.IsSelected = true;
-            ShowViewer(item);
+            PageInstanceScreenshotViewModel.OpenScreenshot(item);
         };
         Grid.SetRow(image, 1);
         grid.Children.Add(image);
@@ -221,28 +220,5 @@ public partial class PageInstanceScreenshot : MyPageRight, IRefreshable
         if (!await ViewModel.DeleteAsync(item))
             return;
         PanScreenshots.Children.Remove(card);
-    }
-
-    /// <summary>在页内放大显示截图，避免为了看一眼就打开外部程序。</summary>
-    private void ShowViewer(ScreenshotItemViewModel item)
-    {
-        try
-        {
-            using var stream = File.OpenRead(item.FilePath);
-            ImgViewer.Source = new Bitmap(stream);
-            LabViewerName.Text = item.DisplayName;
-            PanViewer.IsVisible = true;
-        }
-        catch (Exception ex)
-        {
-            LauncherCommon.Log(ex, $"打开截图预览失败：{item.FilePath}", LauncherLogLevel.Developer);
-        }
-    }
-
-    private void HideViewer()
-    {
-        PanViewer.IsVisible = false;
-        if (ImgViewer.Source is IDisposable disposable) disposable.Dispose();
-        ImgViewer.Source = null;
     }
 }

@@ -311,7 +311,7 @@ public partial class MyExtraTextButton : Grid
 
         var key = !IsEnabled
             ? "ColorBrushGray4"
-            : this.IsHoveredState()
+            : IsPointerOver
                 ? "ColorBrush4"
                 : "ColorBrush3";
 
@@ -320,7 +320,7 @@ public partial class MyExtraTextButton : Grid
             Border.BackgroundProperty,
             key,
             null,
-            !IsEnabled || this.IsHoveredState() ? AnimationColorIn : AnimationColorOut,
+            !IsEnabled || IsPointerOver ? AnimationColorIn : AnimationColorOut,
             animate,
             ColorKey);
     }

@@ -24,20 +24,6 @@ public partial class PageToolsGameLink : MyPageRight
     private const string EasyTierUrl = "https://easytier.cn/";
     private const string PysioUrl = "https://pysio.online/";
 
-    private readonly MyButton _btnModeSwitch;
-    private readonly TextBlock _labMode;
-    private readonly PageToolsAstral _panAstral;
-    private readonly Grid _panLobby;
-    private readonly PageToolsTerracotta _panTerracotta;
-    private readonly ScrollViewer _panDirect;
-    private static int MethodToMode(string? method) => method?.ToLowerInvariant() switch
-    {
-        "astral" => 1,
-        "terracotta" => 2,
-        "easytier" => 3,
-        _ => 0
-    };
-
     private readonly MyButton _btnClearCode;
     private readonly MyButton _btnCreate;
     private readonly MyButton _btnEulaAgree;
@@ -59,7 +45,6 @@ public partial class PageToolsGameLink : MyPageRight
     {
         InitializeComponent();
         PanScroll = PanContent;
-        SetPageContent(PanMain);
         DataContext = ViewModel;
 
         _load = this.FindControl<MyLoading>("Load")!;
@@ -77,15 +62,6 @@ public partial class PageToolsGameLink : MyPageRight
         _btnFinishCopy = this.FindControl<MyIconTextButton>("BtnFinishCopy")!;
         _btnFinishCopyIp = this.FindControl<MyIconTextButton>("BtnFinishCopyIp")!;
         _btnFinishExit = this.FindControl<MyIconTextButton>("BtnFinishExit")!;
-
-        _btnModeSwitch = this.FindControl<MyButton>("BtnModeSwitch")!;
-        _labMode = this.FindControl<TextBlock>("LabMode")!;
-        _panAstral = this.FindControl<PageToolsAstral>("PanAstral")!;
-        _panLobby = this.FindControl<Grid>("PanLobby")!;
-        _panTerracotta = this.FindControl<PageToolsTerracotta>("PanTerracotta")!;
-        _panDirect = this.FindControl<ScrollViewer>("PanDirect")!;
-        _btnModeSwitch.IsVisible = false;
-        ApplyConnectionMethod(Config.Link.ConnectionMethod);
 
         Current = this;
         ViewModel.PlayerRows.CollectionChanged += (_, _) => RebuildPlayerList();
@@ -322,31 +298,5 @@ public partial class PageToolsGameLink : MyPageRight
             LogWrapper.Error(ex, "Link", "读取剪贴板失败");
             HintService.Show(Hints.Error(ex.Message));
         }
-    }
-
-    /// <summary>在「联机大厅」与「Astral 联机」之间切换，两套逻辑互不影响。</summary>
-    public override void OnNavigatedTo(object? parameter)
-    {
-        // 页面会被缓存，从设置页改完连接方式再回来时重新应用一次。
-        ApplyConnectionMethod(Config.Link.ConnectionMethod);
-        base.OnNavigatedTo(parameter);
-    }
-
-    /// <summary>按设置里的连接方式只显示对应面板。</summary>
-    private void ApplyConnectionMethod(string? method)
-    {
-        var mode = MethodToMode(method);
-        _panLobby.IsVisible = mode == 0;
-        _panAstral.IsVisible = mode == 1;
-        _panTerracotta.IsVisible = mode == 2;
-        _panDirect.IsVisible = mode == 3;
-
-        _labMode.Text = Lang.Text(mode switch
-        {
-            1 => "Tools.GameLink.Mode.Astral",
-            2 => "Tools.GameLink.Mode.Terracotta",
-            3 => "Tools.GameLink.Mode.Direct",
-            _ => "Tools.GameLink.Mode.Lobby"
-        });
     }
 }

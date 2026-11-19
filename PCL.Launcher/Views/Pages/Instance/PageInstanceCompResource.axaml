@@ -67,22 +67,7 @@
                                              IsVisible="False"
                                              Text="{loc:Loc Instance.Resource.CheckMods}"
                                              ToolTip.Tip="{loc:Loc Instance.Resource.CheckMods.ToolTip}" />
-                                <ui:MyButton x:Name="BtnUpdateAll"
-                                             MinWidth="110"
-                                             Margin="0,7,15,0"
-                                             Padding="13,7"
-                                             HorizontalAlignment="Left"
-                                             IsEnabled="{Binding CanUpdateAll}"
-                                             Click="UpdateAll_OnClick"
-                                             Text="{loc:Loc Instance.Resource.UpdateAll}" />
                             </WrapPanel>
-                            <TextBlock x:Name="LabUpdateSummary"
-                                       Margin="15,0,15,12"
-                                       FontSize="12"
-                                       Opacity="0.7"
-                                       TextWrapping="Wrap"
-                                       IsVisible="False"
-                                       Text="{Binding UpdateSummary}" />
                         </ui:MyCard>
 
                         <ui:MyCard x:Name="PanListBack"

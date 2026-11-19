@@ -17,29 +17,6 @@ public interface IFileDialogService
         string? initialDirectory = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>异步选择文件夹（单视图平台必须用这个，不能阻塞 UI 线程）。</summary>
-    Task<string> SelectFolderAsync(string? title = null, string? initialDirectory = null);
-
-    /// <summary>异步选择文件。</summary>
-    Task<string> SelectFileAsync(
-        string? fileFilter = null,
-        string? title = null,
-        string? initialDirectory = null);
-
-    /// <summary>异步多选文件。</summary>
-    Task<string[]> SelectFilesAsync(
-        string? fileFilter = null,
-        string? title = null,
-        string? initialDirectory = null,
-        bool allowMultiSelect = true);
-
-    /// <summary>异步保存文件。</summary>
-    Task<string> SelectSaveFileAsync(
-        string? title,
-        string fileName,
-        string? fileFilter = null,
-        string? initialDirectory = null);
-
     /// <summary>显示打开文件对话框；取消时返回空字符串。</summary>
     Task<string> SelectFileAsync(
         string? fileFilter = null,

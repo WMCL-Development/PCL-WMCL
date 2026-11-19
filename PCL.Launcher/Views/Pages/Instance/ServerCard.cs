@@ -6,7 +6,6 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using PCL.UI;
 using PCL.UI.Controls;
 
 namespace PCL.Views.Pages.Instance;
@@ -235,7 +234,7 @@ public partial class ServerCard : Grid
     {
         var stateNew = _isMouseDown
             ? "MouseDown"
-            : this.IsHoveredState()
+            : IsPointerOver
                 ? "MouseOver"
                 : "Idle";
         if (_stateLast == stateNew)

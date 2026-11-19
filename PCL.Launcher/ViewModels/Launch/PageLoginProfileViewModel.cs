@@ -68,8 +68,7 @@ public partial class PageLoginProfileViewModel : ViewModelBase
         {
             var isEmpty = Profiles.Count == 0;
             ShowSelectHint = !isEmpty;
-            // 不再提示「必须先验证正版」：离线与第三方登录均可直接使用。
-            ShowMicrosoftHint = false;
+            ShowMicrosoftHint = isEmpty;
             ShowCreateHint = isEmpty;
             if (isEmpty)
                 States.Hint.LaunchWithProfile = true;

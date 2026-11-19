@@ -35,6 +35,9 @@ public partial class MySkinViewModel : ViewModelBase
 
     [ObservableProperty] public partial CroppedBitmap? HatImage { get; set; }
 
+    /// <summary>请求上层打开更换披风流程。</summary>
+    public event Action? CapeRequested;
+
     partial void OnAddressChanged(string value)
     {
         var address = value ?? string.Empty;
@@ -86,7 +89,7 @@ public partial class MySkinViewModel : ViewModelBase
                     address.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
                         ? address
                         : "Skin.png"),
-                Lang.Text("Launch.Skin.SaveDialog.Filter")).ConfigureAwait(true);
+                Lang.Text("Launch.Skin.SaveDialog.Filter"));
             if (string.IsNullOrWhiteSpace(target))
                 return;
 
@@ -105,6 +108,12 @@ public partial class MySkinViewModel : ViewModelBase
             LogWrapper.Warn(ex, "Launch", "保存皮肤失败");
             HintService.Show(Hints.Error(Lang.Text("Launch.Skin.File.Error")));
         }
+    }
+
+    [RelayCommand]
+    private void ChangeCape()
+    {
+        CapeRequested?.Invoke();
     }
 
     public static string GetCapeDisplayName(string capeAlias)

@@ -37,16 +37,17 @@ public partial class PageLoginProfileSkin : LoginPageBase
 
         _btnSkin.Click += (_, _) => _btnSkin.ContextMenu?.Open(_btnSkin);
         _btnEdit.Click += (_, _) => _btnEdit.ContextMenu?.Open(_btnEdit);
-        // 头像区域的皮肤 / 编辑菜单只保留左键点击打开，不再挂右键菜单。
+        ContextMenuHelper.Attach(_btnSkin, () => _btnSkin.ContextMenu);
+        ContextMenuHelper.Attach(_btnEdit, () => _btnEdit.ContextMenu);
         _btnSelect.Click += (_, _) => ViewModel.SelectProfileCommand.Execute(null);
+        _skin.CapeRequested += (_, _) => ViewModel.ChangeCapeCommand.Execute(null);
 
-        PointerEntered += (_, _) => ShowButtons();
-        PointerExited += (_, e) =>
+        PointerEntered += (_, _) => AnimationService.Run(
+            new OpacityAnimation(_panButtons, 1d - _panButtons.Opacity, 120),
+            "PageLoginProfileSkin Button");
+        PointerExited += (_, _) =>
         {
-            // 触摸屏没有悬停，移出事件不代表用户离开，交给点击切换。
-            if (e.Pointer.Type != Avalonia.Input.PointerType.Mouse)
-                return;
-            if (this.IsHoveredState() || IsMenuOpen())
+            if (IsPointerOver || IsMenuOpen())
                 return;
             HideButtons();
         };
@@ -68,13 +69,6 @@ public partial class PageLoginProfileSkin : LoginPageBase
                 _menuSave?.IsEnabled = ViewModel.CanSave;
                 break;
         }
-    }
-
-    private void ShowButtons()
-    {
-        AnimationService.Run(
-            new OpacityAnimation(_panButtons, 1d - _panButtons.Opacity, 120),
-            "PageLoginProfileSkin Button");
     }
 
     private void HideButtons()
@@ -100,15 +94,23 @@ public partial class PageLoginProfileSkin : LoginPageBase
     {
         var items = new List<MyMenuItem>();
 
-        // 菜单只保留两项：进入皮肤子页、刷新头像；其余操作都收进皮肤子页。
         AddItem(
-            "Launch.Skin.Title",
+            "Launch.Account.ProfileSkin.ChangeSkin",
             "lucide/shirt",
-            OpenSkinPage);
+            () => ViewModel.ChangeSkinCommand.Execute(null));
+        _menuSave = AddItem(
+            "Launch.Account.ProfileSkin.SaveSkin",
+            "lucide/download",
+            () => ViewModel.SaveSkinCommand.Execute(null));
+        _menuSave.IsEnabled = ViewModel.CanSave;
         AddItem(
             "Launch.Account.ProfileSkin.RefreshSkin",
             "lucide/refresh-cw",
             () => ViewModel.RefreshSkinCommand.Execute(null));
+        AddItem(
+            "Launch.Account.ProfileSkin.ChangeCape",
+            "lucide/shirt",
+            () => ViewModel.ChangeCapeCommand.Execute(null));
 
         _btnSkin.ContextMenu = new ContextMenu
         {
@@ -118,7 +120,7 @@ public partial class PageLoginProfileSkin : LoginPageBase
         };
         _btnSkin.ContextMenu.Closed += (_, _) =>
         {
-            if (!this.IsHoveredState()) HideButtons();
+            if (!IsPointerOver) HideButtons();
         };
         return;
 
@@ -138,26 +140,6 @@ public partial class PageLoginProfileSkin : LoginPageBase
             return item;
         }
     }
-
-    /// <summary>
-    ///     Android 上进入皮肤管理子页；桌面保持原有的弹窗（SkinPanel）行为。
-    /// </summary>
-    private void OpenSkinPage()
-    {
-        if (OperatingSystem.IsAndroid())
-        {
-            PCL.Navigation.PageRouter.Navigate(PCL.Navigation.PageType.LaunchSkin);
-            return;
-        }
-
-        _ = PCL.Core.UI.Dialogs.DialogService.Instance.ShowAsync(
-            new PCL.UI.Dialogs.ContentDialogRequest
-            {
-                Title = Lang.Text("Launch.Skin.Title"),
-                ContentFactory = () => new SkinPanel()
-            });
-    }
-
 
     private void BuildEditMenu()
     {
@@ -180,7 +162,7 @@ public partial class PageLoginProfileSkin : LoginPageBase
         };
         _btnEdit.ContextMenu.Closed += (_, _) =>
         {
-            if (!this.IsHoveredState()) HideButtons();
+            if (!IsPointerOver) HideButtons();
         };
         return;
 

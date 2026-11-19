@@ -306,8 +306,6 @@ public partial class PageSelectRight : MyPageRight, IRefreshable, IShellShortcut
             if (args.GetCurrentPoint(sender).Properties.IsRightButtonPressed)
                 PageSelectRightViewModel.OpenInstanceSettings(version);
         };
-        // 触屏：长按等同右键
-        TouchRightClick.Subscribe(sender, () => PageSelectRightViewModel.OpenInstanceSettings(version));
 
         var btnStar = new MyIconButton
         {
@@ -354,8 +352,6 @@ public partial class PageSelectRight : MyPageRight, IRefreshable, IShellShortcut
         else
             btnSettings.Click += (_, _) => PageSelectRightViewModel.OpenInstanceSettings(version);
 
-        // 触摸屏：点右侧 1/3 展开操作按钮，左侧正常选择实例。
-        sender.TouchRevealButtons = true;
         sender.Buttons = [btnStar, btnOpenFolder, btnDelete, btnSettings];
     }
 

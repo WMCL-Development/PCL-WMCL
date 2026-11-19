@@ -53,52 +53,6 @@ public partial class PageSetupUIViewModel : ViewModelBase
 
     [ObservableProperty] private int _launcherOpacity = Config.Preference.Theme.WindowOpacity;
 
-    /// <summary>主题微调：色相（0–100，50 为不变）。</summary>
-    [ObservableProperty] private int _themeHueOffset = Config.Preference.Theme.ThemeHueOffset;
-
-    /// <summary>主题微调：明度。</summary>
-    [ObservableProperty] private int _themeLightOffset = Config.Preference.Theme.ThemeLightOffset;
-
-    /// <summary>主题微调：色度。</summary>
-    [ObservableProperty] private int _themeChromaOffset = Config.Preference.Theme.ThemeChromaOffset;
-
-    partial void OnThemeHueOffsetChanged(int value)
-    {
-        if (_reloading) return;
-        Config.Preference.Theme.ThemeHueOffset = Math.Clamp(value, 0, 100);
-    }
-
-    partial void OnThemeLightOffsetChanged(int value)
-    {
-        if (_reloading) return;
-        Config.Preference.Theme.ThemeLightOffset = Math.Clamp(value, 0, 100);
-    }
-
-    partial void OnThemeChromaOffsetChanged(int value)
-    {
-        if (_reloading) return;
-        Config.Preference.Theme.ThemeChromaOffset = Math.Clamp(value, 0, 100);
-    }
-
-    /// <summary>界面缩放百分比（80–150）。</summary>
-    [ObservableProperty] private int _uiScalePercent = Config.Preference.UiScalePercent;
-
-    /// <summary>滑块值：0 对应 80%，70 对应 150%。</summary>
-    public int UiScaleOffset
-    {
-        get => Math.Clamp(UiScalePercent - 80, 0, 70);
-        set => UiScalePercent = Math.Clamp(value, 0, 70) + 80;
-    }
-
-    partial void OnUiScalePercentChanged(int value)
-    {
-        if (_reloading) return;
-        Config.Preference.UiScalePercent = Math.Clamp(value, 80, 150);
-        OnPropertyChanged(nameof(UiScaleOffset));
-        if (PCL.Views.MainWindow.Current is { } window) window.ApplyUiScale();
-        PCL.UI.UiScaleNotifier.Notify();
-    }
-
     [ObservableProperty] private int _lightColorSelectedIndex = -1;
 
     [ObservableProperty] private string _logoText = string.Empty;
@@ -140,33 +94,14 @@ public partial class PageSetupUIViewModel : ViewModelBase
 
     partial void OnLightColorSelectedIndexChanged(int value)
     {
-        if (_reloading || value < 0) return;
-        if (ResolveColorTheme(value) is { } theme)
-            Config.Preference.Theme.LightColor = theme;
+        if (!_reloading && value >= 0)
+            Config.Preference.Theme.LightColor = (ColorTheme)value;
     }
 
     partial void OnDarkColorSelectedIndexChanged(int value)
     {
-        if (_reloading || value < 0) return;
-        if (ResolveColorTheme(value) is { } theme)
-            Config.Preference.Theme.DarkColor = theme;
-    }
-
-    /// <summary>下拉索引 → 配色枚举。预设表里愚人节项平时隐藏，索引与枚举值不再一一对应。</summary>
-    private static ColorTheme? ResolveColorTheme(int index)
-    {
-        var presets = PCL.Core.UI.Theme.ThemePresetCatalog.Visible(Basics.IsAprilFool);
-        return index >= 0 && index < presets.Count ? presets[index].Value : null;
-    }
-
-    /// <summary>配色枚举 → 下拉索引。</summary>
-    private static int ResolveColorIndex(ColorTheme theme)
-    {
-        var presets = PCL.Core.UI.Theme.ThemePresetCatalog.Visible(Basics.IsAprilFool);
-        for (var index = 0; index < presets.Count; index++)
-            if (presets[index].Value == theme)
-                return index;
-        return 0;
+        if (!_reloading && value >= 0)
+            Config.Preference.Theme.DarkColor = (ColorTheme)value;
     }
 
     partial void OnBlurTypeSelectedIndexChanged(int value)
@@ -230,11 +165,10 @@ public partial class PageSetupUIViewModel : ViewModelBase
         {
             var theme = Config.Preference.Theme;
             var colorMax = Math.Max(0, themeColorCount - 1);
-            _ = colorMax;
             LauncherOpacity = theme.WindowOpacity;
             DarkModeSelectedIndex = Math.Clamp((int)theme.ColorMode, 0, 2);
-            LightColorSelectedIndex = ResolveColorIndex(theme.LightColor);
-            DarkColorSelectedIndex = ResolveColorIndex(theme.DarkColor);
+            LightColorSelectedIndex = Math.Clamp((int)theme.LightColor, 0, colorMax);
+            DarkColorSelectedIndex = Math.Clamp((int)theme.DarkColor, 0, colorMax);
 
             BlurRadius = Config.Preference.Blur.Radius;
             BlurSamplingRate = Config.Preference.Blur.SamplingRate;

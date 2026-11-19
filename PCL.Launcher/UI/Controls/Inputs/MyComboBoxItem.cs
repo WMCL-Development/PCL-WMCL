@@ -69,7 +69,7 @@ public class MyComboBoxItem : ComboBoxItem
             newFontOpacity = 1d;
             time = AnimationTimeIn;
         }
-        else if (keyboardNavigation ? IsFocused : this.IsHoveredState())
+        else if (keyboardNavigation ? IsFocused : IsPointerOver)
         {
             newBackColorName = InputTheme.ComboHoverKey;
             newFontOpacity = 1d;

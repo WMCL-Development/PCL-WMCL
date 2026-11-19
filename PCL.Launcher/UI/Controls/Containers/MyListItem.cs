@@ -496,7 +496,7 @@ public partial class MyListItem : Grid, IMyRadio
             stateNew = "MouseDown";
             time = AnimationTimeIn;
         }
-        else if (this.IsHoveredState() && _isHoverAnimationEnabled)
+        else if (IsPointerOver && _isHoverAnimationEnabled)
         {
             stateNew = "MouseOver";
             time = AnimationTimeIn;
@@ -633,33 +633,9 @@ public partial class MyListItem : Grid, IMyRadio
         }
     }
 
-    /// <summary>
-    ///     触摸屏上没有悬停：开启后点击条目右侧 1/3 切换按钮组显示，点击其余区域仍是正常点击。
-    /// </summary>
-    public bool TouchRevealButtons { get; set; }
-
-    private bool _touchButtonsVisible;
-
-    /// <summary>切换（或指定）触摸模式下按钮组的显示状态。</summary>
-    public void SetTouchButtonsVisible(bool show)
-    {
-        if (buttonStack is null || _touchButtonsVisible == show)
-        {
-            _touchButtonsVisible = show;
-            return;
-        }
-
-        _touchButtonsVisible = show;
-        var animations = new List<IAnimation>();
-        AddButtonAnimations(animations, show, 120);
-        if (animations.Count > 0)
-            AnimationService.Run(animations, "ListItem Buttons " + Uuid);
-    }
-
     private bool ShouldShowButtons(string stateNew)
     {
         return stateNew is "MouseOver" or "MouseDown"
-            || _touchButtonsVisible
             || (_showButtonsOnKeyboardFocus && IsKeyboardFocusWithin);
     }
 
@@ -1322,20 +1298,6 @@ public partial class MyListItem : Grid, IMyRadio
             return;
         }
 
-        // 触摸屏：右侧 1/3 用于展开/收起按钮组，不触发行点击。
-        if (TouchRevealButtons
-            && e.Pointer.Type != PointerType.Mouse
-            && Bounds.Width > 0
-            && e.GetPosition(this).X > Bounds.Width * 2d / 3d)
-        {
-            _isMouseDown = false;
-            ResetPointerState();
-            SetTouchButtonsVisible(!_touchButtonsVisible);
-            e.Handled = true;
-            return;
-        }
-
-        SetTouchButtonsVisible(false);
         _isMouseDown = false;
         buttonStack?.IsHitTestVisible = true;
         PerformClick(e.KeyModifiers, e);

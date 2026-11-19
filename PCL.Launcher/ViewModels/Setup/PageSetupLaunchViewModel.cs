@@ -1,4 +1,3 @@
-using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PCL.Core.App;
 using PCL.Core.App.Configuration;
@@ -13,32 +12,6 @@ namespace PCL;
 public partial class PageSetupLaunchViewModel : ViewModelBase
 {
     [ObservableProperty] private bool _checkAdvanceRunWaitVisible;
-
-    // 各项设置按平台实际能力决定是否显示（能力位定义在 PlatformCapabilities）：
-    // Windows 全支持；Linux 不支持进程优先级/独显偏好；macOS 额外不支持窗口标题/渲染器；Android 全部隐藏。
-    [ObservableProperty]
-    private bool _showProcessPriority = _Capability(c => c.SupportsProcessPriority);
-
-    [ObservableProperty]
-    private bool _showGameWindowTitle = _Capability(c => c.SupportsGameWindowTitle);
-
-    [ObservableProperty]
-    private bool _showGameWindowSize = _Capability(c => c.SupportsGameWindowSize);
-
-    [ObservableProperty]
-    private bool _showLauncherVisibility = _Capability(c => c.SupportsLauncherVisibility);
-
-    [ObservableProperty]
-    private bool _showRendererSelection = _Capability(c => c.SupportsRendererSelection);
-
-    [ObservableProperty]
-    private bool _showGpuPreference = _Capability(c => c.SupportsGpuPreferenceSelection);
-
-    private static bool _Capability(Func<PCL.Core.Platform.IPlatformCapabilities, bool> selector)
-    {
-        return !PCL.Core.Platform.PlatformRuntime.IsInitialized
-               || selector(PCL.Core.Platform.PlatformRuntime.Current.Capabilities);
-    }
 
     [ObservableProperty]
     private int _customInitialMemorySize = Config.Launch.CustomInitialMemorySize;
@@ -514,33 +487,6 @@ public partial class PageSetupLaunchViewModel : ViewModelBase
     partial void OnRendererIndexChanged(int value)
     {
         if (!_reloading && value >= 0) Config.Launch.Renderer = value;
-    }
-
-    #endregion
-
-    #region 启动器行为
-
-    [ObservableProperty] private bool _closeToTray = Config.Preference.CloseToTray;
-
-    /// <summary>0 保持、1 最小化、2 隐藏。</summary>
-    [ObservableProperty] private int _afterLaunchIndex = Config.Preference.LauncherAfterLaunch switch
-    {
-        "minimize" => 1,
-        "hide" => 2,
-        _ => 0
-    };
-
-    partial void OnCloseToTrayChanged(bool value) => Config.Preference.CloseToTray = value;
-
-    partial void OnAfterLaunchIndexChanged(int value)
-    {
-        if (value < 0) return;
-        Config.Preference.LauncherAfterLaunch = value switch
-        {
-            1 => "minimize",
-            2 => "hide",
-            _ => "keep"
-        };
     }
 
     #endregion

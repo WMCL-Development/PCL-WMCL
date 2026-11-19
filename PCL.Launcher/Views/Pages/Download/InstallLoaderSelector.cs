@@ -1194,13 +1194,12 @@ internal sealed class InstallLoaderSelector : IDisposable
                         () => GetOptiFineInfo(version),
                         "Blocks/GrassPath.png");
                     var entry = version;
-                    item.TouchRevealButtons = true;
                     item.Buttons =
                     [
                         CreateItemButton(
                             "lucide/save",
                             "Download.Version.SaveAs",
-                            () => _ = PageDownloadLoaderPage.SaveOptiFineAsync(entry)),
+                            () => PageDownloadLoaderPage.SaveOptiFine(entry)),
                         CreateChangelogButton(() => OpenWebsite(
                             $"https://optifine.net/changelog?f={entry.NameFile}"))
                     ];
@@ -1226,8 +1225,7 @@ internal sealed class InstallLoaderSelector : IDisposable
                     var saveButton = CreateItemButton(
                         "lucide/save",
                         "Download.Version.SaveInstaller",
-                        () => _ = PageDownloadLoaderPage.SaveLiteLoaderAsync(entry));
-                    item.TouchRevealButtons = true;
+                        () => PageDownloadLoaderPage.SaveLiteLoader(entry));
                     item.Buttons = entry.IsLegacy
                         ?
                         [
@@ -1302,13 +1300,12 @@ internal sealed class InstallLoaderSelector : IDisposable
                             : Lang.Text("Download.Version.Type.Stable"),
                         "Blocks/LabyMod.png");
                     var isSnapshot = choice.Channel == "snapshot";
-                    item.TouchRevealButtons = true;
                     item.Buttons =
                     [
                         CreateItemButton(
                             "lucide/save",
                             "Download.Version.SaveAs",
-                            () => _ = PageDownloadLoaderPage.SaveLabyModAsync(isSnapshot)),
+                            () => PageDownloadLoaderPage.SaveLabyMod(isSnapshot)),
                         CreateChangelogButton(() => OpenWebsite(
                             "https://www.labymod.net/zh_Hans/download"))
                     ];
@@ -1421,13 +1418,12 @@ internal sealed class InstallLoaderSelector : IDisposable
             entry.VersionName,
             infoFactory,
             "Blocks/Anvil.png");
-        item.TouchRevealButtons = true;
         item.Buttons =
         [
             CreateItemButton(
                 "lucide/save",
                 "Download.Version.SaveAs",
-                () => _ = PageDownloadLoaderPage.SaveForgelikeAsync(entry)),
+                () => PageDownloadLoaderPage.SaveForgelike(entry)),
             CreateChangelogButton(() => OpenWebsite(
                 $"https://files.minecraftforge.net/maven/net/minecraftforge/forge/{entry.Inherit}-{entry.VersionName}/forge-{entry.Inherit}-{entry.VersionName}-changelog.txt"))
         ];
@@ -1445,13 +1441,12 @@ internal sealed class InstallLoaderSelector : IDisposable
             entry.VersionName,
             infoFactory,
             kind == InstallLoaderKind.Cleanroom ? "Blocks/Cleanroom.png" : "Blocks/NeoForge.png");
-        item.TouchRevealButtons = true;
         item.Buttons =
         [
             CreateItemButton(
                 "lucide/save",
                 "Download.Version.SaveAs",
-                () => _ = PageDownloadLoaderPage.SaveForgelikeEntryAsync(entry)),
+                () => PageDownloadLoaderPage.SaveForgelikeEntry(entry)),
             CreateChangelogButton(() =>
             {
                 var url = PageDownloadLoaderPage.GetForgelikeChangelogUrl(entry);

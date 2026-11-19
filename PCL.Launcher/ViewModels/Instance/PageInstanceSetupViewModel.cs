@@ -548,35 +548,6 @@ public partial class PageInstanceSetupViewModel : ViewModelBase
         RamInitialCustomEnabled = MemorySolution == 1 && !Config.Launch.LockMemory;
     }
 
-    /// <summary>校验实例文件完整性，并按清单补齐缺失文件。</summary>
-    [RelayCommand]
-    public async Task RepairVersionAsync()
-    {
-        if (Instance is null) return;
-        try
-        {
-            var report = VersionIntegrityChecker.Check(Instance);
-            if (report.IsHealthy)
-            {
-                HintService.Show(Hints.Success(Lang.Text("Instance.Setup.Repair.Healthy", report.Checked)));
-                return;
-            }
-
-            HintService.Show(Hints.Info(Lang.Text("Instance.Setup.Repair.Found", report.Missing.Count)));
-            var results = await VersionRepairer.RepairAsync(report).ConfigureAwait(true);
-            var ok = results.Count(result => result.Success);
-            var failed = results.Count - ok;
-            HintService.Show(failed == 0
-                ? Hints.Success(Lang.Text("Instance.Setup.Repair.Done", ok))
-                : Hints.Error(Lang.Text("Instance.Setup.Repair.Partial", ok, failed)));
-        }
-        catch (Exception exception)
-        {
-            LogWrapper.Error(exception, "Instance", "修复实例失败");
-            HintService.Show(Hints.Error(exception.Message));
-        }
-    }
-
     [RelayCommand]
     public void Reset()
     {
@@ -710,8 +681,23 @@ public partial class PageInstanceSetupViewModel : ViewModelBase
             ThreadPriority.BelowNormal);
     }
 
-    /// <summary>第三方与离线档案是否可选。已取消「必须先登录正版」的限制。</summary>
-    public static bool CanCreateOtherProfile() => true;
+    public static bool CanCreateOtherProfile()
+    {
+#if DEBUG || DEBUGCI
+        return true;
+#else
+        try
+        {
+            return ProfileService.HasMicrosoftProfile
+                   || (Lang.IsFeaturesUnrestricted && ProfileService.Profiles.Count > 0)
+                   || !NetworkHelper.IsNetworkAvailable();
+        }
+        catch
+        {
+            return false;
+        }
+#endif
+    }
 
     public async Task<bool> ApplyRendererAsync(int index)
     {

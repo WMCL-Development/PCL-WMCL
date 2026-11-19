@@ -30,7 +30,7 @@ public static class EasyTierMetadata
 
     /// <summary>当前平台的 EasyTier 依赖是否完整。</summary>
     public static bool IsInstalled =>
-        Package.Os == PCL.Core.Platform.PlatformKind.Android ||
+        EasyTierPlatform.CurrentOs == PCL.Core.Platform.PlatformKind.Android ||
         Package.RequiredFiles.All(fileName => File.Exists(Path.Combine(InstallRoot, fileName)));
 
     /// <summary>兼容旧调用点。新代码应使用 <see cref="InstallRoot" />。</summary>

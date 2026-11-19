@@ -75,6 +75,7 @@ public sealed class MySkin : Grid
         Children.Add(_imgFore);
 
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        ViewModel.CapeRequested += () => CapeRequested?.Invoke(this, EventArgs.Empty);
 
         BuildContextMenu();
         ContextMenuHelper.Attach(this, () => ContextMenu);
@@ -150,6 +151,7 @@ public sealed class MySkin : Grid
 
     public event EventHandler? Click;
 
+    public event EventHandler? CapeRequested;
 
     public void Clear()
     {
@@ -202,7 +204,7 @@ public sealed class MySkin : Grid
         refreshItem.SetLocalizedValue(MenuItem.HeaderProperty, "Common.Action.Refresh");
         refreshItem.Click += (_, _) => RefreshSource();
 
-        var skinItem = new MyMenuItem
+        _menuCape = new MyMenuItem
         {
             SvgIcon = "lucide/shirt",
             IsVisible = ViewModel.HasCape
@@ -212,16 +214,13 @@ public sealed class MySkin : Grid
 
         ContextMenu = new ContextMenu
         {
-            ItemsSource = new List<MyMenuItem> { refreshItem, skinItem },
-            HorizontalOffset = 10d,
-            VerticalOffset = 18d
+            ItemsSource = new List<MyMenuItem>
+            {
+                _menuSave,
+                refreshItem,
+                _menuCape
+            }
         };
-    }
-
-    /// <summary>进入皮肤管理子页（3D 预览、上传与编辑器入口）。</summary>
-    private void OpenSkinWindow()
-    {
-        PCL.Navigation.PageRouter.Navigate(PCL.Navigation.PageType.LaunchSkin);
     }
 
     private void ApplyShadowColor()

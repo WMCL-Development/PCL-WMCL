@@ -13,7 +13,7 @@
             <ui:MyCard Margin="0,0,0,15"
                        Title="{loc:Loc Setup.Launch.Options.Title}">
                 <StackPanel Margin="25,40,25,15">
-                    <Grid RowDefinitions="Auto,9,Auto,9,Auto,9,Auto,9,Auto,9,Auto,9,Auto,9,Auto,Auto">
+                    <Grid RowDefinitions="28,9,28,9,28,9,28,9,28,9,28,9,28,9,28,Auto">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="Name" />
@@ -46,14 +46,12 @@
                         </ui:MyComboBox>
 
                         <TextBlock Grid.Row="2"
-                                   IsVisible="{Binding ShowGameWindowTitle}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Margin="0,0,25,0"
                                    Text="{loc:Loc Setup.Launch.Options.WindowTitle.Label}" />
                         <ui:MyComboBox x:Name="ComboArgumentTitle"
                                        Grid.Row="2"
-                                       IsVisible="{Binding ShowGameWindowTitle}"
                                        Grid.Column="1"
                                        Grid.ColumnSpan="2"
                                        HorizontalAlignment="Stretch"
@@ -78,14 +76,12 @@
                                       ToolTip.Tip="{loc:Loc Setup.Launch.Options.CustomInfo.ToolTip}" />
 
                         <TextBlock Grid.Row="6"
-                                   IsVisible="{Binding ShowLauncherVisibility}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Margin="0,0,25,0"
                                    Text="{loc:Loc Setup.Launch.Options.Visibility.Label}" />
                         <ui:MyComboBox x:Name="ComboArgumentVisibie"
                                        Grid.Row="6"
-                                       IsVisible="{Binding ShowLauncherVisibility}"
                                        Grid.Column="1"
                                        Grid.ColumnSpan="2"
                                        HorizontalAlignment="Stretch"
@@ -102,14 +98,12 @@
                         </ui:MyComboBox>
 
                         <TextBlock Grid.Row="8"
-                                   IsVisible="{Binding ShowProcessPriority}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Margin="0,0,25,0"
                                    Text="{loc:Loc Setup.Launch.Options.Priority.Label}" />
                         <ui:MyComboBox x:Name="ComboArgumentPriority"
                                        Grid.Row="8"
-                                       IsVisible="{Binding ShowProcessPriority}"
                                        Grid.Column="1"
                                        Grid.ColumnSpan="2"
                                        HorizontalAlignment="Stretch"
@@ -127,14 +121,12 @@
                         </ui:MyComboBox>
 
                         <TextBlock Grid.Row="10"
-                                   IsVisible="{Binding ShowGameWindowSize}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Margin="0,0,25,0"
                                    Text="{loc:Loc Setup.Launch.Options.WindowSize.Label}" />
                         <Grid x:Name="PanArgumentWindow"
                               Grid.Row="10"
-                              IsVisible="{Binding ShowGameWindowSize}"
                               Grid.Column="1"
                               Grid.ColumnSpan="2"
                               ColumnDefinitions="*,Auto,Auto,Auto">
@@ -351,16 +343,14 @@
                        IsSwapped="True">
                 <Grid Margin="25,40,25,15"
                       ColumnDefinitions="Auto,*"
-                      RowDefinitions="Auto,9,Auto,9,28,9,28,Auto,Auto,Auto">
+                      RowDefinitions="28,9,Auto,9,28,9,28,Auto,Auto,Auto">
                     <TextBlock Grid.Row="0"
-                               IsVisible="{Binding ShowRendererSelection}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Left"
                                Margin="0,0,25,0"
                                Text="{loc:Loc Setup.Launch.Advanced.Renderer.Label}" />
                     <ui:MyComboBox x:Name="ComboAdvanceRenderer"
                                    Grid.Row="0"
-                                   IsVisible="{Binding ShowRendererSelection}"
                                    Grid.Column="1"
                                    HorizontalAlignment="Stretch"
                                    SelectedIndex="{Binding RendererIndex, Mode=OneWay}"
@@ -449,7 +439,6 @@
                                        Checked="{Binding DisableLF, Mode=TwoWay}"
                                        ToolTip.Tip="{loc:Loc Setup.Launch.Advanced.DisableLF.ToolTip}" />
                         <ui:MyCheckBox x:Name="CheckAdvanceGraphicCard"
-                                       IsVisible="{Binding ShowGpuPreference}"
                                        Height="28"
                                        Text="{loc:Loc Setup.Launch.Advanced.GpuPreference}"
                                        Checked="{Binding SetGpuPreference, Mode=TwoWay}"
@@ -487,31 +476,6 @@
                 </Grid>
             </ui:MyCard>
 
-
-            <ui:MyCard Margin="0,0,0,15"
-                       Title="{loc:Loc Setup.Launch.Behavior.Title}">
-                <StackPanel Margin="25,40,25,15"
-                            Orientation="Vertical">
-                    <ui:MyCheckBox x:Name="CheckCloseToTray"
-                                   Height="28"
-                                   Checked="{Binding CloseToTray, Mode=TwoWay}"
-                                   Text="{loc:Loc Setup.Launch.Behavior.CloseToTray}"
-                                   ToolTip.Tip="{loc:Loc Setup.Launch.Behavior.CloseToTray.ToolTip}" />
-                    <StackPanel Margin="0,14,0,0"
-                                Orientation="Horizontal">
-                        <TextBlock Width="150"
-                                   VerticalAlignment="Center"
-                                   Text="{loc:Loc Setup.Launch.Behavior.AfterLaunch}" />
-                        <ui:MyComboBox x:Name="ComboAfterLaunch"
-                                       MinWidth="180"
-                                       SelectedIndex="{Binding AfterLaunchIndex, Mode=TwoWay}">
-                            <ui:MyComboBoxItem Content="{loc:Loc Setup.Launch.Behavior.AfterLaunch.Keep}" />
-                            <ui:MyComboBoxItem Content="{loc:Loc Setup.Launch.Behavior.AfterLaunch.Minimize}" />
-                            <ui:MyComboBoxItem Content="{loc:Loc Setup.Launch.Behavior.AfterLaunch.Hide}" />
-                        </ui:MyComboBox>
-                    </StackPanel>
-                </StackPanel>
-            </ui:MyCard>
             <ui:MyExtraTextButton x:Name="BtnSwitch"
                                   Margin="0,-5,0,15"
                                   HorizontalAlignment="Center"

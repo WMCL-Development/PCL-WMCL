@@ -60,7 +60,6 @@ public sealed record PlatformCapabilities : IPlatformCapabilities
         SupportsShortcutIcon = false,
         NativeLibraryExtensions = [".so"],
         SupportsWindowsStoreDependencies = false,
-        UsesWindowsPaths = false,
         SuppressAltMenu = false,
         SupportsDisplayProtocolSelection = false,
         SupportsProcessPriority = false,

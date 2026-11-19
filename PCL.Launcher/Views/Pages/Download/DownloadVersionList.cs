@@ -250,7 +250,6 @@ internal static class DownloadVersionList
 
         if (mode == DownloadVersionListMode.SaveOnly)
         {
-            item.TouchRevealButtons = true;
             item.Buttons = [serverButton, changelogButton];
             item.Click += (_, _) =>
                 _ = DownloadVersionActions.SaveVersionAsync(version, formattedVersion);

@@ -435,10 +435,10 @@ public partial class PageDownloadCompFavoritesViewModel : ViewModelBase
                 [
                     new Loading.LoaderTask<List<string>, List<DownloadFile>>(
                         Lang.Text("Download.Comp.Favorites.LoaderName.QueryInfo"),
-                        async task => task.output = await BuildBatchDownloadFilesAsync(
+                        task => task.output = BuildBatchDownloadFiles(
                             task,
                             projects,
-                            desiredLoader).ConfigureAwait(false))
+                            desiredLoader))
                     {
                         ProgressWeight = 2d
                     },
@@ -847,7 +847,7 @@ public partial class PageDownloadCompFavoritesViewModel : ViewModelBase
         SelectionChanged?.Invoke();
     }
 
-    private static async Task<List<DownloadFile>> BuildBatchDownloadFilesAsync(
+    private static List<DownloadFile> BuildBatchDownloadFiles(
         Loading.LoaderTask<List<string>, List<DownloadFile>> task,
         List<Comp.CompProject> projects,
         Comp.CompLoaderType desiredLoader)

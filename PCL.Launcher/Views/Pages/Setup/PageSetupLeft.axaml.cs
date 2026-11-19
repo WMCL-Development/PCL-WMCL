@@ -100,9 +100,6 @@ public partial class PageSetupLeft : MyPageLeft
     public static void NotifyHiddenSettingChanged()
     {
         HiddenSettingChanged?.Invoke();
-        // 主标签的可见性由同一批配置决定，改完立刻重算。
-        if (MainWindow.Current?.GetTitleBar() is { } titleBar)
-            titleBar.ApplyHiddenPages();
     }
 
     private void BuildItems()

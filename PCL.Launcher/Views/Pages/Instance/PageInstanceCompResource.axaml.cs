@@ -131,7 +131,7 @@ public partial class PageInstanceCompResource
         };
         BtnManageBack.Click += (_, _) => GoBackToParentFolder();
         BtnManageOpen.Click += (_, _) => OpenCurrentFolder();
-        BtnManageInstall.Click += async (_, _) => await InstallFromFilesAsync();
+        BtnManageInstall.Click += (_, _) => InstallFromFiles();
         BtnManageDownload.Click += (_, _) => DownloadNew();
         BtnManageDownload.IsVisible =
             HiddenFeatureState.ForceShow || !Config.Preference.Hide.PageDownload;
@@ -140,7 +140,7 @@ public partial class PageInstanceCompResource
         BtnManageSelectAll.Click += (_, _) => ToggleSelectAll();
         BtnManageInfoExport.Click += (_, _) => _ = ExportInfoAsync();
         BtnHintBack.Click += (_, _) => GoBackToParentFolder();
-        BtnHintInstall.Click += async (_, _) => await InstallFromFilesAsync();
+        BtnHintInstall.Click += (_, _) => InstallFromFiles();
         BtnHintDownload.Click += (_, _) => DownloadNew();
         BtnHintOpen.Click += (_, _) => OpenCurrentFolder();
         BtnSchematicDownloadMod.Click += (_, _) => DownloadNewForSchematic();
@@ -469,56 +469,11 @@ public partial class PageInstanceCompResource
             BtnManageBack.IsVisible = !string.IsNullOrEmpty(_currentFolderPath);
             RefreshFilterTexts();
             RefreshSelectBar();
-            ViewModel.RefreshUpdateSummary();
-            RefreshUpdateBar();
         }
         finally
         {
             _isBuilding = false;
         }
-    }
-
-    /// <summary>更新「可更新 N 项」汇总与「全部更新」按钮的可用状态。</summary>
-    private void RefreshUpdateBar()
-    {
-        if (this.FindControl<TextBlock>("LabUpdateSummary") is { } label)
-        {
-            label.Text = ViewModel.UpdateSummary;
-            label.IsVisible = ViewModel.HasUpdateSummary;
-        }
-
-        if (this.FindControl<MyButton>("BtnUpdateAll") is { } button)
-            button.IsEnabled = ViewModel.CanUpdateAll;
-    }
-
-    private async void UpdateAll_OnClick(object? sender, PointerReleasedEventArgs? e)
-    {
-        // 先让用户逐项确认要更新哪些资源，避免一键更新把不想动的也换掉。
-        var items = ViewModel.BuildUpdateReviewItems();
-        if (items.Count == 0)
-        {
-            await ViewModel.UpdateAllAsync();
-            ViewModel.RefreshUpdateSummary();
-            RefreshUpdateBar();
-            return;
-        }
-
-        ResourceUpdateReviewPanel? panel = null;
-        await PCL.Core.UI.Dialogs.DialogService.Instance.ShowAsync(
-            new PCL.UI.Dialogs.ContentDialogRequest
-            {
-                Title = Lang.Text("Instance.Comp.Update.Review.Title"),
-                Buttons = PCL.Core.UI.Dialogs.DialogButtons.OkCancel,
-                ContentFactory = () => panel = new ResourceUpdateReviewPanel(items)
-            });
-
-        if (panel is null) return;
-        var selected = panel.GetSelectedPaths();
-        if (selected.Count == 0) return;
-
-        await ViewModel.UpdateReviewedAsync(selected);
-        ViewModel.RefreshUpdateSummary();
-        RefreshUpdateBar();
     }
 
     private void RefreshFilterTexts()

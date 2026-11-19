@@ -157,7 +157,7 @@ public static class Basics
     /// <summary>用系统默认程序打开链接。</summary>
     public static void OpenUrl(string url)
     {
-        PlatformRuntime.Current.Shell.OpenUrl(url);
+        ApplicationRuntime.Current.Platform.Shell.OpenUrl(url);
     }
 
     public static void OpenPath(string path, string? workingDirectory = null)

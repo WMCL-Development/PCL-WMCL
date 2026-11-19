@@ -615,7 +615,7 @@ public class MyCard : Grid
     private bool _IsInHeader(double positionY)
     {
         return positionY <= (IsSwapped ? SwapedHeight : SwapedHeight - 6d)
-            && !(positionY == 0d && !this.IsHoveredState());
+            && !(positionY == 0d && !IsPointerOver);
     }
 
     private bool _isCommandRunning;
@@ -734,7 +734,7 @@ public class MyCard : Grid
     /// <summary>标题与折叠箭头的颜色：悬停时为强调色，其余情况跟随主题文本色。 悬停与主题切换调用同一段逻辑，后发起的过渡会接管正在进行的过渡。</summary>
     private void AnimateTitleColors(bool animate)
     {
-        var hover = this.IsHoveredState() && HasMouseAnimation;
+        var hover = IsPointerOver && HasMouseAnimation;
         var brush = ContainerTheme.Brush(
             this,
             hover ? "ColorBrush2" : "ColorBrush1",

@@ -2,7 +2,6 @@ using PCL.Core.App.Localization;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.ViewModel;
 using PCL.Navigation;
-using PCL.Views.Shell;
 
 namespace PCL;
 

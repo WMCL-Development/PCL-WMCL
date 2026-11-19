@@ -217,36 +217,6 @@
                     </Grid>
                 </StackPanel>
             </ui:MyCard>
-
-            <ui:MyCard Margin="0,0,0,15"
-                       Title="{loc:Loc Setup.Misc.Niri.Title}">
-                <StackPanel Margin="25,40,25,15"
-                            Orientation="Vertical">
-                    <TextBlock Margin="0,0,0,8"
-                               FontSize="12"
-                               Opacity="0.7"
-                               TextWrapping="Wrap"
-                               Text="{loc:Loc Setup.Misc.Niri.Hint}" />
-                    <TextBlock Margin="0,0,0,8"
-                               FontSize="12"
-                               Opacity="0.55"
-                               TextWrapping="Wrap"
-                               Text="{Binding NiriConfigPath}" />
-                    <WrapPanel>
-                        <ui:MyButton x:Name="BtnApplyNiriRule"
-                                     MinWidth="140"
-                                     Padding="13,0"
-                                     Margin="0,0,12,8"
-                                     Command="{Binding ApplyNiriRuleCommand}"
-                                     Text="{loc:Loc Setup.Misc.Niri.Apply}" />
-                    </WrapPanel>
-                    <TextBlock Margin="0,4,0,0"
-                               FontSize="12"
-                               Opacity="0.75"
-                               TextWrapping="Wrap"
-                               Text="{Binding NiriStatus}" />
-                </StackPanel>
-            </ui:MyCard>
         </StackPanel>
     </ui:MyScrollViewer>
 </ui:MyPageRight>

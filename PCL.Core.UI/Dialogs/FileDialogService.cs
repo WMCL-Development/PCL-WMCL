@@ -167,68 +167,17 @@ public class FileDialogService : IFileDialogService
 
     protected static IStorageProvider? GetStorageProvider()
     {
-        // 桌面：取主窗口的存储提供器。
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            var window = desktop.MainWindow ?? desktop.Windows.FirstOrDefault();
-            return window is null ? null : TopLevel.GetTopLevel(window)?.StorageProvider;
-        }
-
-        // 单视图平台（Android）：没有窗口，直接从视图的 TopLevel 取。
-        if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView
-            && singleView.MainView is Control mainView)
-            return TopLevel.GetTopLevel(mainView)?.StorageProvider;
-
-        return null;
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime
+            lifetime)
+            return null;
+        var window = lifetime.MainWindow ?? lifetime.Windows.FirstOrDefault();
+        return window is null ? null : TopLevel.GetTopLevel(window)?.StorageProvider;
     }
 
     private static string? GetLocalPath(IStorageItem? item)
     {
         var uri = item?.Path;
-        if (uri is null || !uri.IsAbsoluteUri) return null;
-        if (uri.Scheme == "file") return uri.LocalPath;
-
-        // Android SAF：把 content:// 的文档 ID 还原成真实路径（能还原时）。
-        return uri.Scheme == "content" ? TryResolveSafPath(uri) : null;
-    }
-
-    /// <summary>
-    ///     解析 SAF 的 tree/document URI：
-    ///     content://com.android.externalstorage.documents/tree/primary%3AMinecraft%2F.minecraft
-    ///     → /storage/emulated/0/Minecraft/.minecraft
-    /// </summary>
-    private static string? TryResolveSafPath(Uri uri)
-    {
-        try
-        {
-            var text = Uri.UnescapeDataString(uri.ToString());
-            var marker = text.IndexOf("/tree/", StringComparison.Ordinal);
-            if (marker < 0) marker = text.IndexOf("/document/", StringComparison.Ordinal);
-            if (marker < 0) return null;
-
-            var documentId = text[(marker + 6)..];
-            var slash = documentId.IndexOf('/');
-            if (slash >= 0 && text.Contains("/tree/", StringComparison.Ordinal))
-                documentId = documentId[..slash];
-
-            var colon = documentId.IndexOf(':');
-            if (colon <= 0) return null;
-
-            var volume = documentId[..colon];
-            var relative = documentId[(colon + 1)..].Replace('/', Path.DirectorySeparatorChar);
-            var root = volume.Equals("primary", StringComparison.OrdinalIgnoreCase)
-                ? "/storage/emulated/0"
-                : "/storage/" + volume;
-            var full = Path.Combine(root, relative);
-            // 不做存在性检查：Android 11+ 的分区存储可能不允许直接 stat 共享目录，
-            // 但后续读写仍可通过同一路径完成（应用已获得该目录的 SAF 授权）。
-            LogWrapper.Info("Dialog", $"SAF 路径还原：{documentId} → {full}");
-            return full;
-        }
-        catch
-        {
-            return null;
-        }
+        return uri is { IsAbsoluteUri: true, Scheme: "file" } ? uri.LocalPath : null;
     }
 
     private static async Task<IStorageFolder?> TryGetFolderAsync(

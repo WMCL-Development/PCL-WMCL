@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using System.Globalization;
 using Avalonia.Controls;
 using PCL.Core.App;

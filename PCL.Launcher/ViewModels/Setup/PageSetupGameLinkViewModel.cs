@@ -1,4 +1,3 @@
-using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PCL.Core.App;
 using PCL.Core.App.Configuration;
@@ -12,12 +11,6 @@ namespace PCL;
 /// <summary>设置页面中「联机」页的视图模型。</summary>
 public partial class PageSetupGameLinkViewModel : ViewModelBase
 {
-
-    public PageSetupGameLinkViewModel()
-    {
-        LoadAstralRelays();
-    }
-
     [ObservableProperty] private bool _enableCliOutput = Config.Link.EnableCliOutput;
 
     [ObservableProperty] private bool _enableIPv6 = Config.Link.EnableIPv6;

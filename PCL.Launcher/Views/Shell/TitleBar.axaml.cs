@@ -47,10 +47,6 @@ public partial class TitleBar : UserControl
             ThemeService.ColorThemeChanged -= _OnColorThemeChanged;
             ThemeService.ColorModeChanged -= _OnColorModeChanged;
         };
-        HiddenFeatureState.Changed += OnHiddenFeatureChanged;
-        ApplyHiddenPages();
-        DetachedFromVisualTree += (_, _) => HiddenFeatureState.Changed -= OnHiddenFeatureChanged;
-
     }
 
     private bool CanAnimateShell =>

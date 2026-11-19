@@ -7,25 +7,7 @@
                 x:DataType="vm:PageToolsGameLinkViewModel"
                 x:CompileBindings="True"
                 x:Class="PCL.Views.Pages.Tools.PageToolsGameLink">
-    <Grid RowDefinitions="Auto,*">
-        <StackPanel Grid.Row="0"
-                    Margin="20,6,20,0"
-                    HorizontalAlignment="Right"
-                    Orientation="Horizontal">
-            <TextBlock x:Name="LabMode"
-                       Margin="0,0,12,0"
-                       VerticalAlignment="Center"
-                       Opacity="0.6"
-                       FontSize="12"
-                       Text="{loc:Loc Tools.GameLink.Mode.Lobby}" />
-            <ui:MyButton x:Name="BtnModeSwitch"
-                         MinWidth="150"
-                         Padding="13,6"
-                         Text="{loc:Loc Tools.GameLink.Mode.ToAstral}" />
-        </StackPanel>
-
-        <Grid Grid.Row="1" x:Name="PanMain">
-        <Grid x:Name="PanLobby">
+    <Grid>
         <Grid x:Name="PanLoad"
               IsVisible="{Binding ShowLoader}">
             <ui:MyCard x:Name="CardLoad"
@@ -221,10 +203,6 @@
                                              IsEnabled="{Binding JoinEnabled}"
                                              Text="{loc:Loc Tools.GameLink.Join.Action}" />
                             </Grid>
-                            <TextBlock Margin="10,4,10,0"
-                                       FontSize="12"
-                                       Opacity="0.7"
-                                       Text="{Binding JoinCodeKindText}" />
                         </StackPanel>
                     </ui:MyCard>
 
@@ -471,104 +449,9 @@
                             <ui:MyTextButton x:Name="BtnLinkPysio"
                                              Text="Pysio's Home" />
                         </StackPanel>
-            
-
-        </StackPanel>
+                    </StackPanel>
                 </ui:MyCard>
             </Grid>
         </ui:MyScrollViewer>
-        </Grid>
-
-        <ui:MyScrollViewer x:Name="PanDirect"
-                           IsVisible="False"
-                           HorizontalScrollBarVisibility="Disabled"
-                           VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="10">
-                <ui:MyCard x:Name="CardDirect"
-                       Margin="0,0,0,15"
-                       Title="{loc:Loc Tools.GameLink.Direct.Title}">
-                <StackPanel Margin="25,40,25,15">
-                    <TextBlock Margin="0,0,0,10"
-                               FontSize="12"
-                               Opacity="0.7"
-                               TextWrapping="Wrap"
-                               Text="{loc:Loc Tools.GameLink.Direct.Hint}" />
-                    <Grid ColumnDefinitions="120,*" Margin="0,0,0,8">
-                        <TextBlock VerticalAlignment="Center" Text="{loc:Loc Tools.GameLink.Direct.Network}" />
-                        <ui:MyTextBox Grid.Column="1"
-                                      Text="{Binding DirectNetworkName, Mode=TwoWay}"
-                                      Watermark="pcl-myroom" />
-                    </Grid>
-                    <Grid ColumnDefinitions="120,*" Margin="0,0,0,8">
-                        <TextBlock VerticalAlignment="Center" Text="{loc:Loc Tools.GameLink.Direct.Secret}" />
-                        <ui:MyTextBox Grid.Column="1"
-                                      Text="{Binding DirectNetworkSecret, Mode=TwoWay}"
-                                      Watermark="{loc:Loc Tools.GameLink.Direct.Secret.Watermark}" />
-                    </Grid>
-                    <Grid ColumnDefinitions="120,*" Margin="0,0,0,10">
-                        <TextBlock VerticalAlignment="Center" Text="{loc:Loc Tools.GameLink.Direct.Peers}" />
-                        <ui:MyTextBox Grid.Column="1"
-                                      Text="{Binding DirectPeers, Mode=TwoWay}"
-                                      Watermark="例如 tcp://game.udad.top:61123" />
-                    </Grid>
-                    <Grid ColumnDefinitions="120,*" Margin="0,0,0,8">
-                        <TextBlock VerticalAlignment="Center" Text="房主虚拟 IP" />
-                        <ui:MyTextBox Grid.Column="1"
-                                      Text="{Binding DirectHostIp, Mode=TwoWay}"
-                                      Watermark="10.126.126.1（无虚拟网卡时填，用于端口转发）" />
-                    </Grid>
-                    <Grid ColumnDefinitions="120,*" Margin="0,0,0,10">
-                        <TextBlock VerticalAlignment="Center" Text="本地端口" />
-                        <ui:MyTextBox Grid.Column="1"
-                                      Text="{Binding DirectLocalPort, Mode=TwoWay}"
-                                      Watermark="25565" />
-                    </Grid>
-                    <WrapPanel>
-                        <ui:MyButton MinWidth="110"
-                                     Padding="13,0"
-                                     Margin="0,0,12,0"
-                                     Command="{Binding StartDirectCommand}"
-                                     Text="{loc:Loc Tools.GameLink.Direct.Start}" />
-                        <ui:MyButton MinWidth="110"
-                                     Padding="13,0"
-                                     Command="{Binding StopDirectCommand}"
-                                     Text="{loc:Loc Tools.GameLink.Direct.Stop}" />
-                    </WrapPanel>
-                    <TextBlock Margin="0,8,0,0"
-                               FontSize="12"
-                               Opacity="0.7"
-                               TextWrapping="Wrap"
-                               Text="{Binding DirectStatus}" />
-                </StackPanel>
-                </ui:MyCard>
-
-                <ui:MyCard x:Name="CardDirectMembers"
-                           Margin="0,0,0,15"
-                           Title="房间成员"
-                           IsVisible="{Binding HasDirectMembers}">
-                    <ItemsControl Margin="25,40,21,15"
-                                  ItemsSource="{Binding DirectMembers}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="0,0,0,6">
-                                    <TextBlock Text="{Binding Name}" />
-                                    <TextBlock FontSize="11"
-                                               Opacity="0.6"
-                                               Text="{Binding Summary}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ui:MyCard>
-            </StackPanel>
-        </ui:MyScrollViewer>
-
-        <tools:PageToolsTerracotta x:Name="PanTerracotta"
-                                  IsVisible="False"
-                                  Margin="10" />
-
-        <tools:PageToolsAstral x:Name="PanAstral"
-                               IsVisible="False" />
-        </Grid>
     </Grid>
 </ui:MyPageRight>

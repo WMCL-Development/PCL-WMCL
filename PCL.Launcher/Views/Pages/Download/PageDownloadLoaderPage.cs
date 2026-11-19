@@ -529,12 +529,12 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
             changelogButton.Click += (_, _) =>
                 LauncherUi.Interaction?.OpenWebsite("https://www.labymod.net/zh_Hans/download");
             item.Buttons = [saveButton, changelogButton];
-            item.Click += async (_, _) => await SaveLabyModAsync(isSnapshot);
+            item.Click += (_, _) => SaveLabyMod(isSnapshot);
             _panVersions.Children.Add(item);
         }
     }
 
-    internal static async Task SaveLabyModAsync(bool isSnapshot)
+    internal static void SaveLabyMod(bool isSnapshot)
     {
         _ = SaveInstallerAsync(
             [
@@ -740,11 +740,11 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
         changelogButton.Click += (_, _) => LauncherUi.Interaction?.OpenWebsite(
             $"https://files.minecraftforge.net/maven/net/minecraftforge/forge/{entry.Inherit}-{entry.VersionName}/forge-{entry.Inherit}-{entry.VersionName}-changelog.txt");
         item.Buttons = [changelogButton];
-        item.Click += async (_, _) => await SaveForgelikeAsync(entry);
+        item.Click += (_, _) => SaveForgelike(entry);
         target.Children.Add(item);
     }
 
-    internal static async Task SaveForgelikeAsync(GameDownload.DlForgeVersionEntry entry)
+    internal static void SaveForgelike(GameDownload.DlForgeVersionEntry entry)
     {
         var inherit = entry.Inherit.Replace("-", "_");
         var fileName =
@@ -934,7 +934,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
                 LauncherUi.Interaction?.OpenWebsite(url);
         };
         item.Buttons = [changelogButton];
-        item.Click += async (_, _) => await SaveForgelikeEntryAsync(entry);
+        item.Click += (_, _) => SaveForgelikeEntry(entry);
         target.Children.Add(item);
     }
 
@@ -948,7 +948,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
         };
     }
 
-    internal static async Task SaveForgelikeEntryAsync(GameDownload.DlForgelikeEntry entry)
+    internal static void SaveForgelikeEntry(GameDownload.DlForgelikeEntry entry)
     {
         switch (entry)
         {
@@ -1100,11 +1100,11 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
         changelogButton.Click += (_, _) => LauncherUi.Interaction?.OpenWebsite(
             $"https://optifine.net/changelog?f={entry.NameFile}");
         item.Buttons = [changelogButton];
-        item.Click += async (_, _) => await SaveOptiFineAsync(entry);
+        item.Click += (_, _) => SaveOptiFine(entry);
         target.Children.Add(item);
     }
 
-    internal static async Task SaveOptiFineAsync(GameDownload.DlOptiFineListEntry entry)
+    internal static void SaveOptiFine(GameDownload.DlOptiFineListEntry entry)
     {
         var inherit = entry.Inherit ?? string.Empty;
         var displayName = entry.DisplayName ?? string.Empty;
@@ -1235,11 +1235,11 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
             item.Buttons = [listButton];
         }
 
-        item.Click += async (_, _) => await SaveLiteLoaderAsync(entry);
+        item.Click += (_, _) => SaveLiteLoader(entry);
         target.Children.Add(item);
     }
 
-    internal static async Task SaveLiteLoaderAsync(GameDownload.DlLiteLoaderListEntry entry)
+    internal static void SaveLiteLoader(GameDownload.DlLiteLoaderListEntry entry)
     {
         _ = SaveInstallerAsync(
             GetLiteLoaderUrls(entry),

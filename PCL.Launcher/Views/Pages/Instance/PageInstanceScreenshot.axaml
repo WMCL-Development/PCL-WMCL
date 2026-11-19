@@ -105,29 +105,6 @@
             </Grid>
         </ui:MyScrollViewer>
 
-        <!-- 大图查看器：点击缩略图时在页内放大显示。 -->
-        <Border x:Name="PanViewer"
-                IsVisible="False"
-                Background="#88000000">
-            <Grid Margin="24" RowDefinitions="Auto,*">
-                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                    <TextBlock x:Name="LabViewerName"
-                               VerticalAlignment="Center"
-                               Foreground="White"
-                               FontSize="14" />
-                    <ui:MyButton x:Name="BtnViewerClose"
-                                 Grid.Column="1"
-                                 MinWidth="80"
-                                 Padding="13,0"
-                                 Text="{loc:Loc Common.Action.Close}" />
-                </Grid>
-                <Image x:Name="ImgViewer"
-                       Grid.Row="1"
-                       Stretch="Uniform"
-                       RenderOptions.BitmapInterpolationMode="HighQuality" />
-            </Grid>
-        </Border>
-
         <ui:MyCard x:Name="PanLoad"
                    Margin="40,50"
                    HorizontalAlignment="Center"

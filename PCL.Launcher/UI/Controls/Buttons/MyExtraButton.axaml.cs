@@ -71,7 +71,6 @@ public partial class MyExtraButton : Grid
         Tooltip.Enable();
 
         PanProgress.Clip = _rectProgress;
-        TouchRightClick.Subscribe(this, OnTouchRightClick);
         PanClick.PointerPressed += _OnPointerPressed;
         PanClick.PointerReleased += _OnPointerReleased;
         PanClick.PointerEntered += (_, _) => RefreshColor();
@@ -186,7 +185,7 @@ public partial class MyExtraButton : Grid
 
         var key = !IsEnabled
             ? "ColorBrushGray4"
-            : this.IsHoveredState()
+            : IsPointerOver
                 ? "ColorBrush4"
                 : "ColorBrush3";
 
@@ -195,7 +194,7 @@ public partial class MyExtraButton : Grid
             Border.BackgroundProperty,
             key,
             null,
-            !IsEnabled || this.IsHoveredState() ? AnimationColorIn : AnimationColorOut,
+            !IsEnabled || IsPointerOver ? AnimationColorIn : AnimationColorOut,
             true,
             ColorKey);
     }
@@ -406,14 +405,6 @@ public partial class MyExtraButton : Grid
     private void _StopAnimations()
     {
         ExtraButtonInteraction.StopAnimations(ScaleKey, MainScaleKey, ColorKey);
-    }
-
-    /// <summary>触屏：长按等同右键。</summary>
-    private void OnTouchRightClick()
-    {
-        if (!CanRightClick) return;
-        _StartScaleAnimation(0.85d, -0.05d);
-        Focus();
     }
 
     private void _OnPointerPressed(object? sender, PointerPressedEventArgs e)

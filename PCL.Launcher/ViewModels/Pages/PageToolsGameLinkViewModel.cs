@@ -1440,14 +1440,6 @@ public partial class PageToolsGameLinkViewModel : ViewModelBase
     public async Task JoinLobbyAsync()
     {
         var code = JoinCode.Trim();
-
-        // 联机大厅只处理 PCL CE 大厅编号，陶瓦编号请到「陶瓦联机」页使用
-        if (LobbyInfoProvider.ParseCode(code, allowTerracotta: false) is null
-            && LobbyInfoProvider.ParseCode(code)?.Type == LobbyInfoProvider.LobbyType.Terracotta)
-        {
-            HintService.Show(Hints.Warning(Lang.Text("Tools.GameLink.Join.TerracottaNotSupported")));
-            return;
-        }
         if (string.IsNullOrWhiteSpace(code))
         {
             HintService.Show(Hints.Info(Lang.Text("Tools.GameLink.Join.InvalidText")));
@@ -2201,6 +2193,90 @@ public partial class PageToolsGameLinkViewModel : ViewModelBase
 
     #endregion
 
+    #region 协议
+
+    public void AgreeEula()
+    {
+        try
+        {
+            States.Link.LinkEula = true;
+            _forceEulaPage = false;
+        }
+        catch (Exception ex)
+        {
+            _forceEulaPage = true;
+            LogWrapper.Error(ex, "Link", "写入大厅协议同意状态失败");
+            HintService.Show(Hints.Error(ex.Message));
+        }
+
+        RefreshLayout();
+    }
+
+    public async Task RevokeEulaAsync()
+    {
+        if (Interlocked.Exchange(ref _eulaBusy, 1) == 1)
+            return;
+
+        try
+        {
+            RefreshLayout();
+            var result = await Dialog
+                .ShowAsync(
+                    new TextDialogRequest
+                    {
+                        Title = Lang.Text("Tools.GameLink.Eula.RevokeTitle"),
+                        Content = Lang.Text("Tools.GameLink.Eula.RevokeConfirm"),
+                        Buttons = DialogButtons.OkCancel,
+                        IsWarn = true
+                    })
+                .ConfigureAwait(true);
+            if (!result.IsConfirmed)
+                return;
+
+            _forceEulaPage = true;
+            try
+            {
+                if (LobbyService.CurrentState == LobbyState.Connected)
+                    await LobbyService.LeaveLobbyAsync().ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                LogWrapper.Error(ex, "Link", "撤销协议时退出大厅失败");
+                HintService.Show(Hints.Error(Lang.Text("Tools.GameLink.Error.ServerExit")));
+            }
+
+            ClearNaidSession();
+            try
+            {
+                States.Link.LinkEula = false;
+            }
+            catch (Exception ex)
+            {
+                LogWrapper.Error(ex, "Link", "写入大厅协议撤销状态失败");
+                HintService.Show(Hints.Error(ex.Message));
+            }
+
+            HintService.Show(Hints.Info(Lang.Text("Tools.GameLink.Eula.Disabled")));
+            RunOnUi(() =>
+            {
+                ClearFinishState();
+                UpdateAccountDisplay();
+                RefreshLayout();
+            });
+        }
+        catch (Exception ex)
+        {
+            LogWrapper.Error(ex, "Link", "撤销大厅协议失败");
+            HintService.Show(Hints.Error(ex.Message));
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _eulaBusy, 0);
+            RunOnUi(RefreshLayout);
+        }
+    }
+
+    #endregion
 }
 
 /// <summary>世界下拉框中的一项，保留原始端口以便创建大厅。</summary>

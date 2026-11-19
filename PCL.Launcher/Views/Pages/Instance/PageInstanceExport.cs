@@ -71,8 +71,8 @@ public partial class PageInstanceExport : MyPageRight, IRefreshable
             ViewModel.Modrinth = CheckAdvancedModrinth.Checked == true;
             SyncOptionsAndAdvanced();
         };
-        BtnAdvancedImport.Click += async (_, _) => await ImportConfigAsync();
-        BtnAdvancedExport.Click += async (_, _) => await ExportConfigAsync();
+        BtnAdvancedImport.Click += (_, _) => ImportConfig();
+        BtnAdvancedExport.Click += (_, _) => ExportConfig();
 
         DragDrop.SetAllowDrop(this, true);
         DragDrop.AddDragOverHandler(this, OnDragOver);

@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.VisualTree;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -56,14 +55,6 @@ public sealed class DialogPresenter : IDialogPresenter
         get
         {
             var window = _window ?? _GetMainWindow();
-            if (window is null)
-                return _layerOnly
-                       && _layer is not null
-                       && _host is not null
-                       && _windows.Count == 0
-                       && _dialogs.Count == 0
-                       && !_releasing;
-
             return window is { IsVisible: true }
                 && window.WindowState != WindowState.Minimized
                 && _windows.Count == 0
@@ -86,23 +77,6 @@ public sealed class DialogPresenter : IDialogPresenter
         var owner = _window ?? _GetMainWindow();
         if (owner is null)
         {
-            // 无窗口平台：直接渲染到遮罩层，不创建独立窗口。
-            if (_layerOnly && _layer is { } layerOnly && _host is { } hostOnly)
-            {
-                try
-                {
-                    _PresentInLayer(layerOnly, hostOnly, dialog);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"[UI] 弹窗显示失败：{ex}");
-                    _Discard(dialog);
-                    dialog.Close(DialogResult.None);
-                }
-
-                return;
-            }
-
             ShowFallback(dialog);
             return;
         }
@@ -205,39 +179,6 @@ public sealed class DialogPresenter : IDialogPresenter
         window.Closed += _OnMainWindowClosed;
     }
 
-    /// <summary>
-    ///     仅绑定遮罩层，供没有窗口的平台使用（Android 单视图宿主）。
-    ///     弹窗直接渲染在层内，不创建独立窗口。
-    /// </summary>
-    public void Attach(Panel layer)
-    {
-        if (!Dispatcher.UIThread.CheckAccess())
-        {
-            Dispatcher.UIThread.Post(() => Attach(layer));
-            return;
-        }
-
-        if (_window is null && _layerOnly && ReferenceEquals(_layer, layer)) return;
-
-        _Detach();
-        _layerOnly = true;
-        _layer = layer;
-        // 代码创建的层没有 NameScope，FindControl 会抛「Could not find parent name scope」，
-        // 这里直接按名称遍历可视树。
-        _host = FindByName<Panel>(layer, DialogHostName);
-        _mask = FindByName<Border>(layer, "BorDialogMask");
-        if (_mask is not null)
-            _mask.PointerPressed += _maskDragHandler ??= (_, _) => { };
-
-        KeyboardNavigation.SetTabNavigation(layer, KeyboardNavigationMode.Cycle);
-    }
-
-    private static T? FindByName<T>(Visual root, string name) where T : Control
-    {
-        if (root is T self && self.Name == name) return self;
-        return root.GetVisualDescendants().OfType<T>().FirstOrDefault(control => control.Name == name);
-    }
-
     private static MyMsgDialogBase CreateDialogView(DialogViewModel dialog)
     {
         return dialog.Kind switch
@@ -248,7 +189,6 @@ public sealed class DialogPresenter : IDialogPresenter
             DialogKind.Select => new MyMsgSelect(dialog),
             DialogKind.AuthServer => new MyMsgAuthServer(dialog),
             DialogKind.Login => new MyMsgLogin(dialog),
-            DialogKind.Content => new MyMsgContent(dialog),
             _ => new MyMsgText(dialog)
         };
     }
@@ -597,7 +537,6 @@ public sealed class DialogPresenter : IDialogPresenter
             _window.Closed -= _OnMainWindowClosed;
 
         _window = null;
-        _layerOnly = false;
         _layer = null;
         _host = null;
         _dialogScroll = null;

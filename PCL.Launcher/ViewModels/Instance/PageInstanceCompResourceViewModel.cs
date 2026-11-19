@@ -897,69 +897,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
                         : Lang.Text("Instance.Resource.Delete.PermanentMultiple", permanent)));
     }
 
-    /// <summary>本次检查的汇总（可更新 N 项 / 已最新 N 项 …），没有可检查项时为空。</summary>
-    [ObservableProperty] private string _updateSummary = string.Empty;
-
-    /// <summary>汇总是否值得显示。</summary>
-    public bool HasUpdateSummary => !string.IsNullOrEmpty(UpdateSummary);
-
-    /// <summary>可一键更新的条目数。</summary>
-    public int ApplicableUpdateCount => Entries.Count(entry => entry is { CanUpdate: true, UpdateFile: not null });
-
-    public bool CanUpdateAll => ApplicableUpdateCount > 0 && !IsLoading;
-
-    /// <summary>用当前列表重建汇总。</summary>
-    public void RefreshUpdateSummary()
-    {
-        try
-        {
-            var report = ModUpdatePlanner.Build(Entries);
-            UpdateSummary = report.Items.Count == 0 ? string.Empty : report.Summary;
-        }
-        catch (Exception exception)
-        {
-            UpdateSummary = string.Empty;
-            LauncherCommon.Log(exception, "生成 Mod 更新汇总失败");
-        }
-
-        OnPropertyChanged(nameof(HasUpdateSummary));
-        OnPropertyChanged(nameof(ApplicableUpdateCount));
-        OnPropertyChanged(nameof(CanUpdateAll));
-    }
-
-    /// <summary>生成更新审阅条目：只列出有可用更新的资源，供窗口逐项勾选。</summary>
-    public IReadOnlyList<ResourceUpdateReviewItem> BuildUpdateReviewItems()
-    {
-        var report = ModUpdatePlanner.Build(Entries);
-        return report.Items
-            .Where(item => item.State == ModUpdateState.UpdateAvailable)
-            .Select(item => new ResourceUpdateReviewItem(
-                item.Name,
-                item.FilePath,
-                item.Description,
-                true))
-            .ToList();
-    }
-
-    /// <summary>按审阅窗口勾选结果执行更新。</summary>
-    public Task UpdateReviewedAsync(IReadOnlyCollection<string> selectedPaths)
-    {
-        var targets = Entries
-            .Where(entry => selectedPaths.Contains(entry.RawPath)
-                && entry is { CanUpdate: true, UpdateFile: not null })
-            .ToList();
-        return UpdateEntriesAsync(targets);
-    }
-
-    /// <summary>更新全部可更新的条目。</summary>
-    public Task UpdateAllAsync()
-    {
-        var targets = Entries
-            .Where(entry => entry is { CanUpdate: true, UpdateFile: not null })
-            .ToList();
-        return UpdateEntriesAsync(targets);
-    }
-
+    [RelayCommand]
     public Task UpdateSelectedAsync()
     {
         var targets = Entries
