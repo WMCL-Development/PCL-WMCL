@@ -63,8 +63,8 @@ public partial class PageInstanceExport : MyPageRight, IRefreshable
             ViewModel.Modrinth = CheckAdvancedModrinth.Checked == true;
             SyncOptionsAndAdvanced();
         };
-        BtnAdvancedImport.Click += (_, _) => ImportConfig();
-        BtnAdvancedExport.Click += (_, _) => ExportConfig();
+        BtnAdvancedImport.Click += async (_, _) => await ImportConfigAsync();
+        BtnAdvancedExport.Click += async (_, _) => await ExportConfigAsync();
 
         DragDrop.SetAllowDrop(this, true);
         DragDrop.AddDragOverHandler(this, OnDragOver);
@@ -180,18 +180,18 @@ public partial class PageInstanceExport : MyPageRight, IRefreshable
         SyncOptionsAndAdvanced();
     }
 
-    private void ImportConfig()
+    private async Task ImportConfigAsync()
     {
-        if (ViewModel.ImportConfig())
+        if (await ViewModel.ImportConfigAsync())
         {
             BuildOptionTree();
             SyncUiFromViewModel();
         }
     }
 
-    private void ExportConfig()
+    private async Task ExportConfigAsync()
     {
-        ViewModel.ExportConfig();
+        await ViewModel.ExportConfigAsync();
     }
 
     private static string? GetSingleTxtFile(DragEventArgs e)
