@@ -81,6 +81,26 @@ public sealed class WmclPageModule : IPageModule
             [],
             [],
             (sp, _) => ActivatorUtilities.CreateInstance<PageLaunchSkinEditorHost>(sp)),
+        new(
+            PageIds.Collection,
+            "Tools.Test.Lottery.CollectionHeader",
+            null,
+            null,
+            0d,
+            null,
+            [],
+            [],
+            (sp, _) => ActivatorUtilities.CreateInstance<CollectionHost>(sp)),
+        new(
+            PageIds.ItemPicker,
+            "Tools.Test.Achievement.Pick",
+            null,
+            null,
+            0d,
+            null,
+            [],
+            [],
+            (sp, _) => ActivatorUtilities.CreateInstance<ItemPickerHost>(sp)),
     ];
 
     public IReadOnlyList<MainTabDescriptor> MainTabs { get; } =

@@ -6,10 +6,19 @@ namespace PCL.Core.UI;
 /// <summary>Avalonia UI 服务注册。</summary>
 public static class AvaloniaUiServiceRegistration
 {
+    /// <summary>UI 服务由组合根注入（Android 等非桌面平台使用）。</summary>
+    public static Action<IServiceCollection>? CustomRegistration { get; set; }
+
     public static IServiceCollection AddAvaloniaUi(
         this IServiceCollection services,
         PlatformKind kind)
     {
+        if (CustomRegistration is { } custom)
+        {
+            custom(services);
+            return services;
+        }
+
         services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<IFileDialogService>(provider => kind switch

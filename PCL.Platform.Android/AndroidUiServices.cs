@@ -56,3 +56,42 @@ public sealed class AndroidNotificationService : ISystemNotificationService
         manager.Notify(Environment.TickCount, builder.Build());
     }
 }
+
+/// <summary>Android Shell：用系统 Intent 打开链接或文件。</summary>
+public sealed class AndroidShellLauncher : IShellLauncher
+{
+    public void OpenPath(string path, string? workingDirectory = null, string? arguments = null)
+    {
+        try
+        {
+            var context = global::Android.App.Application.Context;
+            var file = new global::Java.IO.File(path);
+            var uri = global::Android.Net.Uri.FromFile(file);
+            var intent = new global::Android.Content.Intent(global::Android.Content.Intent.ActionView, uri);
+            intent.AddFlags(global::Android.Content.ActivityFlags.NewTask);
+            intent.AddFlags(global::Android.Content.ActivityFlags.GrantReadUriPermission);
+            context.StartActivity(intent);
+        }
+        catch (Exception exception)
+        {
+            PCL.Core.Logging.LogWrapper.Warn("Shell", "打开路径失败：" + exception.Message);
+        }
+    }
+
+    public void OpenUrl(string url)
+    {
+        try
+        {
+            var context = global::Android.App.Application.Context;
+            var uri = global::Android.Net.Uri.Parse(url)!;
+            var intent = new global::Android.Content.Intent(global::Android.Content.Intent.ActionView, uri);
+            intent.AddFlags(global::Android.Content.ActivityFlags.NewTask);
+            context.StartActivity(intent);
+        }
+        catch (Exception exception)
+        {
+            PCL.Core.Logging.LogWrapper.Warn("Shell", "打开链接失败：" + exception.Message);
+        }
+    }
+}
+

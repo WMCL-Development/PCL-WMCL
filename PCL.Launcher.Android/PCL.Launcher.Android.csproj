@@ -48,7 +48,7 @@
         <!-- 直接复用桌面端 UI：页面、视图模型与样式都来自 PCL.Launcher。
              桌面端是 Exe，不能作为工程引用，这里直接引用其产物程序集。 -->
         <Reference Include="PCL.Launcher">
-            <HintPath>..\PCL.Launcher\bin\Debug\net11.0\PCL.Launcher.dll</HintPath>
+            <HintPath>..\PCL.Launcher\bin\Debug\net10.0\PCL.Launcher.dll</HintPath>
             <Private>true</Private>
         </Reference>
     </ItemGroup>

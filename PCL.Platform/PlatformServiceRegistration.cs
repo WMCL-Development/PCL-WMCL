@@ -6,10 +6,19 @@ namespace PCL.Platform;
 /// <summary>按平台注册 OS 原生服务。</summary>
 public static class PlatformServiceRegistration
 {
+    /// <summary>平台实现由组合根注入（Android 等非桌面平台使用）。</summary>
+    public static Action<IServiceCollection>? CustomRegistration { get; set; }
+
     public static IServiceCollection AddPlatformServices(
         this IServiceCollection services,
         PlatformKind kind)
     {
+        if (CustomRegistration is { } custom)
+        {
+            custom(services);
+            return services;
+        }
+
         services.AddSingleton<IExternalCommandRunner, ExternalCommandRunner>();
         services.AddSingleton<IElevationService, PlatformElevationService>();
         services.AddSingleton<IProcessLauncher, PlatformProcessLauncher>();

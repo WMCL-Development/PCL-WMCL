@@ -22,7 +22,7 @@ public static class AndroidRuntimeSetup
         if (_done) return;
         _done = true;
 
-        Step("platform-ui", AndroidFactories.Register);
+        Step("platform-ui", AndroidComposition.Initialize);
         Step("bootstrap", AndroidBootstrap.Initialize);
         Step("animation", AnimationRegistration.Register);
         Step("dialogs", () =>
@@ -30,7 +30,6 @@ public static class AndroidRuntimeSetup
             DialogPresenter.Install();
             HintPresenter.Install();
         });
-        Step("ui-bridge", UiBridgeRegistration.Register);
         Step("localization", InitLocalization);
 
         Step("easytier", AndroidEasyTierProcess.Register);
