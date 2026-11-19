@@ -1,3 +1,4 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PCL.Core.App;
 using PCL.Core.App.Configuration;
@@ -12,6 +13,32 @@ namespace PCL;
 public partial class PageSetupLaunchViewModel : ViewModelBase
 {
     [ObservableProperty] private bool _checkAdvanceRunWaitVisible;
+
+    // 各项设置按平台实际能力决定是否显示（能力位定义在 PlatformCapabilities）：
+    // Windows 全支持；Linux 不支持进程优先级/独显偏好；macOS 额外不支持窗口标题/渲染器；Android 全部隐藏。
+    [ObservableProperty]
+    private bool _showProcessPriority = _Capability(c => c.SupportsProcessPriority);
+
+    [ObservableProperty]
+    private bool _showGameWindowTitle = _Capability(c => c.SupportsGameWindowTitle);
+
+    [ObservableProperty]
+    private bool _showGameWindowSize = _Capability(c => c.SupportsGameWindowSize);
+
+    [ObservableProperty]
+    private bool _showLauncherVisibility = _Capability(c => c.SupportsLauncherVisibility);
+
+    [ObservableProperty]
+    private bool _showRendererSelection = _Capability(c => c.SupportsRendererSelection);
+
+    [ObservableProperty]
+    private bool _showGpuPreference = _Capability(c => c.SupportsGpuPreferenceSelection);
+
+    private static bool _Capability(Func<PCL.Core.Platform.IPlatformCapabilities, bool> selector)
+    {
+        return !PCL.Core.Platform.PlatformRuntime.IsInitialized
+               || selector(PCL.Core.Platform.PlatformRuntime.Current.Capabilities);
+    }
 
     [ObservableProperty]
     private int _customInitialMemorySize = Config.Launch.CustomInitialMemorySize;

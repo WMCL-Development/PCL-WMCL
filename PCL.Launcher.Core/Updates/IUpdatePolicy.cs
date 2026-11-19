@@ -19,8 +19,8 @@ public static class UpdatePolicies
         return kind switch
         {
             PlatformKind.Windows => new WindowsUpdatePolicy(),
-            PlatformKind.Linux or PlatformKind.MacOs => new ManualUpdatePolicy(),
-            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+            // 其余平台（Linux/macOS/Android）没有应用内安装能力，一律走手动下载。
+            _ => new ManualUpdatePolicy()
         };
     }
 }

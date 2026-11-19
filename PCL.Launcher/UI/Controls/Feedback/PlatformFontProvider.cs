@@ -10,7 +10,8 @@ internal static class PlatformFontProvider
         PlatformKind.Windows => new WindowsFontProvider(),
         PlatformKind.Linux => new LinuxFontProvider(),
         PlatformKind.MacOs => new MacOsFontProvider(),
-        _ => throw new ArgumentOutOfRangeException()
+        // Android 没有 Bahnschrift 等系统字体，使用内嵌字体链。
+        _ => new LinuxFontProvider()
     };
 }
 

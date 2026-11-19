@@ -74,7 +74,7 @@ public partial class PageInstanceCompResource
         };
         BtnManageBack.Click += (_, _) => GoBackToParentFolder();
         BtnManageOpen.Click += (_, _) => OpenCurrentFolder();
-        BtnManageInstall.Click += (_, _) => InstallFromFiles();
+        BtnManageInstall.Click += async (_, _) => await InstallFromFilesAsync();
         BtnManageDownload.Click += (_, _) => DownloadNew();
         BtnManageDownload.IsVisible =
             HiddenFeatureState.ForceShow || !Config.Preference.Hide.PageDownload;
@@ -83,7 +83,7 @@ public partial class PageInstanceCompResource
         BtnManageSelectAll.Click += (_, _) => ToggleSelectAll();
         BtnManageInfoExport.Click += (_, _) => _ = ExportInfoAsync();
         BtnHintBack.Click += (_, _) => GoBackToParentFolder();
-        BtnHintInstall.Click += (_, _) => InstallFromFiles();
+        BtnHintInstall.Click += async (_, _) => await InstallFromFilesAsync();
         BtnHintDownload.Click += (_, _) => DownloadNew();
         BtnHintOpen.Click += (_, _) => OpenCurrentFolder();
         BtnSchematicDownloadMod.Click += (_, _) => DownloadNewForSchematic();
@@ -1082,7 +1082,7 @@ public partial class PageInstanceCompResource
 
     #region 管理
 
-    private void InstallFromFiles()
+    private async Task InstallFromFilesAsync()
     {
         try
         {
@@ -1101,7 +1101,7 @@ public partial class PageInstanceCompResource
                     "Instance.Resource.Install.FileDialog.Mod.Filter",
                     "Instance.Resource.Install.FileDialog.Mod.Title")
             };
-            var files = SystemDialogs.SelectFiles(
+            var files = await SystemDialogs.SelectFilesAsync(
                 Lang.Text(filterKey),
                 Lang.Text(titleKey));
             if (files.Length != 0)

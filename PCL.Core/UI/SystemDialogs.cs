@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using PCL.Core.Platform;
 
 namespace PCL.Core.UI;
@@ -10,6 +12,85 @@ public static class SystemDialogs
 
     /// <summary>当前平台是否有可用的文件对话框实现。</summary>
     public static bool IsAvailable => Service?.IsAvailable ?? false;
+
+    /// <summary>异步选择文件夹（Android 等单视图平台必须用这个，不能阻塞 UI 线程）。</summary>
+    public static Task<string> SelectFolderAsync(string? title = null, string? initialDirectory = null)
+    {
+        return Service?.SelectFolderAsync(title, initialDirectory) ?? Task.FromResult("");
+    }
+
+    /// <summary>异步选择文件。</summary>
+    public static Task<string> SelectFileAsync(
+        string? fileFilter = null,
+        string? title = null,
+        string? initialDirectory = null)
+    {
+        return Service?.SelectFileAsync(fileFilter, title, initialDirectory) ?? Task.FromResult("");
+    }
+
+    // ---- 后台线程用的同步包装 ----
+    // Android 不支持在 UI 线程上嵌套消息循环，所以这些只能在非 UI 线程调用；
+    // 桌面端行为与原来的同步 API 完全一致。
+
+    /// <summary>在后台线程上同步选择文件夹。</summary>
+    public static string SelectFolderBlocking(string? title = null, string? initialDirectory = null)
+    {
+        return WaitFor(SelectFolderAsync(title, initialDirectory)) ?? "";
+    }
+
+    /// <summary>在后台线程上同步选择文件。</summary>
+    public static string SelectFileBlocking(
+        string? fileFilter = null,
+        string? title = null,
+        string? initialDirectory = null)
+    {
+        return WaitFor(SelectFileAsync(fileFilter, title, initialDirectory)) ?? "";
+    }
+
+    /// <summary>在后台线程上同步多选文件。</summary>
+    public static string[] SelectFilesBlocking(
+        string? fileFilter = null,
+        string? title = null,
+        string? initialDirectory = null,
+        bool allowMultiSelect = true)
+    {
+        return WaitFor(SelectFilesAsync(fileFilter, title, initialDirectory, allowMultiSelect))
+               ?? [];
+    }
+
+    /// <summary>在后台线程上同步选择保存位置。</summary>
+    public static string SelectSaveFileBlocking(
+        string? title,
+        string fileName,
+        string? fileFilter = null,
+        string? initialDirectory = null)
+    {
+        return WaitFor(
+                   SelectSaveFileAsync(title, fileName, fileFilter, initialDirectory))
+               ?? "";
+    }
+
+    /// <summary>异步多选文件。</summary>
+    public static Task<string[]> SelectFilesAsync(
+        string? fileFilter = null,
+        string? title = null,
+        string? initialDirectory = null,
+        bool allowMultiSelect = true)
+    {
+        return Service?.SelectFilesAsync(fileFilter, title, initialDirectory, allowMultiSelect)
+               ?? Task.FromResult<string[]>([]);
+    }
+
+    /// <summary>异步保存文件。</summary>
+    public static Task<string> SelectSaveFileAsync(
+        string? title,
+        string fileName,
+        string? fileFilter = null,
+        string? initialDirectory = null)
+    {
+        return Service?.SelectSaveFileAsync(title, fileName, fileFilter, initialDirectory)
+               ?? Task.FromResult("");
+    }
 
     /// <summary>显示保存文件对话框，要求用户选择保存位置。</summary>
     /// <returns>用户选择的完整文件路径，如果取消或无可用的 UI 实现则返回空字符串。</returns>
@@ -58,5 +139,16 @@ public static class SystemDialogs
     public static string SelectFolder(string? title = null, string? initialDirectory = null)
     {
         return Service?.SelectFolder(title, initialDirectory) ?? "";
+    }
+
+    /// <summary>后台线程上等待异步对话框；UI 线程上直接抛异常（Android 不能嵌套消息循环）。</summary>
+    private static T WaitFor<T>(Task<T> task)
+    {
+        if (!task.IsCompleted
+            && ApplicationRuntime.IsInitialized
+            && ApplicationRuntime.Current.Ui.Dispatcher.CheckAccess())
+            throw new NotSupportedException(
+                "文件对话框不能在 UI 线程同步等待，请改用异步 API。");
+        return task.GetAwaiter().GetResult();
     }
 }

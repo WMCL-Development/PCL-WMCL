@@ -95,6 +95,7 @@ public partial class PageSetupUIViewModel : ViewModelBase
         Config.Preference.UiScalePercent = Math.Clamp(value, 80, 150);
         OnPropertyChanged(nameof(UiScaleOffset));
         if (PCL.Views.MainWindow.Current is { } window) window.ApplyUiScale();
+        PCL.UI.UiScaleNotifier.Notify();
     }
 
     [ObservableProperty] private int _lightColorSelectedIndex = -1;

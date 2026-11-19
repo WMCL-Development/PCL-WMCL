@@ -206,7 +206,7 @@ public partial class PageSelectLeftViewModel : ViewModelBase
 
         try
         {
-            newFolder = SystemDialogs.SelectFolder();
+            newFolder = await SystemDialogs.SelectFolderAsync();
             if (string.IsNullOrEmpty(newFolder))
                 return;
             if (newFolder.Contains('!') || newFolder.Contains(';'))

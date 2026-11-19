@@ -18,7 +18,7 @@ public static class TaskbarProgress
             PlatformKind.Windows => WindowsTaskbarProgress.Instance,
             PlatformKind.Linux => LinuxTaskbarProgress.Instance,
             PlatformKind.MacOs => UnsupportedTaskbarProgressBackend.Instance,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => UnsupportedTaskbarProgressBackend.Instance
         };
 
     internal static Window? MainWindow =>
