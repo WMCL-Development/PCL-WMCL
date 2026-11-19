@@ -107,55 +107,6 @@
                                      Text="{loc:Loc Setup.Ui.Theme.Add}" />
                     </Grid>
 
-                    <Grid x:Name="PanThemeTweakHue"
-                          Margin="0,0,0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"
-                                              SharedSizeGroup="Name1" />
-                            <ColumnDefinition Width="1*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
-                                   Margin="0,0,20,0"
-                                   Text="{loc:Loc Setup.Ui.Theme.Tweak.Hue}" />
-                        <ui:MySlider x:Name="SliderThemeHue"
-                                     Grid.Column="1"
-                                     MaxValue="100"
-                                     ValueByKey="10"
-                                     Value="{Binding ThemeHueOffset, Mode=TwoWay}" />
-                    </Grid>
-                    <Grid x:Name="PanThemeTweakLight"
-                          Margin="0,0,0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"
-                                              SharedSizeGroup="Name1" />
-                            <ColumnDefinition Width="1*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
-                                   Margin="0,0,20,0"
-                                   Text="{loc:Loc Setup.Ui.Theme.Tweak.Light}" />
-                        <ui:MySlider x:Name="SliderThemeLight"
-                                     Grid.Column="1"
-                                     MaxValue="100"
-                                     ValueByKey="10"
-                                     Value="{Binding ThemeLightOffset, Mode=TwoWay}" />
-                    </Grid>
-                    <Grid x:Name="PanThemeTweakChroma"
-                          Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"
-                                              SharedSizeGroup="Name1" />
-                            <ColumnDefinition Width="1*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
-                                   Margin="0,0,20,0"
-                                   Text="{loc:Loc Setup.Ui.Theme.Tweak.Chroma}" />
-                        <ui:MySlider x:Name="SliderThemeChroma"
-                                     Grid.Column="1"
-                                     MaxValue="100"
-                                     ValueByKey="10"
-                                     Value="{Binding ThemeChromaOffset, Mode=TwoWay}" />
-                    </Grid>
-
                     <ui:MyCheckBox x:Name="CheckLockWindowSize"
                                    Height="22"
                                    Margin="-1,0,0,7"

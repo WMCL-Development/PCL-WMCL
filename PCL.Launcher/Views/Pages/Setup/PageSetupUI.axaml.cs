@@ -220,7 +220,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 Config.Preference.Theme.LightCustomTheme);
             SelectThemeCombo(ComboDarkColor, Config.Preference.Theme.DarkColor,
                 Config.Preference.Theme.DarkCustomTheme);
-            UpdateTweakVisibility();
+            RefreshComboContextMenus();
             CheckLockWindowSize.Checked = Config.Preference.LockWindowSize;
             CheckShowLaunchingHint.Checked = Config.Preference.ShowLaunchingHint;
 
@@ -309,8 +309,17 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 combo.Items.Add(item);
             }
 
-            ContextMenuHelper.Attach(combo, () => BuildSelectedCustomThemeMenu(combo));
         }
+    }
+
+    /// <summary>
+    ///     Android 的长按菜单由 LongPressContextMenu 通过 ContextMenu 属性触发，
+    ///     因此这里按当前选中项动态挂载；没有选中自定义主题时清空。
+    /// </summary>
+    private void RefreshComboContextMenus()
+    {
+        ComboLightColor.ContextMenu = BuildSelectedCustomThemeMenu(ComboLightColor);
+        ComboDarkColor.ContextMenu = BuildSelectedCustomThemeMenu(ComboDarkColor);
     }
 
     private ContextMenu? BuildSelectedCustomThemeMenu(MyComboBox combo)
@@ -377,7 +386,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 theme.DarkCustomTheme = "";
             }
 
-            UpdateTweakVisibility();
+            RefreshComboContextMenus();
             return;
         }
 
@@ -398,22 +407,8 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         ViewModel.ThemeHueOffset = theme.ThemeHueOffset;
         ViewModel.ThemeLightOffset = theme.ThemeLightOffset;
         ViewModel.ThemeChromaOffset = theme.ThemeChromaOffset;
-        UpdateTweakVisibility();
+        RefreshComboContextMenus();
         ThemeService.RefreshTheme();
-    }
-
-    /// <summary>选中自定义主题时隐藏内置主题的微调滑块，避免两套参数互相干扰。</summary>
-    private void UpdateTweakVisibility()
-    {
-        var combo = ThemeService.IsDarkMode ? ComboDarkColor : ComboLightColor;
-        SetTweakRowsVisible(combo.SelectedIndex < _builtinThemes.Count);
-    }
-
-    private void SetTweakRowsVisible(bool visible)
-    {
-        PanThemeTweakHue.IsVisible = visible;
-        PanThemeTweakLight.IsVisible = visible;
-        PanThemeTweakChroma.IsVisible = visible;
     }
 
     private async Task ShowThemeEditorAsync(CustomThemeInfo? existing)
@@ -441,28 +436,19 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         panel.Children.Add(CreateThemeSliderRow("Setup.Ui.Theme.Tweak.Light", lightSlider));
         panel.Children.Add(CreateThemeSliderRow("Setup.Ui.Theme.Tweak.Chroma", chromaSlider));
 
-        SetTweakRowsVisible(false);
-        DialogResult result;
-        try
-        {
-            result = await DialogService.Instance.ShowAsync(
-                new PCL.UI.Dialogs.ContentDialogRequest
-                {
-                    Title = Lang.Text(
-                        existing is null
-                            ? "Setup.Ui.Theme.Editor.Title"
-                            : "Setup.Ui.Theme.Editor.EditTitle"),
-                    ContentFactory = () => panel,
-                    Buttons = DialogButtons.From(
-                        DialogButton.Create(Lang.Text("Setup.Ui.Theme.Editor.Save")),
-                        DialogButton.Create(Lang.Text("Common.Action.Cancel"))),
-                    HighLight = false
-                });
-        }
-        finally
-        {
-            UpdateTweakVisibility();
-        }
+        var result = await DialogService.Instance.ShowAsync(
+            new PCL.UI.Dialogs.ContentDialogRequest
+            {
+                Title = Lang.Text(
+                    existing is null
+                        ? "Setup.Ui.Theme.Editor.Title"
+                        : "Setup.Ui.Theme.Editor.EditTitle"),
+                ContentFactory = () => panel,
+                Buttons = DialogButtons.From(
+                    DialogButton.Create(Lang.Text("Setup.Ui.Theme.Editor.Save")),
+                    DialogButton.Create(Lang.Text("Common.Action.Cancel"))),
+                HighLight = false
+            });
         if (result.Button != 1) return;
 
         var name = nameBox.Text?.Trim() ?? "";
