@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using PCL.UI;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -49,6 +51,12 @@ public sealed class SkinModelPreview : Control
     private bool _hideOpaqueHat;
     private bool _dragging;
     private bool _panning;
+
+    // 触摸屏双指手势：缩放 + 平移。
+    private readonly Dictionary<int, Point> _touchPoints = [];
+    private bool _isPinching;
+    private double _pinchLastDistance;
+    private Point _pinchLastMidpoint;
     private Point _dragStart;
     private double _dragYaw;
     private double _dragPitch;
@@ -183,6 +191,21 @@ public sealed class SkinModelPreview : Control
     {
         base.OnPointerPressed(e);
         if (e.Handled) return;
+
+        if (e.Pointer.Type == PointerType.Touch)
+        {
+            _touchPoints[e.Pointer.Id] = e.GetPosition(this);
+            if (_touchPoints.Count >= 2)
+            {
+                _dragging = false;
+                _panning = false;
+                BeginPinch();
+                e.Pointer.Capture(this);
+                e.Handled = true;
+                return;
+            }
+        }
+
         var buttons = e.GetCurrentPoint(this).Properties;
         if (!buttons.IsLeftButtonPressed && !buttons.IsRightButtonPressed && !buttons.IsMiddleButtonPressed) return;
         Focus();
@@ -200,6 +223,18 @@ public sealed class SkinModelPreview : Control
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
+
+        if (e.Pointer.Type == PointerType.Touch && _touchPoints.ContainsKey(e.Pointer.Id))
+        {
+            _touchPoints[e.Pointer.Id] = e.GetPosition(this);
+            if (_touchPoints.Count >= 2)
+            {
+                UpdatePinch();
+                e.Handled = true;
+                return;
+            }
+        }
+
         if (!_dragging) return;
         var delta = e.GetPosition(this) - _dragStart;
         if (_panning)
@@ -209,8 +244,10 @@ public sealed class SkinModelPreview : Control
         }
         else
         {
-            SetCurrentValue(YawProperty, _dragYaw + delta.X * 0.75);
-            SetCurrentValue(PitchProperty, _dragPitch - delta.Y * 0.5);
+            // 拖动方向与模型转动方向相反：向右拖，模型向右转（更符合直觉）。
+            SetCurrentValue(YawProperty, _dragYaw - delta.X * 0.75);
+            // 上下同向翻转：向上拖，模型向上仰。
+            SetCurrentValue(PitchProperty, _dragPitch + delta.Y * 0.5);
         }
         _dragStart = e.GetPosition(this);
         _dragYaw = Yaw;
@@ -230,7 +267,9 @@ public sealed class SkinModelPreview : Control
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
-        if (!_dragging) return;
+        var wasTouching = _touchPoints.Remove(e.Pointer.Id);
+        if (_touchPoints.Count < 2) _isPinching = false;
+        if (!_dragging && !wasTouching) return;
         _dragging = false;
         _dragPointer = null;
         e.Pointer.Capture(null);
@@ -242,7 +281,52 @@ public sealed class SkinModelPreview : Control
         base.OnPointerCaptureLost(e);
         _dragging = false;
         _dragPointer = null;
+        _touchPoints.Clear();
+        _isPinching = false;
     }
+
+    private void BeginPinch()
+    {
+        if (_touchPoints.Count < 2) return;
+        var points = _touchPoints.Values.ToArray();
+        _isPinching = true;
+        _pinchLastDistance = Distance(points[0], points[1]);
+        _pinchLastMidpoint = Midpoint(points[0], points[1]);
+    }
+
+    private void UpdatePinch()
+    {
+        if (_touchPoints.Count < 2) return;
+        var points = _touchPoints.Values.ToArray();
+        var midpoint = Midpoint(points[0], points[1]);
+        var distance = Distance(points[0], points[1]);
+        if (!_isPinching || _pinchLastDistance <= 0 || !double.IsFinite(distance) || distance <= 0)
+        {
+            _isPinching = true;
+            _pinchLastDistance = distance;
+            _pinchLastMidpoint = midpoint;
+            return;
+        }
+
+        var factor = distance / _pinchLastDistance;
+        if (double.IsFinite(factor) && factor > 0)
+            SetCurrentValue(ZoomProperty, Zoom * factor);
+
+        SetCurrentValue(PanXProperty, PanX + (midpoint.X - _pinchLastMidpoint.X));
+        SetCurrentValue(PanYProperty, PanY + (midpoint.Y - _pinchLastMidpoint.Y));
+
+        _pinchLastDistance = distance;
+        _pinchLastMidpoint = midpoint;
+    }
+
+    private static double Distance(Point a, Point b)
+    {
+        var dx = a.X - b.X;
+        var dy = a.Y - b.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    private static Point Midpoint(Point a, Point b) => new((a.X + b.X) / 2d, (a.Y + b.Y) / 2d);
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -280,10 +364,15 @@ public sealed class SkinModelPreview : Control
     {
         try
         {
-            using var stream = AssetLoader.Open(new Uri("avares://WMCL.UI/Assets/Skins/Steve.png"));
+            using var stream = AssetLoader.Open(
+                new Uri("avares://PCL.Launcher/Assets/Images/Skins/Steve.png"));
             return new Bitmap(stream);
         }
-        catch (IOException) { return null; }
-        catch (InvalidOperationException) { return null; }
+        catch (Exception ex)
+        {
+            // 资源缺失时预览会整块空白，这里留一条日志方便定位。
+            PCL.Core.Logging.LogWrapper.Warn("UI", $"加载默认皮肤失败：{ex.Message}");
+            return null;
+        }
     }
 }

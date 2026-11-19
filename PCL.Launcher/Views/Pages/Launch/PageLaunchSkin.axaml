@@ -1,0 +1,8 @@
+<ui:MyPageRight xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:ui="using:PCL.UI.Controls"
+                xmlns:launch="using:PCL.Views.Pages.Launch"
+                x:Class="PCL.Views.Pages.Launch.PageLaunchSkin">
+    <!-- 左半：3D 模型；右半：按钮。不再套卡片与外边距，两半直接铺满。 -->
+    <launch:SkinPanel x:Name="Panel" />
+</ui:MyPageRight>

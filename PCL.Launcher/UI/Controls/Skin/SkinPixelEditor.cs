@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using PCL.UI;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -46,6 +48,12 @@ public sealed class SkinPixelEditor : Control
 
     private bool _isPainting;
     private bool _isPanning;
+
+    // 触摸屏双指手势：记录每根手指位置，两指时进入缩放/平移模式。
+    private readonly Dictionary<int, Point> _touchPoints = [];
+    private bool _isPinching;
+    private double _pinchLastDistance;
+    private Point _pinchLastMidpoint;
     private Point _panStart;
     private Point _panOffset;
     private SkinEditorViewModel? _observedViewModel;
@@ -168,9 +176,31 @@ public sealed class SkinPixelEditor : Control
         return brush;
     }
 
+    /// <summary>触屏：长按等同右键（进入拖动视图模式）。</summary>
+    private void OnTouchRightClick()
+    {
+        _isPanning = true;
+    }
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+
+        if (e.Pointer.Type == PointerType.Touch)
+        {
+            _touchPoints[e.Pointer.Id] = e.GetPosition(this);
+            if (_touchPoints.Count >= 2)
+            {
+                // 第二根手指落下：结束单指绘制，转入缩放/平移。
+                _isPainting = false;
+                _isPanning = false;
+                BeginPinch();
+                e.Pointer.Capture(this);
+                e.Handled = true;
+                return;
+            }
+        }
+
         var buttons = e.GetCurrentPoint(this).Properties;
         if (buttons.IsRightButtonPressed || buttons.IsMiddleButtonPressed)
         {
@@ -205,6 +235,18 @@ public sealed class SkinPixelEditor : Control
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
+
+        if (e.Pointer.Type == PointerType.Touch && _touchPoints.ContainsKey(e.Pointer.Id))
+        {
+            _touchPoints[e.Pointer.Id] = e.GetPosition(this);
+            if (_touchPoints.Count >= 2)
+            {
+                UpdatePinch();
+                e.Handled = true;
+                return;
+            }
+        }
+
         if (_isPanning)
         {
             var delta = e.GetPosition(this) - _panStart;
@@ -223,6 +265,8 @@ public sealed class SkinPixelEditor : Control
         base.OnPointerReleased(e);
         _isPainting = false;
         _isPanning = false;
+        _touchPoints.Remove(e.Pointer.Id);
+        if (_touchPoints.Count < 2) _isPinching = false;
         e.Pointer.Capture(null);
     }
 
@@ -231,7 +275,52 @@ public sealed class SkinPixelEditor : Control
         base.OnPointerCaptureLost(e);
         _isPainting = false;
         _isPanning = false;
+        _touchPoints.Clear();
+        _isPinching = false;
     }
+
+    private void BeginPinch()
+    {
+        if (_touchPoints.Count < 2) return;
+        var points = _touchPoints.Values.ToArray();
+        _isPinching = true;
+        _pinchLastDistance = Distance(points[0], points[1]);
+        _pinchLastMidpoint = Midpoint(points[0], points[1]);
+    }
+
+    private void UpdatePinch()
+    {
+        if (_touchPoints.Count < 2) return;
+        var points = _touchPoints.Values.ToArray();
+        var midpoint = Midpoint(points[0], points[1]);
+        var distance = Distance(points[0], points[1]);
+        if (!_isPinching || _pinchLastDistance <= 0 || !double.IsFinite(distance) || distance <= 0)
+        {
+            _isPinching = true;
+            _pinchLastDistance = distance;
+            _pinchLastMidpoint = midpoint;
+            return;
+        }
+
+        var factor = distance / _pinchLastDistance;
+        if (double.IsFinite(factor) && factor > 0)
+            ZoomAt(midpoint, factor);
+
+        PanX += midpoint.X - _pinchLastMidpoint.X;
+        PanY += midpoint.Y - _pinchLastMidpoint.Y;
+
+        _pinchLastDistance = distance;
+        _pinchLastMidpoint = midpoint;
+    }
+
+    private static double Distance(Point a, Point b)
+    {
+        var dx = a.X - b.X;
+        var dy = a.Y - b.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    private static Point Midpoint(Point a, Point b) => new((a.X + b.X) / 2d, (a.Y + b.Y) / 2d);
 
     public void ResetView()
     {

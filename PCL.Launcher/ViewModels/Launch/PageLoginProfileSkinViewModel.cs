@@ -125,20 +125,6 @@ public partial class PageLoginProfileSkinViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private static void ChangeCape()
-    {
-        var profile = ProfileService.Current;
-        if (profile is null)
-            return;
-        if (profile.ProfileType == ProfileType.Microsoft)
-            return;
-
-        if (profile.ProfileType is ProfileType.Authlib or ProfileType.YggdrasilConnect
-            && !string.IsNullOrWhiteSpace(profile.Server))
-            OpenProfilePage(profile.Server, "user/closet");
-    }
-
-    [RelayCommand]
     private static void EditPassword()
     {
         var profile = ProfileService.Current;

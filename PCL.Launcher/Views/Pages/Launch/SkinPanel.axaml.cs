@@ -23,53 +23,94 @@ public partial class SkinPanel : UserControl
 {
     private readonly SkinModelPreview _model;
     private string? _localSkinPath;
-    private string? _localCapePath;
 
     public SkinPanel()
     {
         InitializeComponent();
+
+        // 桌面弹窗需要足够大的初始尺寸；Android 子页按可用空间自适应。
+        if (OperatingSystem.IsAndroid())
+        {
+            MinWidth = 520;
+            MinHeight = 300;
+        }
+        else
+        {
+            MinWidth = 620;
+            MinHeight = 420;
+        }
+
         _model = this.FindControl<SkinModelPreview>("Model")!;
 
-        BtnPickSkin.Click += (_, _) => PickSkin();
-        BtnPickCape.Click += (_, _) => PickCape();
+        BtnPickSkin.Click += async (_, _) => await PickSkinAsync().ConfigureAwait(true);
         BtnUploadSkin.Click += async (_, _) => await UploadSkinAsync().ConfigureAwait(true);
-        BtnUploadCape.Click += (_, _) => UploadCape();
         BtnSaveSkin.Click += async (_, _) => await SaveSkinAsync().ConfigureAwait(true);
+
         BtnOpenEditor.Click += (_, _) => OpenEditor();
 
         this.FindControl<MyButton>("BtnFront").Click += OnFront;
         this.FindControl<MyButton>("BtnBack").Click += OnBack;
         this.FindControl<MyButton>("BtnReset").Click += OnReset;
 
-        Loaded += (_, _) => LoadCurrentSkin();
+        Loaded += (_, _) => _ = LoadCurrentSkinAsync();
     }
 
-    /// <summary>载入当前账号皮肤作为预览起点。</summary>
-    private void LoadCurrentSkin()
+    /// <summary>载入当前账号皮肤作为预览起点（正版 / 第三方账号从统一缓存读取）。</summary>
+    private async Task LoadCurrentSkinAsync()
     {
+        var profile = ProfileService.Current;
+        if (profile is null)
+        {
+            LabStatus.Text = Lang.Text("Launch.Skin.NoAccount");
+            return;
+        }
+
+        IsEnabled = false;
         try
         {
-            var profile = ProfileService.Current;
-            if (profile is null)
+            var address = profile.ProfileType == ProfileType.Offline
+                ? LaunchLoginHelper.GetOfflineSkinAddress(profile.Uuid)
+                : await Task.Run(() =>
+                {
+                    try
+                    {
+                        return LaunchLoginHelper.GetOnlineSkinAddress(profile);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogWrapper.Warn("Skin", $"获取在线皮肤失败：{profile.UserName}：{ex.Message}");
+                        return LaunchLoginHelper.GetOfflineSkinAddress(profile.Uuid);
+                    }
+                }).ConfigureAwait(true);
+
+            if (string.IsNullOrWhiteSpace(address) || !File.Exists(address))
             {
                 LabStatus.Text = Lang.Text("Launch.Skin.NoAccount");
                 return;
             }
 
-            // 账号皮肤由启动页统一缓存，这里只做占位提示，等用户选择本地文件。
-            _ = profile;
+            using var stream = File.OpenRead(address);
+            var bitmap = new Bitmap(stream);
+            _model.Skin = bitmap;
+            _model.Variant = SkinModelDetector.Detect(bitmap);
+            _localSkinPath = address;
+            LabStatus.Text = string.Empty;
         }
         catch (Exception exception)
         {
             LogWrapper.Warn("Skin", "载入当前皮肤失败：" + exception.Message);
         }
+        finally
+        {
+            IsEnabled = true;
+        }
     }
 
-    private void PickSkin()
+    private async Task PickSkinAsync()
     {
-        var path = SystemDialogs.SelectFile(
+        var path = await SystemDialogs.SelectFileAsync(
             Lang.Text("Tools.Test.Avatar.FileFilter"),
-            Lang.Text("Launch.Skin.PickSkin"));
+            Lang.Text("Launch.Skin.PickSkin")).ConfigureAwait(true);
         if (string.IsNullOrWhiteSpace(path)) return;
 
         try
@@ -84,27 +125,6 @@ public partial class SkinPanel : UserControl
         catch (Exception exception)
         {
             LogWrapper.Warn("Skin", "加载皮肤失败：" + exception.Message);
-            LabStatus.Text = Lang.Text("Tools.Test.Avatar.LoadFailed");
-        }
-    }
-
-    private void PickCape()
-    {
-        var path = SystemDialogs.SelectFile(
-            Lang.Text("Tools.Test.Avatar.FileFilter"),
-            Lang.Text("Launch.Skin.PickCape"));
-        if (string.IsNullOrWhiteSpace(path)) return;
-
-        try
-        {
-            _localCapePath = path;
-            using var stream = File.OpenRead(path);
-            _model.Cape = new Bitmap(stream);
-            LabStatus.Text = string.Empty;
-        }
-        catch (Exception exception)
-        {
-            LogWrapper.Warn("Skin", "加载披风失败：" + exception.Message);
             LabStatus.Text = Lang.Text("Tools.Test.Avatar.LoadFailed");
         }
     }
@@ -143,19 +163,6 @@ public partial class SkinPanel : UserControl
         LabStatus.Text = Lang.Text(ok ? "Launch.Skin.Uploaded" : "Launch.Skin.UploadFailed");
     }
 
-    private void UploadCape()
-    {
-        // Mojang 不开放披风上传，只能刷新；第三方账号跳个人中心。
-        var profile = ProfileService.Current;
-        if (profile is { ProfileType: not ProfileType.Microsoft, Server: { Length: > 0 } server })
-        {
-            Basics.OpenUrl(server.TrimEnd('/') + "/user/closet");
-            return;
-        }
-
-        LabStatus.Text = Lang.Text("Launch.Skin.CapeUnsupported");
-    }
-
     private async Task SaveSkinAsync()
     {
         var profile = ProfileService.Current;
@@ -167,9 +174,9 @@ public partial class SkinPanel : UserControl
             return;
         }
 
-        var target = SystemDialogs.SelectSaveFile(
+        var target = await SystemDialogs.SelectSaveFileAsync(
             Lang.Text("Launch.Skin.SaveAs"), "skin.png",
-            Lang.Text("Tools.Test.Achievement.FileFilter"));
+            Lang.Text("Tools.Test.Achievement.FileFilter")).ConfigureAwait(true);
         if (string.IsNullOrWhiteSpace(target)) return;
 
         await using var input = File.OpenRead(source);
@@ -200,9 +207,19 @@ public partial class SkinPanel : UserControl
         }
     }
 
-    /// <summary>用统一的弹窗打开皮肤编辑器。</summary>
+    /// <summary>
+    ///     Android 上用独立子页打开编辑器（小屏弹窗会被裁切）；桌面保持原有的弹窗行为。
+    /// </summary>
     private void ShowSkinEditor(Avalonia.Media.Imaging.Bitmap bitmap)
     {
+        if (OperatingSystem.IsAndroid())
+        {
+            var path = _localSkinPath;
+            if (string.IsNullOrWhiteSpace(path)) return;
+            PCL.Navigation.PageRouter.Navigate(Navigation.PageType.LaunchSkinEditor, parameter: path);
+            return;
+        }
+
         var variant = _model.Variant;
         _ = PCL.Core.UI.Dialogs.DialogService.Instance.ShowAsync(
             new PCL.UI.Dialogs.ContentDialogRequest

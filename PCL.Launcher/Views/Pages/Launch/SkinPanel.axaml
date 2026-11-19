@@ -3,9 +3,9 @@
         xmlns:ui="using:PCL.UI.Controls"
         xmlns:skin="using:PCL.UI.Controls.Skin"
         xmlns:loc="using:PCL.Core.UI"
-        x:Class="PCL.Views.Pages.Launch.SkinPanel"
-        MinWidth="620" MinHeight="420">
-    <Grid ColumnDefinitions="*,280" Margin="12">
+        x:Class="PCL.Views.Pages.Launch.SkinPanel">
+    <!-- 左半 3D 模型，右半按钮；两半等比铺满，不再留大片空白。 -->
+    <Grid ColumnDefinitions="*,420" Margin="12">
         <Border Grid.Column="0"
                 CornerRadius="6"
                 ClipToBounds="True"
@@ -16,27 +16,32 @@
         <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="8">
             <TextBlock FontSize="15" FontWeight="SemiBold" Text="{loc:Loc Launch.Skin.Preview}" />
             <StackPanel Orientation="Horizontal" Spacing="6">
-                <ui:MyButton x:Name="BtnFront" MinWidth="64" Padding="10,0" Text="{loc:Loc Launch.Skin.Front}" />
-                <ui:MyButton x:Name="BtnBack" MinWidth="64" Padding="10,0" Text="{loc:Loc Launch.Skin.Back}" />
-                <ui:MyButton x:Name="BtnReset" MinWidth="64" Padding="10,0" Text="{loc:Loc Launch.Skin.Reset}" />
+                <ui:MyButton x:Name="BtnFront" MinWidth="80" MinHeight="32" Padding="10,0" Text="{loc:Loc Launch.Skin.Front}" />
+                <ui:MyButton x:Name="BtnBack" MinWidth="80" MinHeight="32" Padding="10,0" Text="{loc:Loc Launch.Skin.Back}" />
+                <ui:MyButton x:Name="BtnReset" MinWidth="90" MinHeight="32" Padding="10,0" Text="{loc:Loc Launch.Skin.Reset}" />
             </StackPanel>
 
-            <TextBlock Margin="0,8,0,0" FontSize="13" Text="{loc:Loc Launch.Skin.LocalFile}" />
-            <ui:MyButton x:Name="BtnPickSkin" HorizontalAlignment="Stretch" Padding="10,0"
+            <TextBlock x:Name="LabLocal"
+                       Margin="0,8,0,0"
+                       FontSize="13"
+                       Text="{loc:Loc Launch.Skin.LocalFile}" />
+            <ui:MyButton x:Name="BtnPickSkin" HorizontalAlignment="Stretch" MinHeight="34" Padding="10,0"
                          Text="{loc:Loc Launch.Skin.PickSkin}" />
-            <ui:MyButton x:Name="BtnPickCape" HorizontalAlignment="Stretch" Padding="10,0"
-                         Text="{loc:Loc Launch.Skin.PickCape}" />
 
-            <TextBlock Margin="0,8,0,0" FontSize="13" Text="{loc:Loc Launch.Skin.Account}" />
-            <ui:MyButton x:Name="BtnUploadSkin" HorizontalAlignment="Stretch" Padding="10,0"
+            <TextBlock x:Name="LabAccount"
+                       Margin="0,8,0,0"
+                       FontSize="13"
+                       Text="{loc:Loc Launch.Skin.Account}" />
+            <ui:MyButton x:Name="BtnUploadSkin" HorizontalAlignment="Stretch" MinHeight="34" Padding="10,0"
                          Text="{loc:Loc Launch.Skin.UploadSkin}" />
-            <ui:MyButton x:Name="BtnUploadCape" HorizontalAlignment="Stretch" Padding="10,0"
-                         Text="{loc:Loc Launch.Skin.UploadCape}" />
-            <ui:MyButton x:Name="BtnSaveSkin" HorizontalAlignment="Stretch" Padding="10,0"
+            <ui:MyButton x:Name="BtnSaveSkin" HorizontalAlignment="Stretch" MinHeight="34" Padding="10,0"
                          Text="{loc:Loc Launch.Skin.SaveAs}" />
 
-            <TextBlock Margin="0,8,0,0" FontSize="13" Text="{loc:Loc Launch.Skin.Editor}" />
-            <ui:MyButton x:Name="BtnOpenEditor" HorizontalAlignment="Stretch" Padding="10,0"
+            <TextBlock x:Name="LabEditor"
+                       Margin="0,8,0,0"
+                       FontSize="13"
+                       Text="{loc:Loc Launch.Skin.Editor}" />
+            <ui:MyButton x:Name="BtnOpenEditor" HorizontalAlignment="Stretch" MinHeight="34" Padding="10,0"
                          Text="{loc:Loc Launch.Skin.OpenEditor}" />
 
             <TextBlock x:Name="LabStatus"

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -19,14 +20,6 @@ namespace PCL.Views.Pages.Launch;
 /// </summary>
 public partial class SkinEditorPanel : UserControl
 {
-    private static readonly string[] Palette =
-    [
-        "#FF000000", "#FFFFFFFF", "#FF7F7F7F", "#FFC6C6C6",
-        "#FF8B5A2B", "#FFA0764B", "#FFD8A47F", "#FFF0C8A0",
-        "#FF4A8F3C", "#FF6FBF5A", "#FF2B5FA8", "#FF4F8FE0",
-        "#FFA83232", "#FFD65A5A", "#FFF2D64B", "#FF9B59B6"
-    ];
-
     private readonly SkinPixelEditor _canvas;
     private readonly SkinModelPreview _preview;
 
@@ -37,6 +30,19 @@ public partial class SkinEditorPanel : UserControl
     public SkinEditorPanel(Bitmap? skin, string variant)
     {
         InitializeComponent();
+
+        // 桌面弹窗需要足够大的初始尺寸；Android 子页按可用空间自适应，避免超出屏幕。
+        if (OperatingSystem.IsAndroid())
+        {
+            MinWidth = 320;
+            MinHeight = 300;
+        }
+        else
+        {
+            MinWidth = 720;
+            MinHeight = 480;
+        }
+
         _canvas = this.FindControl<SkinPixelEditor>("Canvas")!;
         _preview = this.FindControl<SkinModelPreview>("Preview")!;
 
@@ -46,7 +52,10 @@ public partial class SkinEditorPanel : UserControl
         _preview.Variant = variant;
 
         Editor.LoadSkin(skin);
-        BuildSwatches();
+
+        // 触摸手势判定：在模型预览 / 调色盘上拖动时不要让外层 ScrollViewer 抢走滚动。
+        PCL.UI.ScrollGestureLock.Attach(_preview);
+        PCL.UI.ScrollGestureLock.Attach(Palette);
 
         _canvas.ColorPicked += (_, args) => Editor.SelectedColor = args.Color;
 
@@ -60,7 +69,7 @@ public partial class SkinEditorPanel : UserControl
         BtnMirrorV.Click += (_, _) => Editor.MirrorTopToBottom();
         BtnClear.Click += (_, _) => Editor.Clear();
         BtnResetView.Click += (_, _) => _canvas.ResetView();
-        BtnSave.Click += (_, _) => SaveSkin();
+        BtnSave.Click += async (_, _) => await SaveSkinAsync();
 
         Editor.PropertyChanged += (_, args) =>
         {
@@ -68,36 +77,25 @@ public partial class SkinEditorPanel : UserControl
                 LabStatus.Text = Editor.Status;
             if (args.PropertyName == nameof(SkinEditorViewModel.PixelsVersion))
                 _preview.Skin = Editor.ToBitmap();
+            if (args.PropertyName == nameof(SkinEditorViewModel.SelectedColor)
+                && Palette.SelectedColor != Editor.SelectedColor)
+                Palette.SelectedColor = Editor.SelectedColor;
+        };
+
+        // 调色盘与编辑器颜色双向同步：选色即切回画笔模式
+        Palette.SelectedColor = Editor.SelectedColor;
+        Palette.PropertyChanged += (_, args) =>
+        {
+            if (args.Property != SkinColorPalette.SelectedColorProperty) return;
+            if (Editor.SelectedColor == Palette.SelectedColor) return;
+            Editor.SelectedColor = Palette.SelectedColor;
+            Editor.IsEraser = false;
         };
     }
 
     public SkinEditorViewModel Editor { get; }
 
-    private void BuildSwatches()
-    {
-        var panel = this.FindControl<WrapPanel>("PanSwatches")!;
-        foreach (var hex in Palette)
-        {
-            var color = Color.Parse(hex);
-            var button = new Button
-            {
-                Width = 26,
-                Height = 26,
-                Padding = new Thickness(0),
-                Background = new SolidColorBrush(color),
-                BorderThickness = new Thickness(1),
-                BorderBrush = Brushes.Gray
-            };
-            button.Click += (_, _) =>
-            {
-                Editor.SelectedColor = color;
-                Editor.IsEraser = false;
-            };
-            panel.Children.Add(button);
-        }
-    }
-
-    private void SaveSkin()
+    private async Task SaveSkinAsync()
     {
         var bitmap = Editor.ToBitmap();
         if (bitmap is null)
@@ -106,14 +104,16 @@ public partial class SkinEditorPanel : UserControl
             return;
         }
 
-        var path = SystemDialogs.SelectSaveFile(
+        // Android 单视图平台不能阻塞 UI 线程等对话框，统一走异步接口。
+        var path = await SystemDialogs.SelectSaveFileAsync(
             Lang.Text("Skin.Editor.Save"), "skin.png",
-            Lang.Text("Tools.Test.Achievement.FileFilter"));
+            Lang.Text("Tools.Test.Achievement.FileFilter")).ConfigureAwait(true);
         if (string.IsNullOrWhiteSpace(path)) return;
 
         try
         {
-            bitmap.Save(path);
+            await using var output = File.Create(path);
+            bitmap.Save(output);
             LabStatus.Text = Lang.Text("Launch.Skin.Saved");
         }
         catch (Exception exception)
