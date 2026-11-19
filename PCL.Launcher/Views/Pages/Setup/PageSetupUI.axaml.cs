@@ -7,7 +7,9 @@ using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Localization;
 using PCL.Core.UI;
+using PCL.Core.UI.Dialogs;
 using PCL.Core.UI.Hints;
+using PCL.Core.UI.Theme;
 using PCL.Core.Utils.Validate;
 using PCL.Navigation;
 using PCL.UI.Controls;
@@ -23,15 +25,9 @@ namespace PCL.Views.Pages.Setup;
 /// </summary>
 public partial class PageSetupUI : MyPageRight, ISetupResetPage
 {
-    private static readonly (string Tag, string Key)[] ThemeColorKeys =
-    [
-        (nameof(ColorTheme.SkyBlue), "Setup.Ui.Theme.Color.SkyBlue"),
-        (nameof(ColorTheme.CatBlue), "Setup.Ui.Theme.Color.CatBlue"),
-        (nameof(ColorTheme.DeathBlue), "Setup.Ui.Theme.Color.CrashBlue"),
-        (nameof(ColorTheme.HmclBlue), "Setup.Ui.Theme.Color.Hmcl")
-    ];
-
     private readonly List<MyCheckBox> _hideChecks = [];
+    private List<ColorTheme> _builtinThemes = [];
+    private List<CustomThemeInfo> _customThemes = [];
     private readonly MyRadioBox[] _homepageRadios;
     private readonly MyRadioBox[] _logoTypeRadios;
     private bool _loaded;
@@ -165,6 +161,9 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
 
         BuildHideGrid();
         BuildThemeColorItems();
+        ComboLightColor.SelectionChanged += (_, _) => OnThemeSelectionChanged(true);
+        ComboDarkColor.SelectionChanged += (_, _) => OnThemeSelectionChanged(false);
+        BtnThemeAdd.Click += async (_, _) => await AddCustomThemeAsync();
 
         HiddenFeatureState.Changed += OnHiddenFeatureStateChanged;
 
@@ -214,7 +213,13 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         _reloading = true;
         try
         {
-            ViewModel.Reload(Math.Max(1, ComboLightColor.ItemCount));
+            BuildThemeColorItems();
+            ViewModel.BuiltinThemeCount = _builtinThemes.Count;
+            ViewModel.Reload(Math.Max(1, _builtinThemes.Count));
+            SelectThemeCombo(ComboLightColor, Config.Preference.Theme.LightColor,
+                Config.Preference.Theme.LightCustomTheme);
+            SelectThemeCombo(ComboDarkColor, Config.Preference.Theme.DarkColor,
+                Config.Preference.Theme.DarkCustomTheme);
             CheckLockWindowSize.Checked = Config.Preference.LockWindowSize;
             CheckShowLaunchingHint.Checked = Config.Preference.ShowLaunchingHint;
 
@@ -276,23 +281,175 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
 
     private void BuildThemeColorItems()
     {
-        var count = Basics.IsAprilFool ? ThemeColorKeys.Length : ThemeColorKeys.Length - 1;
-        foreach (var combo in new[]
-                 {
-                     ComboLightColor,
-                     ComboDarkColor
-                 })
+        var presets = ThemePresetCatalog.Visible(Basics.IsAprilFool).ToList();
+        _builtinThemes = presets.Select(preset => preset.Value).ToList();
+        _customThemes = CustomThemeStore.Load(Config.Preference.Theme.CustomThemes);
+        var customPrefix = Lang.Text("Setup.Ui.Theme.Custom");
+
+        foreach (var combo in new[] { ComboLightColor, ComboDarkColor })
         {
             combo.Items.Clear();
-            for (var i = 0; i < count; i++)
+            foreach (var preset in presets)
             {
-                var item = new MyComboBoxItem();
-                item.SetLocalizedValue(
-                    ContentControl.ContentProperty,
-                    ThemeColorKeys[i].Key);
+                var item = new MyComboBoxItem { Tag = preset.Value };
+                item.SetLocalizedValue(ContentControl.ContentProperty, preset.NameKey);
+                combo.Items.Add(item);
+            }
+
+            foreach (var custom in _customThemes)
+            {
+                var item = new MyComboBoxItem
+                {
+                    Tag = custom,
+                    Content = $"{customPrefix} · {custom.Name}"
+                };
                 combo.Items.Add(item);
             }
         }
+    }
+
+    private void SelectThemeCombo(MyComboBox combo, ColorTheme theme, string customName)
+    {
+        var index = _builtinThemes.IndexOf(theme);
+        if (index < 0) index = 0;
+        if (!string.IsNullOrWhiteSpace(customName))
+        {
+            var customIndex = _customThemes.FindIndex(custom => custom.Name == customName);
+            if (customIndex >= 0) index = _builtinThemes.Count + customIndex;
+        }
+
+        combo.SelectedIndex = index;
+    }
+
+    private void OnThemeSelectionChanged(bool light)
+    {
+        if (_reloading) return;
+        var combo = light ? ComboLightColor : ComboDarkColor;
+        var index = combo.SelectedIndex;
+        if (index < 0) return;
+
+        var theme = Config.Preference.Theme;
+        if (index < _builtinThemes.Count)
+        {
+            if (light)
+            {
+                theme.LightColor = _builtinThemes[index];
+                theme.LightCustomTheme = "";
+            }
+            else
+            {
+                theme.DarkColor = _builtinThemes[index];
+                theme.DarkCustomTheme = "";
+            }
+
+            return;
+        }
+
+        var customIndex = index - _builtinThemes.Count;
+        if (customIndex >= _customThemes.Count) return;
+        ApplyCustomTheme(_customThemes[customIndex], light);
+    }
+
+    private void ApplyCustomTheme(CustomThemeInfo custom, bool light)
+    {
+        var theme = Config.Preference.Theme;
+        theme.ThemeHueOffset = Math.Clamp(custom.Hue, 0, 100);
+        theme.ThemeLightOffset = Math.Clamp(custom.Light, 0, 100);
+        theme.ThemeChromaOffset = Math.Clamp(custom.Chroma, 0, 100);
+        if (light) theme.LightCustomTheme = custom.Name;
+        else theme.DarkCustomTheme = custom.Name;
+
+        ViewModel.ThemeHueOffset = theme.ThemeHueOffset;
+        ViewModel.ThemeLightOffset = theme.ThemeLightOffset;
+        ViewModel.ThemeChromaOffset = theme.ThemeChromaOffset;
+        ThemeService.RefreshTheme();
+    }
+
+    private async Task AddCustomThemeAsync()
+    {
+        var nameBox = new MyTextBox
+        {
+            HintText = Lang.Text("Setup.Ui.Theme.Editor.NameHint"),
+            MaxLength = 32
+        };
+        var hueSlider = CreateThemeValueSlider(ViewModel.ThemeHueOffset);
+        var lightSlider = CreateThemeValueSlider(ViewModel.ThemeLightOffset);
+        var chromaSlider = CreateThemeValueSlider(ViewModel.ThemeChromaOffset);
+
+        var panel = new StackPanel
+        {
+            Spacing = 7,
+            MaxWidth = 440,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(0, 2, 0, 2)
+        };
+        panel.Children.Add(new TextBlock { Text = Lang.Text("Setup.Ui.Theme.Editor.Name") });
+        panel.Children.Add(nameBox);
+        panel.Children.Add(CreateThemeSliderRow("Setup.Ui.Theme.Tweak.Hue", hueSlider));
+        panel.Children.Add(CreateThemeSliderRow("Setup.Ui.Theme.Tweak.Light", lightSlider));
+        panel.Children.Add(CreateThemeSliderRow("Setup.Ui.Theme.Tweak.Chroma", chromaSlider));
+
+        var result = await DialogService.Instance.ShowAsync(
+            new PCL.UI.Dialogs.ContentDialogRequest
+            {
+                Title = Lang.Text("Setup.Ui.Theme.Editor.Title"),
+                ContentFactory = () => panel,
+                Buttons = DialogButtons.From(
+                    DialogButton.Create(Lang.Text("Setup.Ui.Theme.Editor.Save")),
+                    DialogButton.Create(Lang.Text("Common.Action.Cancel"))),
+                HighLight = false
+            });
+        if (result.Button != 1) return;
+
+        var name = nameBox.Text?.Trim() ?? "";
+        if (string.IsNullOrEmpty(name))
+        {
+            HintService.Show(Hints.Error(Lang.Text("Setup.Ui.Theme.Editor.NameEmpty")));
+            return;
+        }
+
+        var theme = Config.Preference.Theme;
+        var existing = _customThemes.FindIndex(custom => custom.Name == name);
+        var info = new CustomThemeInfo(name, hueSlider.Value, lightSlider.Value, chromaSlider.Value);
+        if (existing >= 0) _customThemes[existing] = info;
+        else _customThemes.Add(info);
+
+        theme.CustomThemes = CustomThemeStore.Save(_customThemes);
+        if (ThemeService.IsDarkMode) theme.DarkCustomTheme = name;
+        else theme.LightCustomTheme = name;
+
+        BuildThemeColorItems();
+        Reload();
+        ApplyCustomTheme(info, !ThemeService.IsDarkMode);
+        HintService.Show(Hints.Success(Lang.Text("Setup.Ui.Theme.Editor.Saved")));
+    }
+
+    private static MySlider CreateThemeValueSlider(int value)
+    {
+        return new MySlider
+        {
+            MaxValue = 100,
+            ValueByKey = 10,
+            Value = Math.Clamp(value, 0, 100)
+        };
+    }
+
+    private Grid CreateThemeSliderRow(string labelKey, MySlider slider)
+    {
+        var grid = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*")
+        };
+        grid.Children.Add(new TextBlock
+        {
+            Text = Lang.Text(labelKey),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 20, 0)
+        });
+        slider.HorizontalAlignment = HorizontalAlignment.Stretch;
+        grid.Children.Add(slider);
+        Grid.SetColumn(slider, 1);
+        return grid;
     }
 
     #endregion

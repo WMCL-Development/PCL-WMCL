@@ -3326,6 +3326,14 @@
     <sys:String x:Key="Setup.Ui.Theme.LightColor">Light theme color</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Tweak.Hue">Hue</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Tweak.Light">Lightness</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Add">Add Theme</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Custom">Custom</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.Title">Add Theme</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.Name">Theme name</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.NameHint">Enter a theme name</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.Save">Save</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.NameEmpty">Please enter a theme name</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.Saved">Theme saved</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Tweak.Chroma">Chroma</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Title">Theme</sys:String>
 

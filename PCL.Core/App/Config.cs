@@ -365,6 +365,15 @@ public static partial class Config
             /// 传说中的主题选择，但是没卵用。
             /// </summary>
             [ConfigItem<int>("UiLauncherTheme", 0, ConfigSource.Local)] public partial int ThemeSelected { get; set; }
+
+            /// <summary>自定义主题列表（JSON）。</summary>
+            [ConfigItem<string>("UiCustomThemes", "[]")] public partial string CustomThemes { get; set; }
+
+            /// <summary>浅色模式下最近选择的自定义主题名称。</summary>
+            [ConfigItem<string>("UiLightCustomTheme", "", ConfigSource.Local)] public partial string LightCustomTheme { get; set; }
+
+            /// <summary>深色模式下最近选择的自定义主题名称。</summary>
+            [ConfigItem<string>("UiDarkCustomTheme", "", ConfigSource.Local)] public partial string DarkCustomTheme { get; set; }
         }
 
         /// <summary>

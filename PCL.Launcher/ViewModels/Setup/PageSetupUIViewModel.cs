@@ -185,13 +185,17 @@ public partial class PageSetupUIViewModel : ViewModelBase
         if (!_reloading) Config.Preference.Music.Volume = value;
     }
 
+    /// <summary>内置主题数量（不含自定义主题）。</summary>
+    public int BuiltinThemeCount { get; set; } = 4;
+
     public void Reload(int themeColorCount = 4)
     {
         _reloading = true;
         try
         {
             var theme = Config.Preference.Theme;
-            var colorMax = Math.Max(0, themeColorCount - 1);
+            var builtinCount = Math.Max(1, Math.Min(themeColorCount, BuiltinThemeCount));
+            var colorMax = builtinCount - 1;
             LauncherOpacity = theme.WindowOpacity;
             ThemeHueOffset = theme.ThemeHueOffset;
             ThemeLightOffset = theme.ThemeLightOffset;

@@ -3257,6 +3257,14 @@
     <sys:String x:Key="Setup.Ui.Theme.LightColor">淺色配色</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Tweak.Hue">色相</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Tweak.Light">明度</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Add">新增主題</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Custom">自訂</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.Title">新增主題</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.Name">主題名稱</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.NameHint">輸入主題名稱</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.Save">儲存</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.NameEmpty">請輸入主題名稱</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.Saved">主題已儲存</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Tweak.Chroma">彩度</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Title">主題</sys:String>
 

@@ -86,18 +86,22 @@
                                    Text="{loc:Loc Setup.Ui.Theme.LightColor}" />
                         <ui:MyComboBox x:Name="ComboLightColor"
                                        Grid.Column="3"
-                                       HorizontalAlignment="Stretch"
-                                       SelectedIndex="{Binding LightColorSelectedIndex, Mode=TwoWay}" />
+                                       HorizontalAlignment="Stretch" />
                         <TextBlock Grid.Column="4"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
                                    Text="{loc:Loc Setup.Ui.Theme.DarkColor}" />
                         <ui:MyComboBox x:Name="ComboDarkColor"
                                        Grid.Column="5"
-                                       HorizontalAlignment="Stretch"
-                                       SelectedIndex="{Binding DarkColorSelectedIndex, Mode=TwoWay}" />
+                                       HorizontalAlignment="Stretch" />
                     </Grid>
 
+                    <ui:MyButton x:Name="BtnThemeAdd"
+                                 MinWidth="120"
+                                 Margin="0,0,0,7"
+                                 Padding="13,0"
+                                 HorizontalAlignment="Left"
+                                 Text="{loc:Loc Setup.Ui.Theme.Add}" />
 
                     <Grid Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>

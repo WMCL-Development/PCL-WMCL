@@ -50,7 +50,8 @@ public sealed partial class ThemeService
                 }
 
                 // trigger color refresh
-                if (Lifecycle.CurrentState > LifecycleState.Loading)
+                // Android 没有桌面生命周期，CurrentState 会停留在 Loading，需要单独放行。
+                if (Lifecycle.CurrentState > LifecycleState.Loading || OperatingSystem.IsAndroid())
                     UiDispatcher.Post(() =>
                     {
                         ApplyColorResources();
@@ -152,6 +153,13 @@ public sealed partial class ThemeService
         if (Basics.IsAprilFool)
             Config.Preference.WindowTitleTypeConfig.TriggerEvent(ConfigEvent.Changed, null);
         else if (CurrentTheme == ColorTheme.HmclBlue) CurrentTheme = ColorTheme.CatBlue;
+    }
+
+    /// <summary>按当前配置重新生成色板并通知界面刷新（不修改配色模式）。</summary>
+    public static void RefreshTheme()
+    {
+        ApplyColorResources();
+        ColorThemeChanged?.Invoke(CurrentTheme);
     }
 
     /// <summary>刷新配色模式，若检测到当前配色模式有实际更改，则会触发主题刷新。</summary>
