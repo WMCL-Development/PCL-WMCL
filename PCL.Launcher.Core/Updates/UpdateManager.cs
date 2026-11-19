@@ -12,20 +12,7 @@ public static class UpdateManager
 {
     public static bool isUpdateWaitingRestart;
 
-    public static UpdatesWrapperModel remoteServer = new(
-        new List<IUpdateSource>
-        {
-            new UpdatesRandomModel(
-            [
-                new UpdatesMinioModel("https://s3.pysio.online/pcl2-ce/", "Pysio"),
-                new UpdatesMinioModel(
-                    "https://staticassets.naids.com/resources/pclce/",
-                    "Naids")
-            ]),
-            new UpdatesMinioModel(
-                "https://github.com/PCL-Community/PCL2_CE_Server/raw/main/",
-                "GitHub")
-        });
+    public static WmclUpdateSource remoteServer = new();
 
     public static Loading.LoaderCombo<JsonObject> updateLoader;
 
@@ -107,10 +94,9 @@ public static class UpdateManager
             return;
         }
 
-        var dlTargetPath = Path.Combine(
-            LauncherPaths.ExecutableDirectory,
-            "PCL",
-            "Plain Craft Launcher Community Edition.exe");
+        var updateDirectory = Path.Combine(LauncherPaths.ExecutableDirectory, "PCL");
+        Directory.CreateDirectory(updateDirectory);
+        var dlTargetPath = Path.Combine(updateDirectory, "wmcl-update.zip");
         LauncherCommon.RunInNewThread(() =>
         {
             try
@@ -247,26 +233,38 @@ public static class UpdateManager
     {
         try
         {
-            var fileName = Path.Combine(
-                LauncherPaths.ExecutableDirectory,
-                "PCL",
-                "Plain Craft Launcher Community Edition.exe");
-            if (!File.Exists(fileName))
+            var updateRoot = Path.Combine(LauncherPaths.ExecutableDirectory, "PCL");
+            var zipPath = Path.Combine(updateRoot, "wmcl-update.zip");
+            if (!File.Exists(zipPath))
             {
-                LauncherCommon.Log("[System] 更新失败：未找到更新文件");
+                LauncherCommon.Log("[System] 更新失败：未找到更新包");
                 return;
             }
 
-            // id old new restart
-            var text =
-                $"update {Environment.ProcessId} \"{Basics.ExecutablePath}\" \"{fileName}\" {(triggerRestart ? "true" : "false")}";
-            LauncherCommon.Log("[System] 更新程序启动，参数：" + text);
+            var staging = Path.Combine(updateRoot, "update");
+            if (Directory.Exists(staging))
+                Directory.Delete(staging, true);
+            Directory.CreateDirectory(staging);
+            System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, staging, true);
+
+            var newExe = Path.Combine(
+                staging,
+                OperatingSystem.IsWindows() ? "PCL.Launcher.exe" : "PCL.Launcher");
+            if (!File.Exists(newExe))
+            {
+                LauncherCommon.Log("[System] 更新失败：更新包内未找到启动器程序");
+                return;
+            }
+
+            var arguments =
+                $"--apply-update \"{staging}\" \"{LauncherPaths.ExecutableDirectory}\" {Environment.ProcessId}";
+            LauncherCommon.Log("[System] 启动更新程序：" + newExe + " " + arguments);
             Process.Start(
-                new ProcessStartInfo(fileName)
+                new ProcessStartInfo(newExe)
                 {
                     WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true,
-                    Arguments = text
+                    Arguments = arguments
                 });
             if (triggerRestartAndByEnd)
             {
@@ -274,9 +272,9 @@ public static class UpdateManager
                 LauncherCommon.Log("[System] 已由于更新强制结束程序");
             }
         }
-        catch (Win32Exception ex)
+        catch (Exception ex)
         {
-            LauncherCommon.Log(ex, "自动更新时触发 Win32 错误，疑似被拦截");
+            LauncherCommon.Log(ex, "[System] 启动更新程序失败");
             UpdateUi.Current?.ShowMessageBox(
                 Lang.Text("Update.Error.UpdateBlockedMessage", LauncherPaths.ExecutableDirectory),
                 Lang.Text("Update.Error.UpdateBlocked"),
@@ -285,43 +283,6 @@ public static class UpdateManager
                 "",
                 true);
         }
-    }
-
-    /// <summary>确保 PathTemp 下的 Latest.exe 是最新正式版的 PCL，它会被用于整合包打包。 如果不是，则下载一个。</summary>
-    internal static void DownloadLatestPcl(Loading.LoaderBase? loaderToSyncProgress = null)
-    {
-        // 注意：如果要自行实现这个功能，请换用另一个文件路径，以免与官方版本冲突
-        var latestPclPath = Path.Combine(LauncherPaths.Temp, "CE-Latest.exe");
-        var target = remoteServer.GetLatestVersion(
-            UpdateSourceChannel.Stable,
-            SystemInfo.IsArm64System ? UpdateArch.Arm64 : UpdateArch.X64);
-        if (target is null)
-            throw new Exception(Lang.Text("Update.Error.UnableToGetUpdate"));
-        if (File.Exists(latestPclPath)
-            && (Files.GetFileSha256(latestPclPath) ?? "") == (target.Sha256 ?? ""))
-        {
-            LauncherCommon.Log("[System] 最新版 PCL CE 已存在，跳过下载");
-            return;
-        }
-
-        if ((Files.GetFileSha256(Basics.ExecutablePath) ?? "")
-            == (target.Sha256 ?? "")) // 正在使用的版本符合要求，直接拿来用
-        {
-            Files.CopyFile(Basics.ExecutablePath, latestPclPath);
-            return;
-        }
-
-        var loaders = remoteServer.GetDownloadLoader(
-            UpdateSourceChannel.Stable,
-            SystemInfo.IsArm64System ? UpdateArch.Arm64 : UpdateArch.X64,
-            latestPclPath);
-        var loader =
-            new Loading.LoaderCombo<int>(Lang.Text("Update.Task.DownloadLatestStable"), loaders)
-            {
-                DisplayNameFactory = () => Lang.Text("Update.Task.DownloadLatestStable")
-            };
-        loader.Start();
-        loader.WaitForExit();
     }
 
     private static void LoadOnlineInfo()

@@ -16,6 +16,9 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        if (UpdateApplyMode.TryRun(args))
+            return;
+
         var platform = PlatformDetector.Detect();
 
         PlatformStartup.Initialize(platform, args);
