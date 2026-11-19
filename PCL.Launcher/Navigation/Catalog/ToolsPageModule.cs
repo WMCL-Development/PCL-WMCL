@@ -21,11 +21,27 @@ public sealed class ToolsPageModule : IPageModule
             visible: () => !Config.Preference.Hide.ToolsGameLink),
         Sub(
             PageIds.Tools,
+            SubPageIds.ToolsAstral,
+            "Tools.Left.Astral",
+            "lucide/send",
+            "multiplayer",
+            1,
+            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsAstral>(sp)),
+        Sub(
+            PageIds.Tools,
+            SubPageIds.ToolsTerracotta,
+            "Tools.GameLink.Mode.Terracotta",
+            "lucide/box",
+            "multiplayer",
+            2,
+            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTerracotta>(sp)),
+        Sub(
+            PageIds.Tools,
             SubPageIds.ToolsTest,
             "Tools.Left.Utilities.Title",
             "lucide/tool-case",
             "utilities",
-            1,
+            3,
             (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTest>(sp),
             () => !Config.Preference.Hide.ToolsTest)
     ];
@@ -34,9 +50,9 @@ public sealed class ToolsPageModule : IPageModule
     [
         new(
             PageIds.Tools,
-            "Tools.Left.Lobby",
-            "lucide/wrench",
-            MainTab.Tools,
+            "Main.Tab.Link",
+            "lucide/link-2",
+            MainTab.Link,
             150d,
             SubPageIds.ToolsGameLink,
             [
@@ -50,10 +66,10 @@ public sealed class ToolsPageModule : IPageModule
     public IReadOnlyList<MainTabDescriptor> MainTabs { get; } =
     [
         new(
-            MainTab.Tools,
+            MainTab.Link,
             PageIds.Tools,
-            "Main.Tab.Tools",
-            "lucide/wrench",
-            3)
+            "Main.Tab.Link",
+            "lucide/link-2",
+            2)
     ];
 }

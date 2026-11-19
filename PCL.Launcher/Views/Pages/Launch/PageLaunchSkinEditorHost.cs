@@ -4,25 +4,23 @@ using PCL.Navigation;
 
 namespace PCL.Views.Pages.Launch;
 
-/// <summary>
-///     皮肤编辑器页宿主：参数为皮肤文件路径，切换参数时重建页面。
-/// </summary>
+/// <summary>皮肤编辑器页宿主：参数为皮肤文件路径，切换参数时重建页面。</summary>
 public sealed class PageLaunchSkinEditorHost : IPageHost
 {
     private PageLaunchSkinEditor? _right;
     private object? _parameter;
 
-    public PageType Page => PageType.LaunchSkinEditor;
+    public PageId Page => PageIds.LaunchSkinEditor;
 
     public MainTab? Tab => null;
 
     public double LeftWidth => 0d;
 
-    public string GetTitle(PageStackData stack) => Lang.Text("Skin.Editor.Title");
+    public string GetTitle(PageRoute stack) => Lang.Text("Skin.Editor.Title");
 
-    public Control? GetLeft(PageStackData stack) => null;
+    public Control? GetLeft(PageRoute stack) => null;
 
-    public Control GetRight(PageStackData stack)
+    public Control GetRight(PageRoute stack)
     {
         if (_right is not null && Equals(_parameter, stack.Parameter))
             return _right;

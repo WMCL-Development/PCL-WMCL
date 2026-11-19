@@ -64,7 +64,15 @@ public static class SubPageIds
         "SetupLauncherLanguage");
 
     public static readonly SubPageId ToolsGameLink = new(PageIds.Tools, "ToolsGameLink");
+    public static readonly SubPageId ToolsAstral = new(PageIds.Tools, "ToolsAstral");
+    public static readonly SubPageId ToolsTerracotta = new(PageIds.Tools, "ToolsTerracotta");
     public static readonly SubPageId ToolsTest = new(PageIds.Tools, "ToolsTest");
+
+    // 更多页
+    public static readonly SubPageId MoreToolbox = new(PageIds.More, "MoreToolbox");
+    public static readonly SubPageId MoreHelp = new(PageIds.More, "MoreHelp");
+    public static readonly SubPageId MoreAbout = new(PageIds.More, "MoreAbout");
+    public static readonly SubPageId MoreFeedback = new(PageIds.More, "MoreFeedback");
 
     public static readonly SubPageId VersionOverall = new(PageIds.InstanceSetup, "VersionOverall");
     public static readonly SubPageId VersionSetup = new(PageIds.InstanceSetup, "VersionSetup");

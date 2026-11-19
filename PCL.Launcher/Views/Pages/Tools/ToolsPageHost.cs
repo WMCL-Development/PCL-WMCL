@@ -27,7 +27,7 @@ public sealed class ToolsPageHost : IPageHost
 
     public PageId Page => PageIds.Tools;
 
-    public MainTab? Tab => MainTab.Tools;
+    public MainTab? Tab => MainTab.Link;
 
     public double LeftWidth => _descriptor.LeftWidth;
 

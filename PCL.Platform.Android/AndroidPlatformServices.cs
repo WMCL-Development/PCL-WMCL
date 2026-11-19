@@ -16,6 +16,8 @@ public sealed class AndroidJavaPlatformInfo : IJavaPlatformInfo
 {
     public string JavaExecutableName => "java";
     public string? JavawExecutableName => null;
+
+    public string JstackExecutableName => "jstack";
     public bool SupportsJavaw => false;
 
     public IJavaParser CreateParser() =>
@@ -222,101 +224,42 @@ public sealed class AndroidClipboardService : IClipboardService
             .GetSystemService(global::Android.Content.Context.ClipboardService)
             as global::Android.Content.ClipboardManager;
 
-    public string[]? GetFileDropList() => null;
+    public Task<string[]?> GetFileDropListAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<string[]?>(null);
+    }
 
-    public string? GetText()
+    public Task<string?> GetTextAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             var manager = Manager;
-            if (manager is null || !manager.HasPrimaryClip) return null;
+            if (manager is null || !manager.HasPrimaryClip) return Task.FromResult<string?>(null);
 
             var clip = manager.PrimaryClip;
-            if (clip is null || clip.ItemCount == 0) return null;
+            if (clip is null || clip.ItemCount == 0) return Task.FromResult<string?>(null);
 
-            return clip.GetItemAt(0)?.Text;
+            return Task.FromResult(clip.GetItemAt(0)?.Text);
         }
         catch (Exception)
         {
-            return null;
+            return Task.FromResult<string?>(null);
         }
     }
 
-    public void SetText(string text)
+    public Task SetTextAsync(string text, CancellationToken cancellationToken = default)
     {
         try
         {
             var manager = Manager;
-            if (manager is null) return;
-
-            manager.PrimaryClip = global::Android.Content.ClipData.NewPlainText("PCL CE", text);
+            if (manager is not null)
+                manager.PrimaryClip = global::Android.Content.ClipData.NewPlainText("PCL CE", text);
         }
         catch (Exception)
         {
             // 忽略：剪贴板写入失败不应影响界面
         }
+
+        return Task.CompletedTask;
     }
-}
-
-/// <summary>Android 通过 Intent 打开链接与文件。</summary>
-public sealed class AndroidShellLauncher : IShellLauncher
-{
-    private static bool IsHttpUrl(string path) =>
-        path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-        || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
-
-    public void OpenPath(string path, string? workingDirectory = null, string? arguments = null)
-    {
-        // 很多调用点用 OpenPath 打开网页，Android 上要按链接处理
-        if (IsHttpUrl(path))
-        {
-            OpenUrl(path);
-            return;
-        }
-
-        var context = global::Android.App.Application.Context;
-        var uri = global::Android.Net.Uri.Parse("file://" + path)!;
-        var intent = new global::Android.Content.Intent(global::Android.Content.Intent.ActionView);
-        intent.SetDataAndType(uri, "*/*");
-        intent.AddFlags(global::Android.Content.ActivityFlags.GrantReadUriPermission);
-        intent.AddFlags(global::Android.Content.ActivityFlags.NewTask);
-        context.StartActivity(intent);
-    }
-
-    public void OpenUrl(string url)
-    {
-        var context = global::Android.App.Application.Context;
-        var intent = new global::Android.Content.Intent(
-            global::Android.Content.Intent.ActionView, global::Android.Net.Uri.Parse(url));
-        intent.AddFlags(global::Android.Content.ActivityFlags.NewTask);
-        context.StartActivity(intent);
-    }
-}
-
-/// <summary>Android 区域信号：沿用进程区域设置。</summary>
-public sealed class AndroidRegionSignalProvider : IRegionSignalProvider
-{
-    public RegionSignals ReadSignals()
-    {
-        var culture = CultureInfo.CurrentCulture;
-        var timeZone = TimeZoneInfo.Local;
-        return new RegionSignals(
-            culture.Name,
-            !string.IsNullOrWhiteSpace(culture.Name),
-            timeZone.Id,
-            !string.IsNullOrWhiteSpace(timeZone.Id));
-    }
-}
-
-/// <summary>Android 致命错误：写入调试输出，避免在无窗口环境抛二次异常。</summary>
-public sealed class AndroidFatalDialogService : IFatalDialogService
-{
-    public void ShowFatal(string message, string caption) =>
-        Debug.WriteLine($"[FATAL] {caption}: {message}");
-}
-
-/// <summary>Android 的密钥保护沿用 Unix 实现（应用私有目录 + 文件权限）。</summary>
-public static class AndroidKeyProtector
-{
-    public static IKeyProtector Create(byte[] key) => new UnixKeyProtector(key);
 }

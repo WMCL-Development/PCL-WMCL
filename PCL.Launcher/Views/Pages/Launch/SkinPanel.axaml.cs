@@ -216,7 +216,7 @@ public partial class SkinPanel : UserControl
         {
             var path = _localSkinPath;
             if (string.IsNullOrWhiteSpace(path)) return;
-            PCL.Navigation.PageRouter.Navigate(Navigation.PageType.LaunchSkinEditor, parameter: path);
+            PCL.Navigation.PageRouter.Navigate(PCL.Navigation.PageIds.LaunchSkinEditor, parameter: path);
             return;
         }
 

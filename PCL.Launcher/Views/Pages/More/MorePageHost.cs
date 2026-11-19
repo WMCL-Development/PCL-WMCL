@@ -1,67 +1,60 @@
 using Avalonia.Controls;
 using PCL.Core.App.Localization;
-using PCL.Core.Logging;
 using PCL.Navigation;
-using PCL.Views.Pages.Setup;
-using PCL.Views.Pages.Tools;
 
 namespace PCL.Views.Pages.More;
 
-/// <summary>
-///     更多页宿主：左栏常驻，右栏按 <see cref="PageSubType" /> 缓存
-///     百宝箱 / 关于 / 反馈三个子页；帮助是外部链接。
-/// </summary>
+/// <summary>更多页宿主：左栏常驻，右栏按子页描述缓存。</summary>
 public sealed class MorePageHost : IPageHost
 {
-    private readonly MorePageLeft _left;
-    private readonly Dictionary<PageSubType, Control> _rightPages = new();
+    private readonly PageDescriptor _descriptor;
+    private readonly PageMoreLeft _left;
+    private readonly PageViewFactory _pageViews;
+    private readonly Dictionary<SubPageId, Control> _rightPages = new();
 
-    public MorePageHost()
+    public MorePageHost(
+        PageDescriptor descriptor,
+        PageMoreLeft left,
+        INavigationService navigation,
+        PageViewFactory pageViews)
     {
-        _left = new MorePageLeft();
-        _left.PageSelected += sub => PageRouter.Navigate(PageType.More, sub);
+        _descriptor = descriptor;
+        _pageViews = pageViews;
+        _left = left;
+        _left.PageSelected += sub =>
+            navigation.GoTo(new PageLocation(PageIds.More, sub));
     }
 
-    public PageType Page => PageType.More;
+    public PageId Page => PageIds.More;
 
     public MainTab? Tab => MainTab.More;
 
-    public double LeftWidth => 150d;
+    public double LeftWidth => _descriptor.LeftWidth;
 
-    public string GetTitle(PageStackData stack) => Normalize(stack.SubType) switch
+    public string GetTitle(PageRoute stack)
     {
-        PageSubType.MoreAbout => Lang.Text("More.Left.About"),
-        PageSubType.MoreFeedback => Lang.Text("More.Left.Feedback"),
-        PageSubType.MoreHelp => Lang.Text("More.Left.Help"),
-        _ => Lang.Text("More.Left.Toolbox")
-    };
+        var sub = _descriptor.NormalizeSubPage(stack.SubPage);
+        var descriptor = _descriptor.FindSubPage(sub);
+        return descriptor is null ? string.Empty : Lang.Text(descriptor.TitleKey);
+    }
 
-    public Control? GetLeft(PageStackData stack)
+    public Control? GetLeft(PageRoute stack)
     {
-        _left.Select(Normalize(stack.SubType));
+        var sub = _descriptor.NormalizeSubPage(stack.SubPage);
+        _left.Select(sub);
         return _left;
     }
 
-    public Control GetRight(PageStackData stack)
+    public Control GetRight(PageRoute stack)
     {
-        var sub = Normalize(stack.SubType);
-        if (_rightPages.TryGetValue(sub, out var cached)) return cached;
+        var sub = _descriptor.NormalizeSubPage(stack.SubPage);
+        if (_rightPages.TryGetValue(sub, out var cached))
+            return cached;
 
-        Control page = sub switch
-        {
-            PageSubType.MoreAbout => new PageSetupAbout(),
-            PageSubType.MoreFeedback => new PageSetupFeedback(),
-            PageSubType.MoreHelp => new PageMoreHelp(),
-            _ => new PageToolsTest()
-        };
+        var descriptor = _descriptor.FindSubPage(sub)
+            ?? throw new InvalidOperationException($"未找到更多子页：{sub}");
+        var page = _pageViews.Create(descriptor, stack);
         _rightPages[sub] = page;
         return page;
     }
-
-    private static PageSubType Normalize(PageSubType sub) =>
-        sub is PageSubType.MoreToolbox or PageSubType.MoreAbout or PageSubType.MoreFeedback
-            or PageSubType.MoreHelp
-            ? sub
-            : PageSubType.MoreToolbox;
-
 }

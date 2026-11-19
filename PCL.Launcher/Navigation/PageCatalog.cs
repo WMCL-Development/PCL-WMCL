@@ -13,7 +13,8 @@ public static class PageCatalog
             new SetupPageModule(),
             new ToolsPageModule(),
             new InstancePageModule(),
-            new ShellPageModule()
+            new ShellPageModule(),
+            new WmclPageModule()
         ]));
 
     public static PageCatalogSnapshot Snapshot => _snapshot.Value;

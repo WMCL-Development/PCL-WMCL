@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using PCL.Core.Platform;
 
@@ -29,69 +30,55 @@ public sealed class AndroidFileDialogService : IFileDialogService
 {
     public bool IsAvailable => AndroidFilePickerBridge.PickFiles is not null;
 
-    // 同步 API：UI 线程上不能阻塞（会死锁），后台线程上阻塞等待即可。
-    public string SelectSaveFile(string? title, string fileName, string? fileFilter = null, string? initialDirectory = null)
-        => WaitFor(() => AndroidFilePickerBridge.SaveFile is null
-            ? Task.FromResult("")
-            : AndroidFilePickerBridge.SaveFile(fileName));
-
-    public string SelectFile(string? fileFilter = null, string? title = null, string? initialDirectory = null)
+    public async Task<string> SelectSaveFileAsync(
+        string? title,
+        string fileName,
+        string? fileFilter = null,
+        string? initialDirectory = null,
+        CancellationToken cancellationToken = default)
     {
-        var files = WaitFor(() => AndroidFilePickerBridge.PickFiles is null
-            ? Task.FromResult(Array.Empty<string>())
-            : AndroidFilePickerBridge.PickFiles(false));
-        return files.Length == 0 ? "" : files[0];
-    }
-
-    public string[] SelectFiles(string? fileFilter = null, string? title = null, string? initialDirectory = null, bool allowMultiSelect = true)
-        => WaitFor(() => AndroidFilePickerBridge.PickFiles is null
-            ? Task.FromResult(Array.Empty<string>())
-            : AndroidFilePickerBridge.PickFiles(allowMultiSelect));
-
-    public string SelectFolder(string? title = null, string? initialDirectory = null)
-        => WaitFor(() => AndroidFilePickerBridge.PickFolder is null
-            ? Task.FromResult("")
-            : AndroidFilePickerBridge.PickFolder());
-
-    private static T WaitFor<T>(Func<Task<T>> factory)
-    {
-        if (AndroidFilePickerBridge.IsMainThread?.Invoke() != false)
-        {
-            // 主线程（或无法判定）不能阻塞：返回默认值，调用方应改用异步 API。
-            PCL.Core.Logging.LogWrapper.Warn("Dialog", "文件对话框不能在主线程同步等待，已忽略本次调用");
-            return default!;
-        }
-
-        var task = factory();
-        return task.Wait(TimeSpan.FromMinutes(10)) ? task.Result : default!;
-    }
-
-    public async Task<string> SelectFolderAsync(string? title = null, string? initialDirectory = null)
-    {
-        return AndroidFilePickerBridge.PickFolder is null
+        cancellationToken.ThrowIfCancellationRequested();
+        return AndroidFilePickerBridge.SaveFile is null
             ? ""
-            : await AndroidFilePickerBridge.PickFolder().ConfigureAwait(false);
+            : await AndroidFilePickerBridge
+                .SaveFile(string.IsNullOrWhiteSpace(fileName) ? "save.bin" : fileName)
+                .ConfigureAwait(false);
     }
 
-    public async Task<string> SelectFileAsync(string? fileFilter = null, string? title = null, string? initialDirectory = null)
+    public async Task<string> SelectFileAsync(
+        string? fileFilter = null,
+        string? title = null,
+        string? initialDirectory = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var files = AndroidFilePickerBridge.PickFiles is null
             ? []
             : await AndroidFilePickerBridge.PickFiles(false).ConfigureAwait(false);
         return files.Length == 0 ? "" : files[0];
     }
 
-    public async Task<string[]> SelectFilesAsync(string? fileFilter = null, string? title = null, string? initialDirectory = null, bool allowMultiSelect = true)
+    public async Task<string[]> SelectFilesAsync(
+        string? fileFilter = null,
+        string? title = null,
+        string? initialDirectory = null,
+        bool allowMultiSelect = true,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         return AndroidFilePickerBridge.PickFiles is null
             ? []
             : await AndroidFilePickerBridge.PickFiles(allowMultiSelect).ConfigureAwait(false);
     }
 
-    public async Task<string> SelectSaveFileAsync(string? title, string fileName, string? fileFilter = null, string? initialDirectory = null)
+    public async Task<string> SelectFolderAsync(
+        string? title = null,
+        string? initialDirectory = null,
+        CancellationToken cancellationToken = default)
     {
-        return AndroidFilePickerBridge.SaveFile is null
+        cancellationToken.ThrowIfCancellationRequested();
+        return AndroidFilePickerBridge.PickFolder is null
             ? ""
-            : await AndroidFilePickerBridge.SaveFile(string.IsNullOrWhiteSpace(fileName) ? "save.bin" : fileName).ConfigureAwait(false);
+            : await AndroidFilePickerBridge.PickFolder().ConfigureAwait(false);
     }
 }

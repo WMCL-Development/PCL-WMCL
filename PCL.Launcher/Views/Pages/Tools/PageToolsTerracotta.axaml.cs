@@ -27,7 +27,7 @@ public partial class PageToolsTerracotta : UserControl
 
         try
         {
-            PlatformServices.Clipboard?.SetText(code);
+            ApplicationRuntime.GetService<IClipboardService>()?.SetTextAsync(code);
             HintService.Show(Hints.Success(Lang.Text("Common.Hint.Copied")));
         }
         catch (Exception exception)

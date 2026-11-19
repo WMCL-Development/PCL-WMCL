@@ -25,4 +25,11 @@ public static class PageIds
     public static readonly PageId HelpDetail = new("HelpDetail");
     public static readonly PageId GameLog = new("GameLog");
     public static readonly PageId VersionSaves = new("VersionSaves");
+
+    // Android 端新增页面
+    public static readonly PageId LaunchSkin = new("LaunchSkin");
+    public static readonly PageId LaunchSkinEditor = new("LaunchSkinEditor");
+    public static readonly PageId Collection = new("Collection");
+    public static readonly PageId ItemPicker = new("ItemPicker");
+    public static readonly PageId More = new("More");
 }
