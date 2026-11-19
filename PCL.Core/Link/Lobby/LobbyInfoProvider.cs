@@ -55,7 +55,7 @@ public static class LobbyInfoProvider
     /// <summary>
     /// 解析大厅编号，并返回 LobbyInfo 对象。若解析失败则返回 null。
     /// </summary>
-    public static LobbyInfo? ParseCode(string code)
+    public static LobbyInfo? ParseCode(string code, bool allowTerracotta = true)
     {
         code = code.Trim().ToUpper();
         if (string.IsNullOrWhiteSpace(code) || code.Length < 9 || !code.IsASCII())
@@ -86,6 +86,8 @@ public static class LobbyInfoProvider
         }
         else // 陶瓦
         {
+            // 联机大厅不再支持陶瓦编号，只有陶瓦页自己会解析
+            if (!allowTerracotta) return null;
             var matches = code.RegexSearch(RegexPatterns.TerracottaId);
             if (matches.Count == 0)
             {

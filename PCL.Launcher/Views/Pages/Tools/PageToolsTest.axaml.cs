@@ -41,10 +41,11 @@ public partial class PageToolsTest : MyPageRight
         BtnOpenAvatar.Click += (_, _) => OpenToolDialog("CardAvatar");
         BtnOpenAchievement.Click += (_, _) => OpenToolDialog("CardAchievement");
         BtnPickAchievementItem.Click += async (_, _) => await OpenAchievementItemPickerAsync();
-        BtnPickAchievementImage.Click += (_, _) => PickAchievementImage();
+        BtnPickAchievementImage.Click += async (_, _) => await PickAchievementImageAsync();
         BtnToolDialogClose.Click += (_, _) => CloseToolDialog();
         AchievementImageRenderer.Preview = this.FindControl<Border>("PanAchievementToast");
         PanScroll = PanBack;
+        SetPageContent(PanMain);
         Current = this;
         DataContext = ViewModel;
         RenderOptions.SetBitmapInterpolationMode(ImgHead, BitmapInterpolationMode.None);
@@ -451,7 +452,7 @@ public partial class PageToolsTest : MyPageRight
     }
 
     /// <summary>WPF <c>PageToolsTest.StartCustomDownload</c> 的等价实现。</summary>
-    public static void StartCustomDownload(
+    public static async Task StartCustomDownloadAsync(
         string url,
         string? fileName,
         string? folder,
@@ -464,7 +465,7 @@ public partial class PageToolsTest : MyPageRight
                 : fileName;
             if (string.IsNullOrWhiteSpace(folder))
             {
-                folder = SystemDialogs.SelectSaveFile(
+                folder = await SystemDialogs.SelectSaveFileAsync(
                     Lang.Text("Tools.Test.CustomDownload.SelectLocation"),
                     fileName);
                 if (string.IsNullOrEmpty(folder)) return;
@@ -529,7 +530,7 @@ public partial class PageToolsTest : MyPageRight
             };
             combo.Start();
             Loading.LoaderTaskbarAdd(combo);
-            UiInteraction.RefreshDownloadButton(nameof(StartCustomDownload));
+            UiInteraction.RefreshDownloadButton(nameof(StartCustomDownloadAsync));
         }
         catch (Exception ex)
         {
@@ -554,12 +555,12 @@ public partial class PageToolsTest : MyPageRight
     }
 
     /// <summary>选择本地图片当作成就图标。</summary>
-    private void PickAchievementImage()
+    private async Task PickAchievementImageAsync()
     {
         string? path = null;
         try
         {
-            path = PCL.Core.UI.SystemDialogs.SelectFile(
+            path = await PCL.Core.UI.SystemDialogs.SelectFileAsync(
                 Lang.Text("Tools.Test.Achievement.LocalImage"),
                 Lang.Text("Tools.Test.Achievement.FileFilter"));
         }
@@ -577,41 +578,21 @@ public partial class PageToolsTest : MyPageRight
     }
 
     /// <summary>用创造模式物品栏当物品选择器：全部点亮，点一下就填入物品 ID。</summary>
-    private async Task OpenAchievementItemPickerAsync()
+    private Task OpenAchievementItemPickerAsync()
     {
-        // 选择器依赖物品目录，先把奖池准备好（没装游戏会先下载客户端）。
-        await ViewModel.PrepareLotteryAsync();
-        await ViewModel.EnsureInventoryAssetsAsync();
-        var (items, counts, icons) = ViewModel.BuildItemPicker();
-
-        await PCL.Core.UI.Dialogs.DialogService.Instance.ShowAsync(
-            new PCL.UI.Dialogs.ContentDialogRequest
-            {
-                Title = Lang.Text("Tools.Test.Achievement.Pick"),
-                Buttons = PCL.Core.UI.Dialogs.DialogButtons.Ok,
-                ContentFactory = () =>
-                {
-                    var inventory = new PCL.UI.Controls.Mc.McCreativeInventory
-                    {
-                        Scale = 2,
-                        Width = 390,
-                        Height = 384,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-                    };
-                    inventory.Items = items;
-                    inventory.SetLayout(counts, icons);
-                    inventory.ItemActivated += (_, slot) =>
-                    {
-                        ViewModel.AchievementItem = slot.Id;
-                        inventory.SelectedId = slot.Id;
-                    };
-                    return inventory;
-                }
-            });
+        // 物品选择改为独立二级页，加载过程在页内显示居中遮罩。
+        PCL.Navigation.PageRouter.Navigate(PCL.Navigation.PageType.ItemPicker);
+        return Task.CompletedTask;
     }
 
-    /// <summary>打开收藏库：用统一弹窗显示，高度不受页面限制。</summary>
-    private async void OpenCollectionDialog()
+    /// <summary>打开收藏库：改为独立二级页，加载过程在页内显示居中遮罩。</summary>
+    private void OpenCollectionDialog()
+    {
+        PCL.Navigation.PageRouter.Navigate(PCL.Navigation.PageType.Collection);
+    }
+
+    /// <summary>旧的弹窗实现（保留备查）。</summary>
+    private async void OpenCollectionDialogLegacy()
     {
         await ViewModel.EnsureInventoryAssetsAsync();
         var (items, counts) = ViewModel.BuildCollectionInventory();

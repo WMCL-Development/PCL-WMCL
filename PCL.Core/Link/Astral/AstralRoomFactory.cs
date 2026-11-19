@@ -19,9 +19,11 @@ public static class AstralRoomFactory
         IReadOnlyList<string>? peers = null,
         string? virtualIp = null)
     {
-        var networkName = RandomToken(8);
-        // 密钥用 16 位，避免与他人网络名撞车后还能被猜出。
-        var networkSecret = RandomToken(16);
+        // 同一个房间名必须得到同一套网络参数，否则双方各开一间房，
+        // 界面上都叫「我的房间」却根本不在一个 EasyTier 网络里。
+        var seed = string.IsNullOrWhiteSpace(name) ? "astral-room" : name!.Trim().ToLowerInvariant();
+        var networkName = "astral-" + Derive(seed, 8);
+        var networkSecret = Derive("secret|" + seed, 16);
 
         return new AstralRoom(
             string.IsNullOrWhiteSpace(name) ? "Astral 房间" : name!.Trim(),
@@ -50,6 +52,16 @@ public static class AstralRoomFactory
             networkSecret,
             peers is { Count: > 0 } ? peers : [.. AstralCode.DefaultPeers()],
             "Astral");
+    }
+
+    /// <summary>由房间名派生固定串：同名房间 → 同一个网络。</summary>
+    private static string Derive(string seed, int length)
+    {
+        var hash = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed));
+        var builder = new System.Text.StringBuilder(length);
+        for (var i = 0; i < length; i++)
+            builder.Append(Alphabet[hash[i] % Alphabet.Length]);
+        return builder.ToString();
     }
 
     /// <summary>生成短码量级的随机串（不含易混淆字符）。</summary>

@@ -41,7 +41,7 @@ public sealed class AstralLobbyHost
         Func<AstralRoom, CancellationToken, Task<string>>? createCode = null,
         IReadOnlyList<string>? peers = null)
     {
-        _factory = factory ?? (options => new Scaffolding.EasyTier.EasyTierEntity(options));
+        _factory = factory ?? EasyTierProcessFactory.Create;
         _createCode = createCode;
         _peers = peers;
     }
@@ -99,7 +99,7 @@ public sealed class AstralLobbyHost
         {
             await StopAsync().ConfigureAwait(false);
             _process = _factory(options);
-            if (_process.Launch() != 0)
+            if (await _process.LaunchAsync().ConfigureAwait(false) != 0)
                 return AstralHostResult.Fail("EasyTier 启动失败，请检查安装与权限（tun 需要管理员权限）。");
         }
         catch (Exception exception)

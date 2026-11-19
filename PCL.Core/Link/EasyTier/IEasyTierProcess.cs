@@ -10,6 +10,12 @@ public interface IEasyTierProcess
     /// <summary>返回 0 表示启动成功。</summary>
     int Launch();
 
+    /// <summary>
+    ///     异步启动：默认就是同步实现，单视图平台（Android）可以覆盖它，
+    ///     这样调用方能等到真正启动完成再报告成功。
+    /// </summary>
+    Task<int> LaunchAsync() => Task.FromResult(Launch());
+
     /// <summary>返回 0 表示停止成功。</summary>
     Task<int> StopAsync();
 

@@ -50,6 +50,8 @@ public static class EasyTierPlatform
             PlatformKind.Windows => "windows",
             PlatformKind.Linux => "linux",
             PlatformKind.MacOs => "macos",
+            // Android 没有 EasyTier 官方依赖包，这里给出占位值让模块初始化不中断。
+            PlatformKind.Android => "android",
             _ => throw new ArgumentOutOfRangeException(nameof(os), os, "未知的 EasyTier 宿主平台")
         };
 
@@ -62,6 +64,10 @@ public static class EasyTierPlatform
             (PlatformKind.Linux, Architecture.Arm64) => "aarch64",
             (PlatformKind.MacOs, Architecture.X64) => "x86_64",
             (PlatformKind.MacOs, Architecture.Arm64) => "aarch64",
+            // Android 由启动器自带核心库，这里只需要一个合法标识，避免平台解析抛异常
+            (PlatformKind.Android, Architecture.Arm64) => "arm64",
+            (PlatformKind.Android, Architecture.Arm) => "arm",
+            (PlatformKind.Android, Architecture.X64) => "x86_64",
             _ => throw new PlatformNotSupportedException(
                 $"EasyTier 没有适用于 {os}/{architecture} 的官方依赖包")
         };

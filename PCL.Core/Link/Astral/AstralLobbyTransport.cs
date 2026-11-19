@@ -21,7 +21,7 @@ public sealed class AstralLobbyTransport : ILobbyTransport
 
     public AstralLobbyTransport(Func<EasyTierOptions, IEasyTierProcess>? factory = null)
     {
-        _factory = factory ?? (options => new EasyTierEntity(options));
+        _factory = factory ?? EasyTierProcessFactory.Create;
     }
 
     public string ProviderId => "astral";
@@ -69,7 +69,7 @@ public sealed class AstralLobbyTransport : ILobbyTransport
         {
             if (_entity is not null) await _entity.StopAsync().ConfigureAwait(false);
             _entity = _factory(options);
-            var code = _entity.Launch();
+            var code = await _entity.LaunchAsync().ConfigureAwait(false);
             if (code != 0)
                 return LobbyConnectResult.Fail("EasyTier 启动失败，请检查是否已安装或被占用。");
 

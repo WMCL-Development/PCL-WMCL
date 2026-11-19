@@ -939,6 +939,14 @@ public partial class PageToolsGameLinkViewModel : ViewModelBase
     public async Task JoinLobbyAsync()
     {
         var code = JoinCode.Trim();
+
+        // 联机大厅只处理 PCL CE 大厅编号，陶瓦编号请到「陶瓦联机」页使用
+        if (LobbyInfoProvider.ParseCode(code, allowTerracotta: false) is null
+            && LobbyInfoProvider.ParseCode(code)?.Type == LobbyInfoProvider.LobbyType.Terracotta)
+        {
+            HintService.Show(Hints.Warning(Lang.Text("Tools.GameLink.Join.TerracottaNotSupported")));
+            return;
+        }
         if (string.IsNullOrWhiteSpace(code))
         {
             HintService.Show(Hints.Info(Lang.Text("Tools.GameLink.Join.InvalidText")));

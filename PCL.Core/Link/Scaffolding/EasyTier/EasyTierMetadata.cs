@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using PCL.Core.App;
@@ -34,17 +35,25 @@ public static class EasyTierMetadata
     /// <summary>
     ///     EasyTier 核心可执行文件路径。
     /// </summary>
-    public static string CorePath => Path.Combine(InstallRoot, Package.CoreFileName);
+    public static string CorePath =>
+        Environment.GetEnvironmentVariable("PCL_EASYTIER_CORE_PATH") is { Length: > 0 } custom
+            ? custom
+            : Path.Combine(InstallRoot, Package.CoreFileName);
 
     /// <summary>
     ///     EasyTier CLI 可执行文件路径。
     /// </summary>
-    public static string CliPath => Path.Combine(InstallRoot, Package.CliFileName);
+    public static string CliPath =>
+        Environment.GetEnvironmentVariable("PCL_EASYTIER_CLI_PATH") is { Length: > 0 } custom
+            ? custom
+            : Path.Combine(InstallRoot, Package.CliFileName);
 
     /// <summary>
-    ///     当前平台的 EasyTier 依赖是否完整。
+    ///     Android 上 EasyTier 核心随 APK 一起分发（libeasytier-core.so / libeasytier-cli.so），
+    ///     不需要额外下载，安装判定直接为真。
     /// </summary>
     public static bool IsInstalled =>
+        Package.Os == PCL.Core.Platform.PlatformKind.Android ||
         Package.RequiredFiles.All(fileName => File.Exists(Path.Combine(InstallRoot, fileName)));
 
     /// <summary>

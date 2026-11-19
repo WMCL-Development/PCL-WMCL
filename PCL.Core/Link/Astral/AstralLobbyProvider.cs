@@ -13,7 +13,9 @@ namespace PCL.Core.Link.Astral;
 public sealed class AstralLobbyProvider(AstralShareCodeService? service = null) : ILobbyProvider
 {
     /// <summary>Astral 房主固定虚拟 IP。</summary>
-    public const string HostVirtualIp = "10.144.144.1";
+    // 与官方 Astral 客户端保持同一网段（其本机地址为 10.126.126.1），
+    // 否则两端不在同一个虚拟子网，房间能连上但互相不可达。
+    public const string HostVirtualIp = "10.126.126.1";
 
     private readonly AstralShareCodeService _service = service ?? new AstralShareCodeService();
 

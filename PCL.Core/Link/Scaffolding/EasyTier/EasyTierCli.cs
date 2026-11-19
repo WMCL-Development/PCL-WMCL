@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -36,10 +37,16 @@ public static class EasyTierCli
     /// </summary>
     public static ProcessStartInfo CreateStartInfo(string arguments)
     {
+        // Android 的 CLI 位于 APK 的 nativeLibraryDir，InstallRoot（shared-local）并不存在；
+        // 工作目录不存在会让 fork/exec 直接抛 ENOENT，这里回退到 CLI 实际所在目录。
+        var workingDirectory = EasyTierMetadata.InstallRoot;
+        if (!Directory.Exists(workingDirectory))
+            workingDirectory = Path.GetDirectoryName(EasyTierMetadata.CliPath) ?? workingDirectory;
+
         var startInfo = new ProcessStartInfo
         {
             FileName = EasyTierMetadata.CliPath,
-            WorkingDirectory = EasyTierMetadata.InstallRoot,
+            WorkingDirectory = workingDirectory,
             Arguments = arguments,
             UseShellExecute = false,
             CreateNoWindow = true,

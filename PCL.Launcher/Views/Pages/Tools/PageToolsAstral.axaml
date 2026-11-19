@@ -4,6 +4,7 @@
              xmlns:loc="using:PCL.Core.UI"
              x:CompileBindings="False"
              x:Class="PCL.Views.Pages.Tools.PageToolsAstral">
+    <Panel>
     <ui:MyScrollViewer HorizontalScrollBarVisibility="Disabled"
                        VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="10">
@@ -187,6 +188,20 @@
                        Title="{loc:Loc Tools.Astral.Share.Title}">
                 <StackPanel Margin="25,40,21,15">
                     <StackPanel Orientation="Horizontal"
+                                IsVisible="{Binding ShareShortCode, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc Tools.Astral.Share.ShortCode}" />
+                        <SelectableTextBlock x:Name="TxtShortCode"
+                                             Margin="8,0,0,0"
+                                             FontSize="16"
+                                             VerticalAlignment="Center"
+                                             Text="{Binding ShareShortCode}" />
+                        <ui:MyButton x:Name="BtnCopyShortCode"
+                                     MinWidth="80"
+                                     Margin="12,0,0,0"
+                                     Text="{loc:Loc Tools.Astral.Share.Copy}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal"
                                 IsVisible="{Binding ShareShortLink, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                         <TextBlock VerticalAlignment="Center"
                                    Text="{loc:Loc Tools.Astral.Share.Short}" />
@@ -234,4 +249,15 @@
             </ui:MyCard>
         </StackPanel>
     </ui:MyScrollViewer>
+        <Panel Background="#B3FFFFFF" IsVisible="{Binding IsBusy}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                <ui:MyLoading Width="42" Height="42"
+                              HorizontalAlignment="Center" />
+                <TextBlock HorizontalAlignment="Center"
+                           FontSize="12"
+                           Opacity="0.8"
+                           Text="{Binding HostStatus}" />
+            </StackPanel>
+        </Panel>
+    </Panel>
 </UserControl>

@@ -18,7 +18,8 @@ namespace PCL.ViewModels.Pages;
 /// </summary>
 public partial class PageToolsTerracottaViewModel : ViewModelBase
 {
-    private EasyTierEntity? _entity;
+    partial void OnLocalPortChanged(int value) => PCL.Core.App.Config.Link.TerracottaLocalPort = value;
+    private PCL.Core.Link.EasyTier.IEasyTierProcess? _entity;
     private TerracottaTunnel? _tunnel;
 
     [ObservableProperty] public partial string Code { get; set; } = string.Empty;
@@ -31,7 +32,7 @@ public partial class PageToolsTerracottaViewModel : ViewModelBase
 
     [ObservableProperty] public partial string HostStatus { get; set; } = string.Empty;
 
-    [ObservableProperty] public partial int LocalPort { get; set; } = 25565;
+    [ObservableProperty] public partial int LocalPort { get; set; } = PCL.Core.App.Config.Link.TerracottaLocalPort;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(JoinCommand))]
@@ -117,7 +118,7 @@ public partial class PageToolsTerracottaViewModel : ViewModelBase
         {
             var code = TerracottaCode.Create(out var name, out var secret, out var port);
 
-            _entity = new EasyTierEntity(new EasyTierOptions
+            _entity = PCL.Core.Link.EasyTier.EasyTierProcessFactory.Create(new EasyTierOptions
             {
                 NetworkName = "terracotta-mc-" + name,
                 NetworkSecret = secret,

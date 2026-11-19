@@ -8,7 +8,7 @@
         xmlns:mc="using:PCL.UI.Controls.Mc"
                 x:CompileBindings="False"
                 x:Class="PCL.Views.Pages.Tools.PageToolsTest">
-    <Panel>
+    <Panel x:Name="PanMain">
     <ui:MyScrollViewer x:Name="PanBack"
                        HorizontalScrollBarVisibility="Disabled"
                        VerticalScrollBarVisibility="Auto">
@@ -397,7 +397,8 @@
                        IsVisible="False"
                        Margin="0,0,0,15"
                        Title="{loc:Loc Tools.Test.Lottery.Title}">
-                <StackPanel Margin="25,40,25,15">
+                <Grid>
+                    <StackPanel Margin="25,40,25,15">
                     <TextBlock Margin="0,0,0,6"
                                FontSize="12"
                                Opacity="0.7"
@@ -470,16 +471,24 @@
                                Opacity="0.7"
                                TextWrapping="Wrap"
                                Text="{Binding LotteryStatus}" />
-                    <StackPanel Margin="0,10,0,0"
-                                Orientation="Horizontal"
-                                IsVisible="{Binding IsLotteryLoading}">
-                        <ui:MyLoading Width="18" Height="18" Margin="0,0,8,0" />
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="12"
-                                   Opacity="0.75"
-                                   Text="{Binding LotteryLoadStatus}" />
                     </StackPanel>
-                </StackPanel>
+
+                    <!-- 解析物品时的遮罩：盖住卡片内容，加载动画居中 -->
+                    <Panel IsVisible="{Binding IsLotteryLoading}"
+                           Background="#B3FFFFFF">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="10">
+                            <ui:MyLoading Width="42"
+                                          Height="42"
+                                          HorizontalAlignment="Center" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="13"
+                                       Opacity="0.8"
+                                       Text="{Binding LotteryLoadStatus}" />
+                        </StackPanel>
+                    </Panel>
+                </Grid>
             </ui:MyCard>
             <ui:MyCard x:Name="CardDirectories"
                        Margin="0,0,0,15"
