@@ -27,13 +27,24 @@ public static class EasyTierInstaller
     public static IReadOnlyList<string> GetDownloadUrls(string version, EasyTierPackage package)
     {
         var archiveName = package.GetArchiveName(version);
+        var githubUrl = $"https://github.com/EasyTier/EasyTier/releases/download/v{version}/{archiveName}";
         return
         [
             $"https://staticassets.naids.com/resources/pclce/static/easytier/{archiveName}",
             $"https://s3.pysio.online/pcl2-ce/static/easytier/{archiveName}",
-            $"https://github.com/EasyTier/EasyTier/releases/download/v{version}/{archiveName}"
+            githubUrl,
+            // GitHub 直连不通或速度过低时，依次换这些镜像（前缀代理）。
+            $"https://ghfast.top/{githubUrl}",
+            $"https://gh-proxy.com/{githubUrl}",
+            $"https://ghproxy.net/{githubUrl}"
         ];
     }
+
+    /// <summary>低于该速度（字节/秒）视为“太慢”，自动切换到下一个下载源。</summary>
+    private const long MinimumDownloadSpeed = 100 * 1024;
+
+    /// <summary>开始测速前允许的宽限时间，避免刚建连就把源判死。</summary>
+    private static readonly TimeSpan _SpeedWarmup = TimeSpan.FromSeconds(4);
 
     /// <summary>
     ///     确保当前平台的 EasyTier 依赖已经安装；已安装时不会重复下载。
@@ -164,7 +175,8 @@ public static class EasyTierInstaller
                     FileShare.None,
                     81920,
                     true);
-                await source.CopyToAsync(target, timeoutCts.Token).ConfigureAwait(false);
+                await _CopyWithSpeedCheckAsync(source, target, url, timeoutCts.Token)
+                    .ConfigureAwait(false);
 
                 return;
             }
@@ -177,6 +189,30 @@ public static class EasyTierInstaller
             }
 
         throw new IOException("下载 EasyTier 依赖文件失败", lastError);
+    }
+
+    /// <summary>边下边测速：超过宽限期后平均速度低于阈值就中止，交给外层换源。</summary>
+    private static async Task _CopyWithSpeedCheckAsync(
+        Stream source,
+        Stream target,
+        string url,
+        CancellationToken cancellationToken)
+    {
+        var buffer = new byte[81920];
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        long total = 0;
+        while (true)
+        {
+            var read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            if (read <= 0) break;
+            await target.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+            total += read;
+
+            var elapsed = stopwatch.Elapsed;
+            if (elapsed >= _SpeedWarmup && total / elapsed.TotalSeconds < MinimumDownloadSpeed)
+                throw new IOException(
+                    $"下载速度低于 100 KB/s，切换下载源：{url}（{total / 1024d / elapsed.TotalSeconds:0} KB/s）");
+        }
     }
 
     private static bool _RequiredFilesExist(string root, EasyTierPackage package)

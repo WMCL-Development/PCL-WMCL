@@ -351,3 +351,6 @@ MaskFiles/
 
 # 本地发布产物
 /dist/
+
+# EasyTier Android 产物由 scripts/fetch-easytier-android.sh 下载，不提交进仓库
+PCL.Launcher.Android/NativeLibs/

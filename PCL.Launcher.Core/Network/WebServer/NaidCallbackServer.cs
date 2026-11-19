@@ -157,11 +157,10 @@ public static partial class WebServer
 
         private static Task<HttpRouteResponse> HandleComplete(HttpServerRequest request)
         {
+            // Android 单视图宿主里程序集资源可能取不到，直接使用内联页面（图标已内联为 data URI）。
+            var html = System.Text.Encoding.UTF8.GetBytes(OAuthCompletePage.Html);
             return HttpRouteResponse
-                .Input(
-                    Basics.GetResourceStream("Resources/oauth-complete.html")
-                    ?? throw new FileNotFoundException("无法找到内置回调页面资源"),
-                    "text/html")
+                .Input(new MemoryStream(html), "text/html; charset=utf-8")
                 .AsTask();
         }
     }

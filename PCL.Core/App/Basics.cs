@@ -98,7 +98,9 @@ public static class Basics
     public static int CurrentProcessId { get; } = CurrentProcess.Id;
 
     /// <summary>当前进程可执行文件的绝对路径。</summary>
-    public static string ExecutablePath { get; } = Environment.ProcessPath!;
+    public static string ExecutablePath { get; } =
+        Environment.ProcessPath
+        ?? AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
     /// <summary>当前进程可执行文件所在的目录。若有需求，请使用 <see cref="Path.Combine(string[])" /> 而不是自行拼接路径。</summary>
     public static string ExecutableDirectory { get; } =
@@ -115,7 +117,8 @@ public static class Basics
     public static string[] FullCommandLineArguments { get; } = Environment.GetCommandLineArgs();
 
     /// <summary>当前进程不包括第一个参数（文件名）的命令行参数。</summary>
-    public static string[] CommandLineArguments { get; } = FullCommandLineArguments[1..];
+    public static string[] CommandLineArguments { get; } =
+        FullCommandLineArguments.Length > 1 ? FullCommandLineArguments[1..] : [];
 
     /// <summary>实时获取的当前目录。若要在可执行文件目录中存放文件等内容，请使用更准确的 <see cref="ExecutableDirectory" /> 而不是这个目录。</summary>
     public static string CurrentDirectory => Environment.CurrentDirectory;

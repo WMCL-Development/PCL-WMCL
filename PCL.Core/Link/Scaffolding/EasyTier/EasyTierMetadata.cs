@@ -22,11 +22,17 @@ public static class EasyTierMetadata
             CurrentEasyTierVer,
             Package.FolderName);
 
-    /// <summary>EasyTier 核心可执行文件路径。</summary>
-    public static string CorePath => Path.Combine(InstallRoot, Package.CoreFileName);
+    /// <summary>EasyTier 核心可执行文件路径。Android 由 <c>AndroidPaths</c> 通过环境变量指向 nativeLibraryDir。</summary>
+    public static string CorePath =>
+        Environment.GetEnvironmentVariable("PCL_EASYTIER_CORE_PATH") is { Length: > 0 } coreOverride
+            ? coreOverride
+            : Path.Combine(InstallRoot, Package.CoreFileName);
 
-    /// <summary>EasyTier CLI 可执行文件路径。</summary>
-    public static string CliPath => Path.Combine(InstallRoot, Package.CliFileName);
+    /// <summary>EasyTier CLI 可执行文件路径。Android 由 <c>AndroidPaths</c> 通过环境变量指向 nativeLibraryDir。</summary>
+    public static string CliPath =>
+        Environment.GetEnvironmentVariable("PCL_EASYTIER_CLI_PATH") is { Length: > 0 } cliOverride
+            ? cliOverride
+            : Path.Combine(InstallRoot, Package.CliFileName);
 
     /// <summary>当前平台的 EasyTier 依赖是否完整。</summary>
     public static bool IsInstalled =>

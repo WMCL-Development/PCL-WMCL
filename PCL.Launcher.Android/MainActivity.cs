@@ -49,6 +49,25 @@ public class MainActivity : AvaloniaMainActivity
             AndroidVpnController.RefreshNotification();
     }
 
+    /// <summary>返回键：有页面历史时返回上一页，否则交给系统退出。</summary>
+    public override void OnBackPressed()
+    {
+        try
+        {
+            if (PCL.Navigation.PageRouter.CanGoBack)
+            {
+                PCL.Navigation.PageRouter.Back();
+                return;
+            }
+        }
+        catch (Exception exception)
+        {
+            PCL.Core.Logging.LogWrapper.Warn("Android", "返回键处理失败：" + exception.Message);
+        }
+
+        base.OnBackPressed();
+    }
+
     protected override void OnPause()
     {
         base.OnPause();

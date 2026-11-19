@@ -3,7 +3,7 @@ name: Android
 on:
   workflow_dispatch:
   push:
-    branches: [dev]
+    branches: [dev, sync/upstream]
     paths:
       - 'PCL.Launcher.Android/**'
       - 'PCL.Platform.Android/**'
@@ -12,7 +12,12 @@ on:
       - 'PCL.Launcher.Core/**'
       - 'PCL.Localization/**'
       - 'PCL.Platform/**'
+      - 'PCL.Launcher/**'
+      - 'scripts/fetch-easytier-android.sh'
       - '.github/workflows/android.yml'
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -30,14 +35,35 @@ jobs:
       - name: Install Android workload
         run: dotnet workload install android
 
+      # EasyTier 的 arm64 产物不再提交进仓库，构建前从 fork 的 release 下载：
+      # https://github.com/wenxiangL521/EasyTier/releases/tag/pcl-android-v2.6.4
+      - name: 下载 EasyTier Android 产物
+        run: bash scripts/fetch-easytier-android.sh
+
+      # Android 工程直接引用桌面端产物（HintPath 指向 Debug/net10.0），必须先构建桌面端。
+      - name: Build desktop
+        env:
+          PCL_WRITE_SECRET: 1
+          PCL_NAID_CLIENT_ID: ${{ secrets.NAID_CLIENT_ID }}
+          PCL_NAID_CLIENT_SECRET: ${{ secrets.NAID_CLIENT_SECRET }}
+          PCL_MS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          PCL_CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+          PCL_TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
+        run: |
+          dotnet build PCL.Launcher/PCL.Launcher.csproj \
+            -c Debug -p:UseSharedCompilation=false
+
       - name: Build APK
         env:
           PCL_WRITE_SECRET: 1
+          PCL_NAID_CLIENT_ID: ${{ secrets.NAID_CLIENT_ID }}
+          PCL_NAID_CLIENT_SECRET: ${{ secrets.NAID_CLIENT_SECRET }}
           PCL_MS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
           PCL_CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+          PCL_TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
         run: |
           dotnet build PCL.Launcher.Android/PCL.Launcher.Android.csproj \
-            -c Release -f net11.0-android -p:AndroidPackageFormat=apk
+            -c Debug -p:AndroidPackageFormat=apk -p:UseSharedCompilation=false
 
       - name: Collect APK
         run: |
