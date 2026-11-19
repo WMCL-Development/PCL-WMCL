@@ -36,9 +36,6 @@ public partial class PageSetupUpdateViewModel : ViewModelBase
 
     [ObservableProperty] public partial string CurrentVersionText { get; set; } = string.Empty;
 
-    [ObservableProperty]
-    public partial string MirrorChyanKey { get; set; } = Config.Update.MirrorChyanKey;
-
     [ObservableProperty] public partial bool ShowCheckCard { get; set; }
 
     [ObservableProperty] public partial bool ShowUpdateCard { get; set; }
@@ -87,11 +84,6 @@ public partial class PageSetupUpdateViewModel : ViewModelBase
                 ? UpdateButtonState.Install
                 : UpdateButtonState.OpenDownload;
 
-    partial void OnMirrorChyanKeyChanged(string value)
-    {
-        Config.Update.MirrorChyanKey = value ?? string.Empty;
-    }
-
     partial void OnShowUpdateCardChanged(bool value)
     {
         OnPropertyChanged(nameof(ChangelogText));
@@ -105,7 +97,6 @@ public partial class PageSetupUpdateViewModel : ViewModelBase
     public void Reload()
     {
         CurrentVersionText = "PCL CE " + VersionNameFormat(LauncherCommon.VersionBaseName);
-        MirrorChyanKey = Config.Update.MirrorChyanKey;
         UpdateModeIndex = Math.Clamp((int)Config.Update.UpdateMode, 0, 3);
         SetUpdateButtonState(InstallButtonState);
         UpdateButtonEnabled = !IsFlatpak;

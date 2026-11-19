@@ -15,7 +15,6 @@ public static class UpdateManager
     public static UpdatesWrapperModel remoteServer = new(
         new List<IUpdateSource>
         {
-            new UpdatesMirrorChyanModel(),
             new UpdatesRandomModel(
             [
                 new UpdatesMinioModel("https://s3.pysio.online/pcl2-ce/", "Pysio"),

@@ -1001,7 +1001,6 @@ PCL CE has implemented some of the official PCL's toolbox features, such as memo
 
 PCL CE supports log viewing and exporting, making it easy for users to submit detailed logs when reporting bugs.
 
-PCL CE supports using Mirror酱 to accelerate updates.
 
 PCL CE supports dark mode, so your eyes won't be blinded when sneaking in some Minecraft gaming at night.
 
