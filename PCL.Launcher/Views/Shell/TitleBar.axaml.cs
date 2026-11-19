@@ -13,15 +13,14 @@ using PCL.UI.Controls;
 
 namespace PCL.Views.Shell;
 
-/// <summary>
-///     自绘标题栏：左侧 Logo 与四个主入口，二级页面显示返回键与标题，右侧为窗口按钮。
-///     Logo 模式、自定义文本与左右布局由配置与主题驱动，文本全部走本地化。
-/// </summary>
+/// <summary>自绘标题栏：左侧 Logo 与四个主入口，二级页面显示返回键与标题，右侧为窗口按钮。 Logo 模式、自定义文本与左右布局由配置与主题驱动，文本全部走本地化。</summary>
 public partial class TitleBar : UserControl
 {
     private const string TitleLayerAnimationKey = "TitleBar Title Layer";
 
     private const string InnerTitleAnimationKey = "TitleBar Inner Title";
+
+    private readonly Dictionary<MainTab, MyRadioButton> _tabButtons = [];
 
     private bool _isSecondary;
 
@@ -30,6 +29,7 @@ public partial class TitleBar : UserControl
     public TitleBar()
     {
         InitializeComponent();
+        BuildMainTabs();
         AddHandler(
             PointerPressedEvent,
             Root_OnPointerPressed,
@@ -254,56 +254,42 @@ public partial class TitleBar : UserControl
         if (control.RenderTransform is TranslateTransform transform) transform.X = 0d;
     }
 
-    /// <summary>
-    ///     按「功能隐藏」配置显示/隐藏主标签；F12 打开临时显示时全部可见。
-    ///     当前停留的标签被隐藏时退回启动页。
-    /// </summary>
-    public void ApplyHiddenPages()
+    private void BuildMainTabs()
     {
-        var hide = Config.Preference.Hide;
-        var force = HiddenFeatureState.ForceShow;
+        PanTitleSelect.Children.Clear();
+        _tabButtons.Clear();
 
-        var downloadVisible = force || !hide.PageDownload;
-        var setupVisible = force || !hide.PageSetup;
-        var moreVisible = force || !hide.PageTools;
-        var linkVisible = force || !hide.ToolsGameLink;
+        foreach (var descriptor in PageCatalog.MainTabs.OrderBy(tab => tab.Order))
+        {
+            var button = new MyRadioButton
+            {
+                SvgIcon = descriptor.IconKey,
+                LogoScale = descriptor.LogoScale,
+                ColorType = MyRadioButton.ColorState.White,
+                Padding = new Thickness(2d, 0d),
+                Margin = new Thickness(5d, 0d),
+                CheckCommandParameter = descriptor.Id
+            };
+            button.SetLocalizedValue(MyRadioButton.TextProperty, descriptor.TitleKey);
+            button.Check += Tab_OnCheck;
+            _tabButtons[descriptor.Id] = button;
+            PanTitleSelect.Children.Add(button);
+        }
 
-        BtnTitleSelect1.IsVisible = downloadVisible;
-        BtnTitleSelect2.IsVisible = linkVisible;
-        BtnTitleSelect3.IsVisible = setupVisible;
-        BtnTitleSelect4.IsVisible = moreVisible;
-
-        if (_currentTab is { } tab
-            && ((tab == MainTab.Download && !downloadVisible)
-                || (tab == MainTab.Link && !linkVisible)
-                || (tab == MainTab.Setup && !setupVisible)
-                || (tab == MainTab.More && !moreVisible)))
-            PageRouter.Navigate(MainTab.Launch);
+        SetTabChecked(MainTab.Launch);
     }
-
-    private MainTab? _currentTab;
-
-    private void OnHiddenFeatureChanged() => ApplyHiddenPages();
 
     private void SetTabChecked(MainTab tab)
     {
-        _currentTab = tab;
-        BtnTitleSelect0.Checked = tab == MainTab.Launch;
-        BtnTitleSelect1.Checked = tab == MainTab.Download;
-        BtnTitleSelect2.Checked = tab == MainTab.Link;
-        BtnTitleSelect3.Checked = tab == MainTab.Setup;
-        BtnTitleSelect4.Checked = tab == MainTab.More;
+        foreach (var (id, button) in _tabButtons)
+            button.Checked = id == tab;
     }
 
     private void Tab_OnCheck(MyRadioButton sender, bool raiseByMouse)
     {
         if (_updating || !raiseByMouse) return;
-        TabSelected?.Invoke(
-            ReferenceEquals(sender, BtnTitleSelect1) ? MainTab.Download
-            : ReferenceEquals(sender, BtnTitleSelect2) ? MainTab.Link
-            : ReferenceEquals(sender, BtnTitleSelect3) ? MainTab.Setup
-            : ReferenceEquals(sender, BtnTitleSelect4) ? MainTab.More
-            : MainTab.Launch);
+        if (sender.CheckCommandParameter is MainTab tab)
+            TabSelected?.Invoke(tab);
     }
 
     private void Back_OnClick(object? sender, EventArgs e)

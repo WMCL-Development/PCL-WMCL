@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Text.Json.Serialization;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.IO;
 using PCL.Core.IO.Net.Http;
 using PCL.Core.Utils;
 using PCL.Core.Utils.Diff;
@@ -95,7 +96,7 @@ public class UpdatesMinioModel : IUpdateSource // 社区自己的更新系统格
                         ?.FirstOrDefault();
                     if (deJsonData is null)
                         throw new Exception("No assets can download!");
-                    var selfSha256 = LauncherCommon.GetFileSha256(Basics.ExecutablePath);
+                    var selfSha256 = Files.GetFileSha256(Basics.ExecutablePath);
                     var remoteUpdSha256 = deJsonData.Sha256;
                     var patchFileName = $"{selfSha256}_{remoteUpdSha256}.patch";
                     if (deJsonData.Patches.Contains(patchFileName))
@@ -120,7 +121,11 @@ public class UpdatesMinioModel : IUpdateSource // 社区自己的更新系统格
                             [new DownloadFile(RandomUtils.Shuffle(deJsonData.Downloads), tempPath)];
                     }
                 }));
-        loaders.Add(new LoaderDownload(Lang.Text("Update.Task.DownloadFile"), []));
+        loaders.Add(
+            new LoaderDownload(Lang.Text("Update.Task.DownloadFile"), [])
+            {
+                DisplayNameFactory = () => Lang.Text("Update.Task.DownloadFile")
+            });
         loaders.Add(
             new Loading.LoaderTask<string, int>(
                 Lang.Text("Update.Task.ApplyFile"),
@@ -131,11 +136,11 @@ public class UpdatesMinioModel : IUpdateSource // 社区自己的更新系统格
                         var diff = new BsDiff();
                         var newFile = diff
                             .ApplyAsync(
-                                LauncherCommon.ReadFileBytes(Basics.ExecutablePath),
-                                LauncherCommon.ReadFileBytes(tempPath))
+                                Files.ReadAllBytesOrEmpty(Basics.ExecutablePath),
+                                Files.ReadAllBytesOrEmpty(tempPath))
                             .GetAwaiter()
                             .GetResult();
-                        LauncherCommon.WriteFile(output, newFile);
+                        Files.WriteAllBytes(output, newFile);
                     }
                     else
                     {
@@ -166,7 +171,10 @@ public class UpdatesMinioModel : IUpdateSource // 社区自己的更新系统格
                         // 解压到指定文件（覆盖已存在文件）
                         entry.ExtractToFile(output, true);
                     }
-                }));
+                })
+            {
+                DisplayNameFactory = () => Lang.Text("Update.Task.ApplyFile")
+            });
         return loaders;
     }
 
@@ -195,7 +203,7 @@ public class UpdatesMinioModel : IUpdateSource // 社区自己的更新系统格
         JsonNode jsonData;
         if (IsCacheValid($"{name}.json", _remoteCache[name]))
         {
-            jsonData = LauncherCommon.GetJson(LauncherCommon.ReadFile(localInfoFile));
+            jsonData = LauncherCommon.GetJson(Files.ReadAllTextOrEmpty(localInfoFile));
         }
         else
         {
@@ -207,15 +215,13 @@ public class UpdatesMinioModel : IUpdateSource // 社区自己的更新系统格
 
             var content = response.AsString();
             jsonData = LauncherCommon.GetJson(content);
-            LauncherCommon.WriteFile(localInfoFile, content);
+            Files.WriteAllText(localInfoFile, content);
         }
 
         return jsonData;
     }
 
-    /// <summary>
-    ///     缓存是否有效
-    /// </summary>
+    /// <summary>缓存是否有效</summary>
     /// <param name="path"></param>
     /// <param name="hash"></param>
     /// <returns></returns>
@@ -225,7 +231,7 @@ public class UpdatesMinioModel : IUpdateSource // 社区自己的更新系统格
         var fileInfo = new FileInfo(cacheFile);
         return fileInfo.Exists
             && (DateTime.Now - fileInfo.LastWriteTime).TotalHours < 1
-            && (LauncherCommon.GetFileMd5(cacheFile) ?? "") == (hash ?? "");
+            && (Files.GetFileMd5(cacheFile) ?? "") == (hash ?? "");
     }
 
     private static string GetChannelName(UpdateSourceChannel channel, UpdateArch arch)

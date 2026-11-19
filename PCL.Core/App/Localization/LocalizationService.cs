@@ -65,8 +65,6 @@ public sealed partial class LocalizationService
         );
 
     /// <summary>界面文案修订号。<br /> 每次 UI 语言或展示格式生效后递增，供页面判断自己上一次渲染的文案是否已经过期。</summary>
-    public static int UiRevision { get; private set; }
-
     /// <summary>语言或展示格式更改后触发。</summary>
     public static event Action? LanguageChanged;
 
@@ -137,7 +135,6 @@ public sealed partial class LocalizationService
         _SaveConfigIfNeeded(save, normalizedLanguageCode, language, normalizedFormatCultureCode);
 
         _LogInfo($"当前 UI 语言: {language.Code}, 展示格式: {formatCulture.Name}");
-        UiRevision++;
         LanguageChanged?.Invoke();
     }
 
@@ -249,13 +246,17 @@ public sealed partial class LocalizationService
         CultureInfo uiCulture,
         CultureInfo formatCulture)
     {
-        var backend = PlatformServices.Localization;
+        var backend = ApplicationRuntime.GetService<ILocalizationBackend>();
         if (backend is null)
         {
             _ApplyCultures(uiCulture, formatCulture);
             _isLanguageResourcesApplied = true;
             return;
         }
+
+        if (UiDispatcher.CheckAccess()) Apply();
+        else UiDispatcher.Invoke(Apply);
+        return;
 
         void Apply()
         {
@@ -267,9 +268,6 @@ public sealed partial class LocalizationService
                     : languageCode);
             _isLanguageResourcesApplied = true;
         }
-
-        if (UiDispatcher.CheckAccess()) Apply();
-        else UiDispatcher.Invoke(Apply);
     }
 
     private static string _NormalizeConfigValue(string? value)

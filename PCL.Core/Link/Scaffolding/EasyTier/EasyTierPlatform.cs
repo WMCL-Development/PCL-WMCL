@@ -6,14 +6,14 @@ using PCL.Core.Platform;
 namespace PCL.Core.Link.Scaffolding.EasyTier;
 
 /// <summary>某个平台/架构对应的 EasyTier 依赖包描述。</summary>
-/// <param name="Os">宿主平台。</param>
+/// <param name="IsWindows">是否为 Windows 宿主。</param>
 /// <param name="Architecture">宿主架构。</param>
 /// <param name="FolderName">压缩包内顶层目录，同时也是安装目录名。</param>
 /// <param name="CoreFileName">EasyTier 核心可执行文件名。</param>
 /// <param name="CliFileName">EasyTier CLI 可执行文件名。</param>
 /// <param name="RequiredFiles">安装完成后必须存在的文件。</param>
 public sealed record EasyTierPackage(
-    PlatformKind Os,
+    bool IsWindows,
     Architecture Architecture,
     string FolderName,
     string CoreFileName,
@@ -32,7 +32,9 @@ public static class EasyTierPlatform
 {
     /// <summary>当前宿主平台。仅本类允许根据操作系统选择平台。</summary>
     public static PlatformKind CurrentOs =>
-        PlatformRuntime.IsInitialized ? PlatformRuntime.Current.Kind : PlatformDetector.Detect();
+        ApplicationRuntime.IsInitialized
+            ? ApplicationRuntime.Current.Platform.Kind
+            : PlatformDetector.Detect();
 
     /// <summary>
     /// 当前宿主使用的 EasyTier 依赖包。 使用系统架构以保持与 WPF 旧下载逻辑一致：Windows ARM64 上即使启动器以 x64
@@ -82,7 +84,7 @@ public static class EasyTierPlatform
             : [coreFileName, cliFileName];
 
         return new EasyTierPackage(
-            os,
+            isWindows,
             architecture,
             folderName,
             coreFileName,

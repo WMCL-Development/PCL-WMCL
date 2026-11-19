@@ -190,13 +190,12 @@ public class LogService : ILifecycleLogService
                         "SystemDialog.Error.Message.WithLogExportGuidance",
                         message);
 
-                DialogService.Instance.Show(
+                DialogService.Instance.ShowNotification(
                     new TextDialogRequest
                     {
                         Title = caption ?? Lang.Text("SystemDialog.Error.Unexpected.Title"),
                         Content = message,
-                        IsWarn = isWarn,
-                        ForceWait = false
+                        IsWarn = isWarn
                     });
 
                 break;
@@ -209,9 +208,11 @@ public class LogService : ILifecycleLogService
                     "SystemDialog.Fatal.Message.WithFeedbackGuidance",
                     _ComposeUserError(plain, entry.Exception));
 
-                PlatformServices.FatalDialog?.ShowFatal(
-                    message,
-                    Lang.Text("SystemDialog.Fatal.Title"));
+                ApplicationRuntime
+                    .GetService<IFatalDialogService>()
+                    ?.ShowFatal(
+                        message,
+                        Lang.Text("SystemDialog.Fatal.Title"));
 
                 break;
             }

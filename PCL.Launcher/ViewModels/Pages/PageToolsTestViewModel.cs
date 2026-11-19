@@ -11,6 +11,7 @@ using PCL.Core.App;
 using PCL.Core.App.Localization;
 using PCL.Core.IO;
 using PCL.Core.Logging;
+using PCL.Core.Platform;
 using PCL.Core.UI;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.UI.Hints;
@@ -542,7 +543,7 @@ public partial class PageToolsTestViewModel : ViewModelBase
             return;
         try
         {
-            var fileName = LauncherCommon.GetFileNameFromPath(WebUtility.UrlDecode(value) ?? value);
+            var fileName = Files.GetFileNameFromPath(WebUtility.UrlDecode(value) ?? value);
             if (!string.IsNullOrWhiteSpace(fileName))
                 DownloadName = fileName;
         }
@@ -655,7 +656,7 @@ public partial class PageToolsTestViewModel : ViewModelBase
                 return;
             }
 
-            var shortcuts = PCL.Core.Platform.PlatformRuntime.Current.Shortcuts;
+            var shortcuts = ApplicationRuntime.Current.Platform.Shortcuts;
             var extension = shortcuts.GetPreferredExtension(target);
             var shortcutName = Lang.Text("Tools.Test.Shortcut.FileName", extension);
             var desktopPath = shortcuts.GetDesktopPath(shortcutName);
@@ -688,7 +689,7 @@ public partial class PageToolsTestViewModel : ViewModelBase
                 target,
                 workingDirectory: AppContext.BaseDirectory,
                 description: "PCL CE",
-                icon: PCL.Core.Platform.PlatformRuntime.Current.Capabilities.SupportsShortcutIcon
+                icon: ApplicationRuntime.Current.Platform.Capabilities.SupportsShortcutIcon
                     ? EnsureShortcutIcon()
                     : null);
             HintService.Show(Hints.Success(Lang.Text("Tools.Test.Shortcut.Created", locationName)));
@@ -711,7 +712,7 @@ public partial class PageToolsTestViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task SelectDownloadFolderAsync()
+    public async Task SelectDownloadFolder()
     {
         var folder = await SystemDialogs.SelectFolderAsync(
             Lang.Text("Tools.Test.CustomDownload.SaveTo"),
@@ -740,13 +741,13 @@ public partial class PageToolsTestViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task StartDownloadAsync()
+    public async Task StartDownload()
     {
         var url = DownloadUrl.Trim();
         var folder = DownloadFolder.Trim();
         var name = DownloadName.Trim();
         States.Tool.DownloadFolder = folder;
-        await PCL.Views.Pages.Tools.PageToolsTest.StartCustomDownloadAsync(url, name, folder);
+        await PageToolsTest.StartCustomDownloadAsync(url, name, folder);
         DownloadUrl = "";
         DownloadName = "";
         DownloadStartEnabled = false;
@@ -890,37 +891,7 @@ public partial class PageToolsTestViewModel : ViewModelBase
 
     /// <summary>为 3D 预览选择皮肤文件，并自动识别经典 / 纤细模型。</summary>
     [RelayCommand]
-    private async Task SelectSkinModelFileAsync()
-    {
-        var path = await SystemDialogs.SelectFileAsync(
-            Lang.Text("Tools.Test.Avatar.FileFilter"),
-            Lang.Text("Tools.Test.SkinModel.Pick"));
-        if (string.IsNullOrWhiteSpace(path)) return;
-
-        try
-        {
-            using var stream = File.OpenRead(path);
-            var bitmap = new Bitmap(stream);
-            if (bitmap.PixelSize.Width != bitmap.PixelSize.Height)
-            {
-                bitmap.Dispose();
-                HintService.Show(Hints.Error(Lang.Text("Tools.Test.Avatar.InvalidSize")));
-                return;
-            }
-
-            PreviewSkin?.Dispose();
-            PreviewSkin = bitmap;
-            PreviewVariant = PCL.UI.Controls.Skin.SkinModelDetector.Detect(bitmap);
-            HintService.Show(Hints.Success(Lang.Text("Tools.Test.SkinModel.Loaded")));
-        }
-        catch (Exception exception)
-        {
-            LogWrapper.Error(exception, "Tools", "加载皮肤预览失败");
-            HintService.Show(Hints.Error(Lang.Text("Tools.Test.Avatar.LoadFailed")));
-        }
-    }
-
-    public async Task SelectSkinFileAsync()
+    public async Task SelectSkinFile()
     {
         var path = await SystemDialogs.SelectFileAsync(
             Lang.Text("Tools.Test.Avatar.FileFilter"),
@@ -956,7 +927,7 @@ public partial class PageToolsTestViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task SaveHeadAsync()
+    public async Task SaveHead()
     {
         if (GeneratedHead is null)
         {

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -11,6 +12,7 @@ using PCL.Core.App.Localization;
 using PCL.Core.Logging;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.UI.Hints;
+using PCL.Navigation;
 using PCL.UI.Controls;
 using PCL.UI.Xaml;
 using PCL.Views.Pages.Homepage;
@@ -20,10 +22,9 @@ using PCL.Xaml;
 namespace PCL.Views.Pages.Launch;
 
 /// <summary>
-///     启动页右栏：按 <c>Preference.Homepage</c> 配置构建主页内容，另带社区版提示与启动日志卡片。
-///     主页来源分为空白、内置“你知道吗”、Minecraft 信息流与运行时 XAML 主页四类；
-///     运行时内容支持旧 WPF XAML 与 AXAML 两种格式，统一走预设、本地文件、URL、
-///     缓存与 CustomLive.json 实时补丁流程。
+/// 启动页右栏：按 <c>Preference.Homepage</c> 配置构建主页内容，另带社区版提示与启动日志卡片。
+/// 主页来源分为空白、内置“你知道吗”、Minecraft 信息流与运行时 XAML 主页四类； 运行时内容支持旧 WPF XAML 与 AXAML
+/// 两种格式，统一走预设、本地文件、URL、 缓存与 CustomLive.json 实时补丁流程。
 /// </summary>
 public partial class PageLaunchRight : MyPageRight, IRefreshable
 {
@@ -53,10 +54,10 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
 
     private bool _communityHintDialogOpen;
 
-    private HomepageContent? _currentContent;
     private DispatcherTimer? _homepageLivePatchTimer;
     private FileSystemWatcher? _homepageLiveWatcher;
     private bool _initialContentPending;
+    private string? _lastWpfToastSource;
     private HomepageContent? _pendingBackgroundContent;
     private int _refreshVersion;
 
@@ -79,14 +80,10 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
         FileDragHandler.CustomHomepageDropped += _ => ForceRefresh();
 
         _panHint.IsVisible = States.Hint.CEMessage;
-        LocalizedText.TryBind(
-            _labHint1,
-            "Text",
-            () => Lang.Text("Launch.Right.CommunityHint.Message"));
-        LocalizedText.TryBind(
-            _labHint2,
-            "Text",
-            () => Lang.Text("Launch.Right.CommunityHint.HidePrompt"));
+        _labHint1.SetLocalizedValue(TextBlock.TextProperty, "Launch.Right.CommunityHint.Message");
+        _labHint2.SetLocalizedValue(
+            TextBlock.TextProperty,
+            "Launch.Right.CommunityHint.HidePrompt");
         this.FindControl<MyIconButton>("BtnHintClose")!.Click += (_, _) => HideCommunityHint();
 
         _panLog.IsVisible = LauncherCommon.ModeDebug;
@@ -140,7 +137,7 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
             Dispatcher.UIThread.Post(() => _labLog.Text = "");
     }
 
-    public override void OnNavigatedTo(object? parameter)
+    public override void OnNavigatedTo(PageParameter? parameter)
     {
     }
 
@@ -204,6 +201,7 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
                     {
                         // 新下载没有可复用的缓存：按 WPF 行为先清空旧页。
                         _panCustom.Children.Clear();
+                        _panHint.Margin = new Thickness(0d, 0d, 0d, 15d);
                         return;
                     }
 
@@ -296,22 +294,24 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
 
     private void LoadContent(HomepageContent content)
     {
-        _currentContent = content;
+        if (content.Kind != HomepageSourceKind.CustomXaml)
+            _lastWpfToastSource = null;
+
         switch (content.Kind)
         {
             case HomepageSourceKind.Blank:
                 LogWrapper.Info("Launch", "[Page] 实例化：清空主页 UI，来源为空");
                 _panCustom.Children.Clear();
+                _panHint.Margin = new Thickness(0d, 0d, 0d, 15d);
                 break;
 
             case HomepageSourceKind.Removed:
-                DialogService.Instance.Show(
+                DialogService.Instance.ShowNotification(
                     new TextDialogRequest
                     {
                         Title = Lang.Text("Common.Dialog.Title"),
                         Content = Lang.Text("Launch.Homepage.Preset.EchoCave.Removed"),
-                        Buttons = DialogButtons.Ok,
-                        ForceWait = true
+                        Buttons = DialogButtons.Ok
                     });
                 break;
 
@@ -353,9 +353,20 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
         }
 
         var xaml = PageHelpDetailViewModel.ReplaceArguments(content.Xaml);
+        if (!HomepageXamlFormatDetector.IsXaml(xaml))
+        {
+            LogWrapper.Error(
+                new InvalidDataException("主页内容不是 XAML/AXAML"),
+                "Launch",
+                $"[Page] 主页内容格式无效：{content.SourceText}");
+            ShowHomepageError(Lang.Text("Launch.Homepage.InvalidXaml"));
+            return;
+        }
+
         var format = HomepageXamlFormatDetector.Detect(xaml);
         if (format == HomepageXamlFormat.Avalonia)
         {
+            _lastWpfToastSource = null;
             var avaloniaResult = HomepageAvaloniaRenderer.Render(xaml);
             if (avaloniaResult.Error is { Length: > 0 }
                 || avaloniaResult.Root is null)
@@ -401,6 +412,8 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
             return;
         }
 
+        ShowWpfMigrationToast(content);
+
         _panCustom.Children.Clear();
         foreach (var control in rendered.Controls)
             _panCustom.Children.Add(control);
@@ -409,8 +422,24 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
         ApplyHomepageLivePatchesFromFile();
     }
 
+    private void ShowWpfMigrationToast(HomepageContent content)
+    {
+        var source = content.SourceText ?? "wpf";
+        if (string.Equals(_lastWpfToastSource, source, StringComparison.Ordinal))
+            return;
+
+        _lastWpfToastSource = source;
+        HintService.Show(
+            Hints.Warning(Lang.Text("Launch.Homepage.WpfMigrationToast")));
+    }
+
     private static void ApplySanitizeHints(RuntimeXamlRenderResult result)
     {
+        foreach (var warning in result.Warnings.Distinct(StringComparer.Ordinal))
+            LauncherCommon.Log(
+                "[Page] 主页运行时 XAML 警告：" + warning,
+                LauncherLogLevel.Debug);
+
         foreach (var unsupported in result.UnsupportedEventTypes.Distinct(StringComparer.Ordinal))
             HintService.Show(
                 Hints.Error(Lang.Text("Event.Sanitize.UnsupportedTypeHint", unsupported)));
@@ -453,19 +482,6 @@ public partial class PageLaunchRight : MyPageRight, IRefreshable
         {
             LogWrapper.Debug(ex, "Launch", "显示主页错误弹窗失败");
         }
-    }
-
-    /// <inheritdoc />
-    protected override void RefreshLocalization()
-    {
-        if (_currentContent is not { } content)
-            return;
-        if (content.Kind is not (HomepageSourceKind.CustomXaml or HomepageSourceKind.Trivia))
-            return;
-        if (content.Kind == HomepageSourceKind.CustomXaml
-            && string.IsNullOrWhiteSpace(content.Xaml))
-            return;
-        LoadContent(content);
     }
 
     private object? FindResource(string key)

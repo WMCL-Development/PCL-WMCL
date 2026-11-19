@@ -1,10 +1,12 @@
 using System.Text;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.IO;
 using PCL.Core.Logging;
 using PCL.Core.Minecraft.ResourceProject;
 using PCL.Core.Platform;
@@ -12,6 +14,7 @@ using PCL.Core.UI;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.UI.Hints;
 using PCL.Core.Utils.Validate;
+using PCL.Navigation;
 using PCL.Network.Loaders;
 using PCL.UI.Controls;
 
@@ -50,17 +53,19 @@ public partial class PageDownloadCompDetail : MyPageRight
             if (ViewModel.Project is { WikiId: > 0 } project)
                 Basics.OpenPath($"https://www.mcmod.cn/class/{project.WikiId}.html");
         };
-        BtnCopyName.Click += (_, _) =>
+        BtnCopyName.Click += async (_, _) =>
         {
             if (ViewModel.Project is not { } project) return;
             var title = project.GetControlTitle(true);
-            PlatformServices.Clipboard?.SetText(title.Key + title.Value);
+            if (ApplicationRuntime.GetService<IClipboardService>() is { } clipboard)
+                await clipboard.SetTextAsync(title.Key + title.Value);
             HintService.Show(Hints.Success(Lang.Text("Common.Status.Success"), false));
         };
-        BtnCopyLink.Click += (_, _) =>
+        BtnCopyLink.Click += async (_, _) =>
         {
             if (ViewModel.Project is not { } project) return;
-            PlatformServices.Clipboard?.SetText(project.Website);
+            if (ApplicationRuntime.GetService<IClipboardService>() is { } clipboard)
+                await clipboard.SetTextAsync(project.Website);
             HintService.Show(Hints.Success(Lang.Text("Common.Status.Success"), false));
         };
         BtnTranslate.Click += async (_, _) => await TranslateDescriptionAsync();
@@ -71,20 +76,29 @@ public partial class PageDownloadCompDetail : MyPageRight
         };
         Grid.SetIsSharedSizeScope(PanResults, true);
 
-        LocalizationService.LanguageChanged += OnLanguageChanged;
+        BtnOpenWebsite.Bind(
+            MyIconTextButton.TextProperty,
+            new Binding(nameof(PageDownloadCompDetailViewModel.IntroWebText))
+            {
+                Source = ViewModel
+            });
+        BtnIntroWiki.Bind(
+            IsVisibleProperty,
+            new Binding(nameof(PageDownloadCompDetailViewModel.IntroWikiVisible))
+            {
+                Source = ViewModel
+            });
+        BtnTranslate.Bind(
+            IsVisibleProperty,
+            new Binding(nameof(PageDownloadCompDetailViewModel.TranslateVisible))
+            {
+                Source = ViewModel
+            });
     }
 
     public PageDownloadCompDetailViewModel ViewModel { get; } = new();
 
-    private void OnLanguageChanged()
-    {
-        if (ViewModel.Project is null) return;
-        ApplyButtonLocalization();
-        ViewModel.RefreshLocalization();
-        RefreshIntro(true);
-    }
-
-    public override void OnNavigatedTo(object? parameter)
+    public override void OnNavigatedTo(PageParameter? parameter)
     {
         PanBack.ScrollToHome();
         if (ViewModel.Project is not null)
@@ -95,7 +109,7 @@ public partial class PageDownloadCompDetail : MyPageRight
     {
     }
 
-    internal void PrepareNavigation(object? parameter)
+    internal void PrepareNavigation(PageParameter? parameter)
     {
         var applied = parameter switch
         {
@@ -117,7 +131,6 @@ public partial class PageDownloadCompDetail : MyPageRight
         };
         if (!applied) return;
 
-        ApplyButtonLocalization();
         RefreshFavoriteButton();
         PanBack.ScrollToHome();
 
@@ -129,8 +142,6 @@ public partial class PageDownloadCompDetail : MyPageRight
 
     private void ApplyIntroState()
     {
-        BtnIntroWiki.IsVisible = ViewModel.IntroWikiVisible;
-        BtnTranslate.IsVisible = ViewModel.TranslateVisible;
         RefreshIntro();
     }
 
@@ -164,14 +175,6 @@ public partial class PageDownloadCompDetail : MyPageRight
             Margin = new Thickness(-7d, -7d, 0d, 8d)
         };
         PanIntro.Children.Insert(0, _compItem);
-    }
-
-    private void ApplyButtonLocalization()
-    {
-        BtnOpenWebsite.Text = ViewModel.IntroWebText;
-        BtnIntroWiki.Text = Lang.Text("Download.Comp.Detail.McMod");
-        BtnTranslate.Text = Lang.Text("Download.Comp.Detail.TranslateDescription");
-        BtnFavorites.Text = Lang.Text("Download.Comp.Detail.Favorite");
     }
 
     private void RefreshFavoriteButton()
@@ -235,7 +238,7 @@ public partial class PageDownloadCompDetail : MyPageRight
                 return;
 
             foreach (var chip in ViewModel.InstanceFilterLabelChips)
-                PanInstanceFilter.Children.Add(CreateFilterLabel(chip.Text, true));
+                PanInstanceFilter.Children.Add(CreateFilterLabel(chip.TextKey, true));
             foreach (var option in ViewModel.InstanceFilterOptions)
                 PanInstanceFilter.Children.Add(
                     CreateFilterChip(
@@ -252,7 +255,7 @@ public partial class PageDownloadCompDetail : MyPageRight
                 return;
 
             foreach (var chip in ViewModel.ModLoaderFilterLabelChips)
-                PanModLoaderFilter.Children.Add(CreateFilterLabel(chip.Text, false));
+                PanModLoaderFilter.Children.Add(CreateFilterLabel(chip.TextKey, false));
             foreach (var option in ViewModel.ModLoaderFilterOptions)
                 PanModLoaderFilter.Children.Add(
                     CreateFilterChip(
@@ -270,14 +273,15 @@ public partial class PageDownloadCompDetail : MyPageRight
         }
     }
 
-    private static TextBlock CreateFilterLabel(string text, bool withBottomMargin)
+    private static TextBlock CreateFilterLabel(string textKey, bool withBottomMargin)
     {
-        return new TextBlock
+        var label = new TextBlock
         {
-            Text = text,
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(2d, 0d, 8d, withBottomMargin ? 4d : 0d)
         };
+        label.SetLocalizedValue(TextBlock.TextProperty, textKey);
+        return label;
     }
 
     private static MyRadioButton CreateFilterChip(
@@ -287,12 +291,15 @@ public partial class PageDownloadCompDetail : MyPageRight
     {
         var chip = new MyRadioButton
         {
-            Text = option.Text,
             GroupName = groupName,
             ColorType = MyRadioButton.ColorState.Highlight,
             Checked = option.IsSelected,
             Margin = new Thickness(2d, 0d, 2d, 4d)
         };
+        LocalizedText.Bind(
+            chip,
+            MyRadioButton.TextProperty,
+            () => option.Text);
         chip.Check += (_, _) => onChecked(option);
         return chip;
     }
@@ -312,12 +319,14 @@ public partial class PageDownloadCompDetail : MyPageRight
             PanResults.Children.Clear();
             if (ViewModel.FileGroups.Count == 0)
             {
-                PanResults.Children.Add(
-                    new TextBlock
-                    {
-                        Text = Lang.Text("Download.Comp.List.NoResults"),
-                        Margin = new Thickness(4, 6, 4, 6)
-                    });
+                var empty = new TextBlock
+                {
+                    Margin = new Thickness(4, 6, 4, 6)
+                };
+                empty.SetLocalizedValue(
+                    TextBlock.TextProperty,
+                    "Download.Comp.List.NoResults");
+                PanResults.Children.Add(empty);
                 return;
             }
 
@@ -325,10 +334,10 @@ public partial class PageDownloadCompDetail : MyPageRight
             {
                 var card = new MyCard
                 {
-                    Title = group.Title,
                     Margin = new Thickness(0, 0, 0, 15),
                     Tag = group
                 };
+                LocalizedText.Bind(card, MyCard.TitleProperty, () => group.Title);
                 var stack = new StackPanel
                 {
                     Margin = new Thickness(20, MyCard.SwapedHeight, 18, 0),
@@ -342,14 +351,17 @@ public partial class PageDownloadCompDetail : MyPageRight
                     foreach (var file in group.Items)
                         target.Children.Add(CreateFileRow(file));
                     if (group.ShowRecognitionHint)
-                        target.Children.Add(
-                            new MyHint
-                            {
-                                Text = Lang.Text(
-                                    "Download.Comp.Detail.VersionRecognitionDelayHint"),
-                                Theme = MyHint.Themes.Yellow,
-                                Margin = new Thickness(5, 0, 0, 8)
-                            });
+                    {
+                        var hint = new MyHint
+                        {
+                            Theme = MyHint.Themes.Yellow,
+                            Margin = new Thickness(5, 0, 0, 8)
+                        };
+                        hint.SetLocalizedValue(
+                            MyHint.TextProperty,
+                            "Download.Comp.Detail.VersionRecognitionDelayHint");
+                        target.Children.Add(hint);
+                    }
                 };
 
                 PanResults.Children.Add(card);
@@ -358,7 +370,7 @@ public partial class PageDownloadCompDetail : MyPageRight
                 else
                     card.IsSwapped = true;
                 card.Swap += (_, _) =>
-                    ViewModel.SetGroupExpanded(group.Title, !card.IsSwapped);
+                    ViewModel.SetGroupExpanded(group.Key, !card.IsSwapped);
             }
 
             if (hadContent && PageState == PageStates.ContentStay)
@@ -412,16 +424,19 @@ public partial class PageDownloadCompDetail : MyPageRight
             Type = MyListItem.CheckType.Clickable,
             Height = 42d,
             Title = fileItem.TitleText,
-            Info = fileItem.InfoText,
             Logo = fileItem.Logo,
             Tag = file
         };
+        LocalizedText.Bind(
+            item,
+            MyListItem.InfoProperty,
+            () => fileItem.InfoText);
 
         var saveButton = new MyIconButton
         {
             SvgIcon = "lucide/save"
         };
-        ToolTip.SetTip(saveButton, Lang.Text("Download.Version.SaveAs"));
+        saveButton.SetLocalizedValue(ToolTip.TipProperty, "Download.Version.SaveAs");
         saveButton.Click += async (_, _) => await SaveFileAsync(file);
 
         if (action == CompFileAction.Save)
@@ -436,7 +451,7 @@ public partial class PageDownloadCompDetail : MyPageRight
         {
             SvgIcon = "lucide/download"
         };
-        ToolTip.SetTip(installButton, Lang.Text("Common.Action.Install"));
+        installButton.SetLocalizedValue(ToolTip.TipProperty, "Common.Action.Install");
         installButton.Click += async (_, _) => await RunInstallAsync(action, file);
         item.TouchRevealButtons = true;
         item.Buttons = [installButton, saveButton];
@@ -899,7 +914,7 @@ public partial class PageDownloadCompDetail : MyPageRight
                 return true;
             }
 
-            var choice = CompDependency.ConfirmDependencyInstall(result);
+            var choice = await CompDependency.ConfirmDependencyInstallAsync(result);
             switch (choice)
             {
                 case Comp.CompDepsInstallTypes.WithDeps:
@@ -942,8 +957,7 @@ public partial class PageDownloadCompDetail : MyPageRight
                         ex),
                     Buttons = DialogButtons.Create(
                         "Download.Comp.Dependency.ResolveFailed.Continue"),
-                    IsWarn = true,
-                    ForceWait = true
+                    IsWarn = true
                 });
             return true;
         }
@@ -1279,7 +1293,7 @@ public partial class PageDownloadCompDetail : MyPageRight
                 },
                 new Loading.LoaderTask<int, int>(
                     Lang.Text("Download.Comp.Detail.InstallWorld"),
-                    _ => LauncherCommon.ExtractFile(tempPath, targetFolder, Encoding.UTF8))
+                    _ => Files.ExtractFile(tempPath, targetFolder, Encoding.UTF8))
                 {
                     ProgressWeight = 0.1d,
                     block = true

@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.IO;
 using PCL.Core.UI;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.UI.Hints;
@@ -52,11 +53,6 @@ public partial class PageSelectLeftViewModel : ViewModelBase
         CanCreateFolder = !Directory.Exists(LauncherPaths.DefaultMinecraftDirectory);
         SelectedFolder = selected;
         return true;
-    }
-
-    public void InvalidateFolders()
-    {
-        _lastFolders = null;
     }
 
     public static bool CanMoveUp(GameFolders.McFolder folder)
@@ -258,9 +254,9 @@ public partial class PageSelectLeftViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public static void InstallModpack()
+    public static async Task InstallModpack()
     {
-        Modpack.ModpackInstall();
+        await Modpack.ModpackInstall();
     }
 
     [RelayCommand]
@@ -461,7 +457,7 @@ public partial class PageSelectLeftViewModel : ViewModelBase
                 try
                 {
                     HintService.Show(Hints.Info(inProgress));
-                    LauncherCommon.DeleteDirectory(folder.Location);
+                    Directories.DeleteDirectory(folder.Location);
                     if (isClearing)
                         Directory.CreateDirectory(folder.Location);
                     HintService.Show(Hints.Success(success));
@@ -495,7 +491,7 @@ public partial class PageSelectLeftViewModel : ViewModelBase
     {
         if (string.IsNullOrEmpty(folder))
             return;
-        LauncherCommon.WriteIni(Path.Combine(folder, "PCL.ini"), "InstanceCache", "");
+        Ini.Write(Path.Combine(folder, "PCL.ini"), "InstanceCache", "");
         if (folder == GameFolders.mcFolderSelected)
             ReloadInstanceList(true);
     }
@@ -516,7 +512,7 @@ public partial class PageSelectLeftViewModel : ViewModelBase
 
         if (force)
         {
-            LauncherCommon.WriteIni(
+            Ini.Write(
                 Path.Combine(root, "PCL.ini"),
                 "InstanceCache",
                 "");
@@ -696,7 +692,7 @@ public partial class PageSelectLeftViewModel : ViewModelBase
     {
         try
         {
-            LauncherCommon.CheckPermissionWithException(path);
+            Directories.EnsureWritable(path);
             return true;
         }
         catch

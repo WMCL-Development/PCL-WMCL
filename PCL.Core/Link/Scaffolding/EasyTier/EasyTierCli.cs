@@ -6,14 +6,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using PCL.Core.Logging;
-using PCL.Core.Platform;
 using PCL.Core.Utils;
 
 namespace PCL.Core.Link.Scaffolding.EasyTier;
 
-/// <summary>
-///     EasyTier CLI 的执行结果。
-/// </summary>
+/// <summary>EasyTier CLI 的执行结果。</summary>
 /// <param name="ExitCode">进程退出码。</param>
 /// <param name="StandardOutput">标准输出。</param>
 /// <param name="StandardError">标准错误。</param>
@@ -26,15 +23,10 @@ public sealed record EasyTierCliResult(
     public string Output => StandardOutput + StandardError;
 }
 
-/// <summary>
-///     统一构造和执行 <c>easytier-cli</c>。
-///     所有平台路径、可执行文件扩展名与 Windows 专属进程选项都集中在这里。
-/// </summary>
+/// <summary>统一构造和执行 <c>easytier-cli</c>。 所有平台路径、可执行文件扩展名与 Windows 专属进程选项都集中在这里。</summary>
 public static class EasyTierCli
 {
-    /// <summary>
-    ///     创建指向当前平台 EasyTier CLI 的进程启动信息。
-    /// </summary>
+    /// <summary>创建指向当前平台 EasyTier CLI 的进程启动信息。</summary>
     public static ProcessStartInfo CreateStartInfo(string arguments)
     {
         // Android 的 CLI 位于 APK 的 nativeLibraryDir，InstallRoot（shared-local）并不存在；
@@ -52,14 +44,12 @@ public static class EasyTierCli
             CreateNoWindow = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            RedirectStandardInput = true,
             StandardOutputEncoding = Encoding.UTF8,
-            StandardErrorEncoding = Encoding.UTF8,
-            StandardInputEncoding = Encoding.UTF8
+            StandardErrorEncoding = Encoding.UTF8
         };
 
         // WindowStyle 与 ErrorDialog 是 Windows 专属属性；Unix 上保持默认值。
-        if (EasyTierMetadata.Package.Os == PlatformKind.Windows)
+        if (EasyTierMetadata.Package.IsWindows)
         {
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.ErrorDialog = false;
@@ -68,9 +58,7 @@ public static class EasyTierCli
         return startInfo;
     }
 
-    /// <summary>
-    ///     执行 EasyTier CLI 并等待退出。
-    /// </summary>
+    /// <summary>执行 EasyTier CLI 并等待退出。</summary>
     /// <param name="arguments">命令行参数。</param>
     /// <param name="timeout">超时时间；超时会终止进程并抛出 <see cref="TimeoutException" />。</param>
     /// <param name="cancellationToken">外部取消令牌。</param>
@@ -88,8 +76,6 @@ public static class EasyTierCli
         {
             if (!process.Start())
                 throw new InvalidOperationException("无法启动 EasyTier CLI");
-
-            process.StandardInput.Close();
 
             var standardOutputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
             var standardErrorTask = process.StandardError.ReadToEndAsync(cancellationToken);
@@ -126,10 +112,7 @@ public static class EasyTierCli
         }
     }
 
-    /// <summary>
-    ///     执行 EasyTier CLI 并把输出解析为 JSON。
-    ///     退出码非 0、输出为空或解析失败时返回 <c>default</c>。
-    /// </summary>
+    /// <summary>执行 EasyTier CLI 并把输出解析为 JSON。 退出码非 0、输出为空或解析失败时返回 <c>default</c>。</summary>
     public static async Task<T?> RunJsonAsync<T>(
         string arguments,
         TimeSpan timeout,

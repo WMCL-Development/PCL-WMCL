@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using PCL.Core.App;
@@ -17,10 +17,9 @@ using PCL.Views.Shell;
 namespace PCL.Views.Pages.Instance;
 
 /// <summary>
-///     实例本地资源页：模组 / 资源包 / 光影 / 结构文件的列表与管理。
-///     支持搜索、按状态筛选、排序、全选与多选批量启用/禁用/更新/删除与导出资源信息。
-///     加载由 <see cref="LocalComp.CompResourceListLoader" /> 驱动，页面实现
-///     <see cref="ICompLocalPage" /> 以便业务层查询加载状态和当前目录。
+/// 实例本地资源页：模组 / 资源包 / 光影 / 结构文件的列表与管理。 支持搜索、按状态筛选、排序、全选与多选批量启用/禁用/更新/删除与导出资源信息。 加载由
+/// <see cref="LocalComp.CompResourceListLoader" /> 驱动，页面实现 <see cref="ICompLocalPage" />
+/// 以便业务层查询加载状态和当前目录。
 /// </summary>
 public partial class PageInstanceCompResource
     : MyPageRight, IPageView, IRefreshable, ICompLocalPage
@@ -44,9 +43,68 @@ public partial class PageInstanceCompResource
         InitializeComponent();
         DataContext = ViewModel;
         PanScroll = PanBack;
-        SearchBox.HintText = Lang.Text("Instance.Resource.Search.Hint");
+        SearchBox.SetLocalizedValue(MySearchBox.HintTextProperty, "Instance.Resource.Search.Hint");
+        BtnFilterAll.Bind(
+            MyRadioButton.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.FilterAllText))
+            {
+                Source = ViewModel
+            });
+        BtnFilterEnabled.Bind(
+            MyRadioButton.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.FilterEnabledText))
+            {
+                Source = ViewModel
+            });
+        BtnFilterDisabled.Bind(
+            MyRadioButton.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.FilterDisabledText))
+            {
+                Source = ViewModel
+            });
+        BtnFilterUpdatable.Bind(
+            MyRadioButton.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.FilterUpdatableText))
+            {
+                Source = ViewModel
+            });
+        BtnFilterError.Bind(
+            MyRadioButton.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.FilterErrorText))
+            {
+                Source = ViewModel
+            });
+        BtnFilterDuplicate.Bind(
+            MyRadioButton.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.FilterDuplicateText))
+            {
+                Source = ViewModel
+            });
+        BtnSort.Bind(
+            MyIconTextButton.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.SortText))
+            {
+                Source = ViewModel
+            });
+        TxtEmptyTitle.Bind(
+            TextBlock.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.EmptyTitle))
+            {
+                Source = ViewModel
+            });
+        TxtEmptyDescription.Bind(
+            TextBlock.TextProperty,
+            new Binding(nameof(PageInstanceCompResourceViewModel.EmptyDescription))
+            {
+                Source = ViewModel
+            });
         ViewModel.Configure(compType, CurrentLoaderFolder);
         ViewModel.ReloadRequested += ReloadList;
+        ViewModel.PropertyChanged += (_, args) =>
+        {
+            if (string.IsNullOrEmpty(args.PropertyName))
+                RefreshSelectBar();
+        };
         _swipeSelector = new ResourceSwipeSelector(
             PanList,
             PanSelect,
@@ -56,7 +114,6 @@ public partial class PageInstanceCompResource
                 && ViewModel.IsSelected(ViewModel.VisibleEntries[index]),
             SetSwipeSelected,
             RefreshSelectBar);
-        RefreshSortText();
         _searchTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(300d)
@@ -89,8 +146,8 @@ public partial class PageInstanceCompResource
         BtnSchematicDownloadMod.Click += (_, _) => DownloadNewForSchematic();
         BtnSchematicVersionSelect.Click += (_, _) =>
         {
-            PageRouter.Navigate(PageType.Launch);
-            PageRouter.Navigate(PageType.InstanceSelect);
+            PageRouter.Navigate(PageIds.Launch);
+            PageRouter.Navigate(PageIds.InstanceSelect);
         };
 
         foreach (var button in new[]
@@ -162,7 +219,7 @@ public partial class PageInstanceCompResource
         }
     }
 
-    public override void OnNavigatedTo(object? parameter)
+    public override void OnNavigatedTo(PageParameter? parameter)
     {
         _currentFolderPath = string.Empty;
         ViewModel.ResetListViewState();
@@ -212,22 +269,6 @@ public partial class PageInstanceCompResource
         {
             LauncherCommon.Log(ex, "显示原理图操作提示失败", LauncherLogLevel.Developer);
         }
-    }
-
-    protected override void RefreshLocalization()
-    {
-        SearchBox.HintText = Lang.Text("Instance.Resource.Search.Hint");
-        ViewModel.Configure(_compType, CurrentLoaderFolder);
-        BtnManageDownload.IsVisible =
-            (HiddenFeatureState.ForceShow || !Config.Preference.Hide.PageDownload)
-            && ViewModel.ShowManageDownload;
-        BtnHintDownload.IsVisible = ViewModel.ShowHintDownload;
-        RefreshSortText();
-        BuildList();
-        if (ViewModel.ShowSchematicEmpty)
-            ShowSchematicEmptyPanel();
-        else if (ViewModel.ShowEmpty)
-            ShowEmptyPanel();
     }
 
     #region 加载
@@ -324,13 +365,13 @@ public partial class PageInstanceCompResource
     {
         var subType = compType switch
         {
-            Comp.CompType.ResourcePack => PageSubType.VersionResourcePack,
-            Comp.CompType.Shader => PageSubType.VersionShader,
-            Comp.CompType.Schematic => PageSubType.VersionSchematic,
-            _ => PageSubType.VersionMod
+            Comp.CompType.ResourcePack => SubPageIds.VersionResourcePack,
+            Comp.CompType.Shader => SubPageIds.VersionShader,
+            Comp.CompType.Schematic => SubPageIds.VersionSchematic,
+            _ => SubPageIds.VersionMod
         };
-        if (PageRouter.Current.Page == PageType.InstanceSetup
-            && PageRouter.Current.SubType == subType
+        if (PageRouter.Current.Page == PageIds.InstanceSetup
+            && PageRouter.Current.SubPage == subType
             && PageRouter.CurrentPage is PageInstanceCompResource page)
         {
             Comp.compProjectCache.Clear();
@@ -394,8 +435,6 @@ public partial class PageInstanceCompResource
         PanLoad.IsVisible = false;
         PanSelect.UpdateSelection(false, 0, ViewModel.SelectedText);
         ViewModel.ApplyEmptyState();
-        TxtEmptyTitle.Text = ViewModel.EmptyTitle;
-        TxtEmptyDescription.Text = ViewModel.EmptyDescription;
         BtnHintBack.IsVisible = ViewModel.ShowHintBack;
         BtnManageBack.IsVisible = ViewModel.ShowManageBack;
         BtnHintDownload.IsVisible = ViewModel.ShowHintDownload;
@@ -429,7 +468,6 @@ public partial class PageInstanceCompResource
             PanListBack.Opacity = 1d;
             BtnManageBack.IsVisible = !string.IsNullOrEmpty(_currentFolderPath);
             RefreshFilterTexts();
-            RefreshSortText();
             RefreshSelectBar();
             ViewModel.RefreshUpdateSummary();
             RefreshUpdateBar();
@@ -485,12 +523,6 @@ public partial class PageInstanceCompResource
 
     private void RefreshFilterTexts()
     {
-        BtnFilterAll.Text = ViewModel.FilterAllText;
-        BtnFilterEnabled.Text = ViewModel.FilterEnabledText;
-        BtnFilterDisabled.Text = ViewModel.FilterDisabledText;
-        BtnFilterUpdatable.Text = ViewModel.FilterUpdatableText;
-        BtnFilterError.Text = ViewModel.FilterErrorText;
-        BtnFilterDuplicate.Text = ViewModel.FilterDuplicateText;
         BtnFilterEnabled.IsVisible = ViewModel.ShowFilterEnabled;
         BtnFilterDisabled.IsVisible = ViewModel.ShowFilterDisabled;
         BtnFilterUpdatable.IsVisible = ViewModel.ShowFilterUpdatable;
@@ -498,31 +530,16 @@ public partial class PageInstanceCompResource
         BtnFilterDuplicate.IsVisible = ViewModel.ShowFilterDuplicate;
     }
 
-    private void RefreshSortText()
-    {
-        BtnSort.Text = ViewModel.SortText;
-    }
-
     private void ShowSortMenu()
     {
-        var menu = new ContextMenu();
-        var names = PageInstanceCompResourceViewModel.GetSortNames();
-        for (var i = 0; i < names.Count; i++)
-        {
-            var index = i;
-            var item = new MyMenuItem
-            {
-                Header = names[i]
-            };
-            item.Click += (_, _) =>
+        LocalCompPageSupport.ShowSortMenu(
+            BtnSort,
+            PageInstanceCompResourceViewModel.GetSortNames(),
+            index =>
             {
                 ViewModel.ApplySort(index);
                 BuildList();
-            };
-            menu.Items.Add(item);
-        }
-
-        menu.Open(BtnSort);
+            });
     }
 
     private string? GetPathHint(LocalComp.LocalCompFile entry)
@@ -580,7 +597,7 @@ public partial class PageInstanceCompResource
             SvgIcon = "lucide/info",
             LogoScale = 1d
         };
-        ToolTip.SetTip(btnInfo, Lang.Text("Instance.Saves.Details"));
+        btnInfo.SetLocalizedValue(ToolTip.TipProperty, "Instance.Saves.Details");
         btnInfo.Click += (_, _) => ShowEntryInfo(entry);
 
         var btnOpen = new MyIconButton
@@ -588,7 +605,7 @@ public partial class PageInstanceCompResource
             SvgIcon = "lucide/folder-open",
             LogoScale = 1.05d
         };
-        ToolTip.SetTip(btnOpen, Lang.Text("Instance.Saves.OpenFileLocation"));
+        btnOpen.SetLocalizedValue(ToolTip.TipProperty, "Instance.Saves.OpenFileLocation");
         btnOpen.Click += (_, _) =>
             Basics.OpenPath(
                 entry.IsFolder
@@ -610,9 +627,9 @@ public partial class PageInstanceCompResource
                 SvgIcon = fine ? "lucide/circle-minus" : "lucide/circle-check",
                 LogoScale = 1.0d
             };
-            ToolTip.SetTip(
-                btnEd,
-                Lang.Text(fine ? "Instance.Resource.Disable" : "Instance.Resource.Enable"));
+            btnEd.SetLocalizedValue(
+                ToolTip.TipProperty,
+                fine ? "Instance.Resource.Disable" : "Instance.Resource.Enable");
             btnEd.Click += (_, _) => ViewModel.ToggleEntry(entry);
             buttons.Add(btnEd);
         }
@@ -622,7 +639,7 @@ public partial class PageInstanceCompResource
             SvgIcon = "lucide/trash-2",
             LogoScale = 1.0d
         };
-        ToolTip.SetTip(btnDelete, Lang.Text("Common.Action.Delete"));
+        btnDelete.SetLocalizedValue(ToolTip.TipProperty, "Common.Action.Delete");
         btnDelete.Click += (_, _) => _ = ViewModel.DeleteEntryAsync(
             entry,
             btnDelete.LastClickKeyModifiers.HasFlag(KeyModifiers.Shift));
@@ -638,12 +655,13 @@ public partial class PageInstanceCompResource
 
     private void SetSwipeSelected(int index, bool selected, bool animate)
     {
-        if (index < 0 || index >= ViewModel.VisibleEntries.Count)
-            return;
-        var entry = ViewModel.VisibleEntries[index];
-        ViewModel.SetSelected(entry, selected);
-        if (index < PanList.Children.Count && PanList.Children[index] is MyLocalModItem item)
-            item.SetChecked(selected, animate);
+        LocalCompPageSupport.SetSwipeSelected(
+            ViewModel.VisibleEntries,
+            index,
+            selected,
+            animate,
+            ViewModel.SetSelected,
+            PanList.Children);
     }
 
     private void RefreshSelectBar()
@@ -739,31 +757,18 @@ public partial class PageInstanceCompResource
 
     private void ShowFavoritesMenu()
     {
-        var projects = ViewModel.GetFavoriteProjects();
-        if (projects.Count == 0)
-            return;
-        CompFavoritesMenu.Show(projects, PanSelect.FavoritesButton);
+        LocalCompPageSupport.ShowFavoritesMenu(
+            ViewModel.GetFavoriteProjects(),
+            PanSelect.FavoritesButton);
     }
 
     private void ShareSelected()
     {
-        try
-        {
-            var ids = ViewModel.GetShareIds();
-            if (ids.Count == 0)
-                return;
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard is null)
-                return;
-            _ = clipboard.SetTextAsync(Comp.CompFavorites.GetShareCode(ids.ToHashSet()));
-            HintService.Show(Hints.Success(Lang.Text("Common.Hint.Copied")));
-            ViewModel.ClearSelection();
-            BuildList();
-        }
-        catch (Exception ex)
-        {
-            InstancePageHelper.ReportError("Instance.Resource.Error.OperationFailed", ex);
-        }
+        LocalCompPageSupport.ShareSelected(
+            this,
+            ViewModel.GetShareIds,
+            ViewModel.ClearSelection,
+            BuildList);
     }
 
     private async void ShowEntryInfo(LocalComp.LocalCompFile entry)
@@ -789,8 +794,8 @@ public partial class PageInstanceCompResource
                 ? LocalComp.GetCurrentVersionModLoader().FirstOrDefault()
                 : Comp.CompLoaderType.Any;
             PageRouter.Navigate(
-                PageType.CompDetail,
-                PageSubType.Default,
+                PageIds.CompDetail,
+                null,
                 new CompDetailParameter(
                     entry.Comp,
                     _compType,
@@ -1033,15 +1038,15 @@ public partial class PageInstanceCompResource
                 LocalComp.GetPathNameByCompType(Comp.CompType.Mod));
             PageDownloadCompDetail.SetCachedFolder(Comp.CompType.Mod, folder);
             PageRouter.Navigate(
-                PageType.Download,
-                PageSubType.DownloadMod,
+                PageIds.Download,
+                SubPageIds.DownloadMod,
                 new CompSearchContext(
                     instance.Info.VanillaName,
                     LocalComp.GetCurrentVersionModLoader().FirstOrDefault()));
             return;
         }
 
-        PageRouter.Navigate(PageType.Download, PageSubType.DownloadMod);
+        PageRouter.Navigate(PageIds.Download, SubPageIds.DownloadMod);
     }
 
     #endregion
@@ -1082,7 +1087,7 @@ public partial class PageInstanceCompResource
 
     #region 管理
 
-    private async Task InstallFromFilesAsync()
+    private async void InstallFromFiles()
     {
         try
         {
@@ -1130,14 +1135,14 @@ public partial class PageInstanceCompResource
 
         var subType = _compType switch
         {
-            Comp.CompType.ResourcePack => PageSubType.DownloadResourcePack,
-            Comp.CompType.Shader => PageSubType.DownloadShader,
-            Comp.CompType.Schematic => PageSubType.DownloadWorld,
-            _ => PageSubType.DownloadMod
+            Comp.CompType.ResourcePack => SubPageIds.DownloadResourcePack,
+            Comp.CompType.Shader => SubPageIds.DownloadShader,
+            Comp.CompType.Schematic => SubPageIds.DownloadWorld,
+            _ => SubPageIds.DownloadMod
         };
         if (instance is null)
         {
-            PageRouter.Navigate(PageType.Download, subType);
+            PageRouter.Navigate(PageIds.Download, subType);
             return;
         }
 
@@ -1145,7 +1150,7 @@ public partial class PageInstanceCompResource
             ? LocalComp.GetCurrentVersionModLoader().FirstOrDefault()
             : Comp.CompLoaderType.Any;
         PageRouter.Navigate(
-            PageType.Download,
+            PageIds.Download,
             subType,
             new CompSearchContext(instance.Info.VanillaName, loader));
     }
@@ -1179,7 +1184,7 @@ public partial class PageInstanceCompResource
 
     public void SetLoadText(string key)
     {
-        Load.Text = Lang.Text(key);
+        Load.SetLocalizedValue(MyLoading.TextProperty, key);
     }
 
     public void UpdateOnly()

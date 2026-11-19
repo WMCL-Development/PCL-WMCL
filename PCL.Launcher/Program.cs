@@ -1,10 +1,11 @@
 using Avalonia;
+using Microsoft.Extensions.DependencyInjection;
 using PCL.Core.App.Essentials;
 using PCL.Core.App.IoC;
 using PCL.Core.Platform;
 using PCL.Core.UI;
+using PCL.Navigation;
 using PCL.UI;
-using PCL.UI.Bridges;
 using PCL.Views;
 
 namespace PCL;
@@ -18,22 +19,28 @@ internal static class Program
         var platform = PlatformDetector.Detect();
 
         PlatformStartup.Initialize(platform, args);
-        var builder = PlatformStartup.Configure(platform);
 
-        PlatformRegistration.Register(platform);
+        var applicationServices = PlatformRegistration.Register(platform);
+        var serviceProvider = LauncherServiceRegistration.Build(applicationServices);
+
+        if (StartupCommandHandler.TryHandle(args, serviceProvider))
+            return;
+
+        var builder = PlatformStartup.Configure(platform);
+        PageRegistry.Initialize(serviceProvider.GetRequiredService<PageHostFactory>());
 
         AnimationRegistration.Register();
 
         ApplicationService.Loading = () =>
             new ApplicationHost(() => builder.StartWithClassicDesktopLifetime(args));
 
-        MainWindowService.Loading = () => new WindowHost(new MainWindow());
-
-        DialogPresenter.Install();
-
-        HintPresenter.Install();
-
-        UiBridgeRegistration.Register();
+        MainWindowService.Loading = () =>
+        {
+            var window = new MainWindow();
+            var context = new WindowContext(window);
+            window.InitializeContext(context);
+            return context.Host;
+        };
 
         Lifecycle.OnInitialize();
     }

@@ -11,7 +11,6 @@ public sealed record PlatformCapabilities : IPlatformCapabilities
         SupportsShortcutIcon = false,
         NativeLibraryExtensions = [".dll"],
         SupportsWindowsStoreDependencies = true,
-        UsesWindowsPaths = true,
         SuppressAltMenu = true,
         SupportsDisplayProtocolSelection = false,
         SupportsProcessPriority = true,
@@ -28,7 +27,6 @@ public sealed record PlatformCapabilities : IPlatformCapabilities
         SupportsShortcutIcon = true,
         NativeLibraryExtensions = [".dll", ".so", ".dylib"],
         SupportsWindowsStoreDependencies = false,
-        UsesWindowsPaths = false,
         SuppressAltMenu = false,
         SupportsDisplayProtocolSelection = true,
         SupportsProcessPriority = false,
@@ -45,7 +43,6 @@ public sealed record PlatformCapabilities : IPlatformCapabilities
         SupportsShortcutIcon = false,
         NativeLibraryExtensions = [".dll", ".so", ".dylib"],
         SupportsWindowsStoreDependencies = false,
-        UsesWindowsPaths = false,
         SuppressAltMenu = false,
         SupportsDisplayProtocolSelection = false,
         SupportsProcessPriority = false,
@@ -78,7 +75,6 @@ public sealed record PlatformCapabilities : IPlatformCapabilities
     public required bool SupportsShortcutIcon { get; init; }
     public required IReadOnlyList<string> NativeLibraryExtensions { get; init; }
     public required bool SupportsWindowsStoreDependencies { get; init; }
-    public required bool UsesWindowsPaths { get; init; }
     public required bool SuppressAltMenu { get; init; }
     public required bool SupportsDisplayProtocolSelection { get; init; }
 

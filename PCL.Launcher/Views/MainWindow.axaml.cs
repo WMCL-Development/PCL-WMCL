@@ -24,8 +24,8 @@ using PCL.Views.Shell;
 namespace PCL.Views;
 
 /// <summary>
-///     主窗口：承载标题栏、左右页面宿主、背景层、提示与弹窗层，并接管窗口级交互与退出流程。
-///     页面由 <see cref="PageRouter" /> 按 <see cref="IPageHost" /> 宿主挂载，窗口本身不感知具体页面。
+/// 主窗口：承载标题栏、左右页面宿主、背景层、提示与弹窗层，并接管窗口级交互与退出流程。 页面由 <see cref="PageRouter" /> 按
+/// <see cref="IPageHost" /> 宿主挂载，窗口本身不感知具体页面。
 /// </summary>
 public partial class MainWindow : Window
 {
@@ -39,7 +39,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Current = this;
         ApplyWindowIcon();
         TransparencyLevelHint = [WindowTransparencyLevel.Transparent];
         Opacity = 0d;
@@ -85,6 +84,8 @@ public partial class MainWindow : Window
             DispatcherPriority.Loaded);
         Opened += (_, _) => TaskbarProgress.SetThumbnailClip(new Thickness(10d));
         SizeChanged += (_, _) => TaskbarProgress.SetThumbnailClip(new Thickness(10d));
+        Opened += (_, _) => UpdateLauncherDpi();
+        ScalingChanged += (_, _) => UpdateLauncherDpi();
 
         _titleBar.TabSelected += PageRouter.Navigate;
         _titleBar.BackRequested += () => PageRouter.Back();
@@ -96,10 +97,6 @@ public partial class MainWindow : Window
         SizeChanged += OnWindowSizeChangedForScale;
         GameLaunch.GameProcessStarted += OnGameProcessStarted;
 
-        if (this.FindControl<Panel>("PanHint") is { } hintLayer)
-            HintPresenter.Instance.Attach(this, hintLayer);
-        if (this.FindControl<Panel>("PanDialogLayer") is { } dialogLayer)
-            DialogPresenter.Instance.Attach(this, dialogLayer);
 
         Closed += (_, _) => OnClosed();
 
@@ -124,19 +121,22 @@ public partial class MainWindow : Window
 #endif
     }
 
-    public static MainWindow? Current { get; private set; }
+    /// <summary>绑定窗口上下文及其弹窗、提示呈现器。</summary>
+    public void InitializeContext(IWindowContext context)
+    {
+        if (this.FindControl<Panel>("PanHint") is { } hintLayer)
+            context.HintPresenter.Attach(this, hintLayer);
+        if (this.FindControl<Panel>("PanDialogLayer") is { } dialogLayer)
+            context.DialogPresenter.Attach(this, dialogLayer);
+    }
 
-    /// <summary>取标题栏，供外部在隐藏配置变化后刷新主标签。</summary>
-    public PCL.Views.Shell.TitleBar? GetTitleBar() => _titleBar;
-    /// <summary>
-    ///     在窗口显示前预创建启动页，避免首屏导航时再同步实例化页面。
-    /// </summary>
+    /// <summary>在窗口显示前预创建启动页，避免首屏导航时再同步实例化页面。</summary>
     private void PreloadLaunchPage()
     {
         try
         {
-            if (PageRegistry.GetHost(PageType.Launch) is not { } host) return;
-            var stack = new PageStackData(PageType.Launch);
+            if (PageRegistry.GetHost(PageIds.Launch) is not { } host) return;
+            var stack = new PageRoute(PageIds.Launch);
             _ = host.GetLeft(stack);
             _ = host.GetRight(stack);
         }
@@ -182,10 +182,7 @@ public partial class MainWindow : Window
             DispatcherPriority.Loaded);
     }
 
-    /// <summary>
-    ///     仅用于截图/布局证据：PCL_DEBUG_WINDOW_SIZE=810x470 或 workarea。
-    ///     不实现真正的最大化；UI 设计中没有最大化场景。
-    /// </summary>
+    /// <summary>仅用于截图/布局证据：PCL_DEBUG_WINDOW_SIZE=810x470 或 workarea。 不实现真正的最大化；UI 设计中没有最大化场景。</summary>
     private void ApplyDebugWindowSize()
     {
         var value = Environment.GetEnvironmentVariable("PCL_DEBUG_WINDOW_SIZE");
@@ -209,6 +206,11 @@ public partial class MainWindow : Window
 
         Width = Math.Max(MinWidth, width);
         Height = Math.Max(MinHeight, height);
+    }
+
+    private void UpdateLauncherDpi()
+    {
+        LauncherCommon.Dpi = (int)Math.Round(RenderScaling * 96d);
     }
 
     private void ApplyRoundedWindowClip()
@@ -311,7 +313,6 @@ public partial class MainWindow : Window
         LocalizationService.LanguageChanged -= OnLanguageChangedForLeftWidth;
         BackgroundHost.Detach(_background);
         _background.Remove();
-        if (ReferenceEquals(Current, this)) Current = null;
     }
 
     private TrayService? _tray;

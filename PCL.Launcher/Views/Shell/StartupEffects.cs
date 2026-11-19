@@ -6,6 +6,7 @@ using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Localization;
 using PCL.Core.Logging;
+using PCL.Core.Platform;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.Utils.OS;
 using PCL.UI;
@@ -175,13 +176,14 @@ public sealed class StartupEffects(
         }
     }
 
-    private static void ShowStartupDialogs()
+    private static async void ShowStartupDialogs()
     {
         try
         {
             ShowSpecialVersionHint();
-            ShowEulaDialog();
-            ShowTelemetryDialog();
+            await ShowEnvironmentWarningAsync();
+            await ShowEulaDialogAsync();
+            await ShowTelemetryDialogAsync();
             HardwareInfo.GetHardwareInfo();
         }
         catch (Exception ex)
@@ -194,7 +196,7 @@ public sealed class StartupEffects(
     {
 #if DEBUG
         if (Environment.GetEnvironmentVariable("PCL_DISABLE_DEBUG_HINT") is not null) return;
-        _ = DialogService.Instance.Show(
+        DialogService.Instance.ShowNotification(
             new TextDialogRequest
             {
                 Title = Lang.Text("Main.SpecialVersion.Title"),
@@ -211,31 +213,63 @@ public sealed class StartupEffects(
                             OpenWebsite("https://github.com/PCL-Community/PCL2-CE/releases/latest");
                             UiInteraction.Shutdown();
                         })),
-                IsWarn = true,
-                ForceWait = true
+                IsWarn = true
             });
 #endif
     }
 
-    private static void ShowEulaDialog()
+    private static async Task ShowEnvironmentWarningAsync()
+    {
+        try
+        {
+            var service = ApplicationRuntime.GetService<IRuntimeEnvironmentService>()
+                ?? throw new InvalidOperationException("运行环境检查服务尚未初始化");
+            var issues = service.GetIssues(Basics.ExecutablePath);
+            if (issues.Count == 0) return;
+            LogWrapper.Info("UI", $"启动环境检查发现问题：{string.Join(", ", issues)}");
+
+            var problems = issues.Select(issue => Lang.Text(issue switch
+            {
+                RuntimeEnvironmentIssue.OutdatedSystem => "Application.EnvironmentWarning.WindowsVersion",
+                RuntimeEnvironmentIssue.System32Bit => "Application.EnvironmentWarning.System32Bit",
+                RuntimeEnvironmentIssue.TempFolder => "Application.EnvironmentWarning.TempFolder",
+                RuntimeEnvironmentIssue.SocialSoftwareFolder => "Application.EnvironmentWarning.SocialSoftwareFolder",
+                _ => throw new ArgumentOutOfRangeException(nameof(issue), issue, null)
+            }));
+
+            await DialogService.Instance.ShowAsync(
+                new TextDialogRequest
+                {
+                    Title = Lang.Text("Application.EnvironmentWarning.Title"),
+                    Content = Lang.Text(
+                        "Application.EnvironmentWarning.Message",
+                        string.Join(Environment.NewLine, problems)),
+                    Buttons = DialogButtons.Create("Application.EnvironmentWarning.IKnow"),
+                    IsWarn = true
+                });
+        }
+        catch (Exception ex)
+        {
+            LogWrapper.Warn(ex, "UI", "启动环境检查失败");
+        }
+    }
+
+    private static async Task ShowEulaDialogAsync()
     {
         if (States.System.LauncherEula) return;
 
-        var button = DialogService.Instance.Show(
-                    new TextDialogRequest
-                    {
-                        Title = Lang.Text("Main.Eula.Title"),
-                        Content = Lang.Text("Main.Eula.Message"),
-                        Buttons = DialogButtons.From(
-                            DialogButton.Create(Lang.Text("Common.Action.Agree")),
-                            DialogButton.Create(Lang.Text("Common.Action.Decline")),
-                            DialogButton.Create(
-                                Lang.Text("Main.Eula.View"),
-                                () => OpenWebsite("https://shimo.im/docs/rGrd8pY8xWkt6ryW"))),
-                        ForceWait = true
-                    })
-                .Result?.Button
-            ?? 0;
+        var button = (await DialogService.Instance.ShowAsync(
+            new TextDialogRequest
+            {
+                Title = Lang.Text("Main.Eula.Title"),
+                Content = Lang.Text("Main.Eula.Message"),
+                Buttons = DialogButtons.From(
+                    DialogButton.Create(Lang.Text("Common.Action.Agree")),
+                    DialogButton.Create(Lang.Text("Common.Action.Decline")),
+                    DialogButton.Create(
+                        Lang.Text("Main.Eula.View"),
+                        () => OpenWebsite("https://shimo.im/docs/rGrd8pY8xWkt6ryW")))
+            })).Button;
 
         switch (button)
         {
@@ -248,20 +282,17 @@ public sealed class StartupEffects(
         }
     }
 
-    private static void ShowTelemetryDialog()
+    private static async Task ShowTelemetryDialogAsync()
     {
         if (!Config.System.TelemetryConfig.IsDefault()) return;
 
-        var button = DialogService.Instance.Show(
-                    new TextDialogRequest
-                    {
-                        Title = Lang.Text("Main.Telemetry.Title"),
-                        Content = Lang.Text("Main.Telemetry.Message"),
-                        Buttons = DialogButtons.AgreeDecline,
-                        ForceWait = true
-                    })
-                .Result?.Button
-            ?? 0;
+        var button = (await DialogService.Instance.ShowAsync(
+            new TextDialogRequest
+            {
+                Title = Lang.Text("Main.Telemetry.Title"),
+                Content = Lang.Text("Main.Telemetry.Message"),
+                Buttons = DialogButtons.AgreeDecline
+            })).Button;
         Config.System.TelemetryConfig.SetValue(button == 1, forceNewValue: true);
     }
 

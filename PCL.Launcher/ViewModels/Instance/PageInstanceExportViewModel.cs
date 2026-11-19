@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.IO;
 using PCL.Core.Platform;
 using PCL.Core.UI;
 using PCL.Core.UI.Hints;
@@ -23,7 +24,16 @@ public class ExportOption
 {
     public string Title { get; init; } = string.Empty;
 
+    public string TitleKey { get; init; } = string.Empty;
+
     public string Description { get; init; } = string.Empty;
+
+    public string DescriptionKey { get; init; } = string.Empty;
+
+    public string DisplayTitle => string.IsNullOrEmpty(TitleKey) ? Title : Lang.Text(TitleKey);
+
+    public string DisplayDescription =>
+        string.IsNullOrEmpty(DescriptionKey) ? Description : Lang.Text(DescriptionKey);
 
     public string Rules { get; init; } = string.Empty;
 
@@ -63,14 +73,18 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         "==============================================================";
 
     private static readonly string[] SubOptionBlackList =
-        ["Quark Programmer Art.zip", "+ EuphoriaPatches_"];
+    [
+        "Quark Programmer Art.zip",
+        "+ EuphoriaPatches_"
+    ];
 
     private readonly List<string> _extraFiles = [];
-
     private readonly List<string> _rulesOverrides = [];
 
     private string _configPackPath = string.Empty;
     private string _lastConfigPath = string.Empty;
+
+    private bool _optionsTitleFromConfig;
 
     [ObservableProperty] public partial string PackName { get; set; } = string.Empty;
 
@@ -98,8 +112,10 @@ public partial class PageInstanceExportViewModel : ViewModelBase
 
     [ObservableProperty] public partial bool ResetOverridesVisible { get; set; }
 
-    [ObservableProperty]
-    public partial string OptionsTitle { get; set; } = Lang.Text("Instance.Export.OptionListTitle");
+    public string OptionsTitle =>
+        _optionsTitleFromConfig
+            ? $"{Lang.Text("Instance.Export.OptionListTitle")}: {Lang.Text("Instance.Export.OptionList.FromConfig")}"
+            : Lang.Text("Instance.Export.OptionListTitle");
 
     [ObservableProperty] public partial string? ToastMessage { get; set; }
 
@@ -117,7 +133,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
 
     public bool ModrinthEnabled => !BundleFiles;
 
-    public bool PclEnabled => !Modrinth && PlatformRuntime.Current.Capabilities.SupportsBundledLauncher;
+    public bool PclEnabled =>
+        !Modrinth && ApplicationRuntime.Current.Platform.Capabilities.SupportsBundledLauncher;
 
     public bool OptionsVisible => !HasOverrides;
 
@@ -184,7 +201,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         _configPackPath = string.Empty;
         HasOverrides = false;
         ResetOverridesVisible = false;
-        OptionsTitle = Lang.Text("Instance.Export.OptionListTitle");
+        _optionsTitleFromConfig = false;
+        OnPropertyChanged(nameof(OptionsTitle));
     }
 
     partial void OnBundleFilesChanged(bool value)
@@ -224,7 +242,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         SyncLauncherOptions();
     }
 
-    public async Task<bool> ExportConfigAsync()
+    public async Task<bool> ExportConfig()
     {
         try
         {
@@ -238,8 +256,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             _lastConfigPath = configPath;
             States.System.ExportConfigPath = configPath;
 
-            var lines = new List<string>
-            {
+            List<string> lines =
+            [
                 $"Name:{PackName}",
                 $"Version:{PackVersion}",
                 string.Empty,
@@ -264,12 +282,12 @@ public partial class PageInstanceExportViewModel : ViewModelBase
                 $"# {Lang.Text("Instance.Export.Config.Comment.PackPath3")}",
                 $"PackPath:{_configPackPath}",
                 string.Empty,
-                Separator
-            };
-            lines.AddRange(GetAllRules());
-            lines.Add(Separator);
-            lines.AddRange(GetExtraFileLines());
-            LauncherCommon.WriteFile(configPath, string.Join("\r\n", lines));
+                Separator,
+                .. GetAllRules(),
+                Separator,
+                .. GetExtraFileLines()
+            ];
+            Files.WriteAllText(configPath, string.Join("\r\n", lines));
             ShowToast(Lang.Text("Instance.Export.SaveSuccess", configPath), false);
             InstancePageHelper.OpenFolder(configPath);
             return true;
@@ -281,7 +299,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         }
     }
 
-    public async Task<bool> ImportConfigAsync()
+    public async Task<bool> ImportConfig()
     {
         try
         {
@@ -304,7 +322,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         {
             _lastConfigPath = configPath;
             States.System.ExportConfigPath = configPath;
-            var content = LauncherCommon.ReadFile(configPath);
+            var content = Files.ReadAllTextOrEmpty(configPath);
             var segments = content.Split(Separator);
             if (segments.Length < 2)
             {
@@ -341,8 +359,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
 
             HasOverrides = true;
             ResetOverridesVisible = true;
-            OptionsTitle =
-                $"{Lang.Text("Instance.Export.OptionListTitle")}: {Lang.Text("Instance.Export.OptionList.FromConfig")}";
+            _optionsTitleFromConfig = true;
+            OnPropertyChanged(nameof(OptionsTitle));
             ShowToast(Lang.Text("Instance.Export.ReadSuccess", configPath), false);
             return true;
         }
@@ -372,7 +390,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             var loaderName = Lang.Text("Instance.Export.ExportTask.Prefix") + packName;
             if (Loading.loaderTaskbar.Any(loader => loader.name == loaderName))
             {
-                PageRouter.Navigate(PageType.TaskManager);
+                PageRouter.Navigate(PageIds.TaskManager);
                 return false;
             }
 
@@ -488,7 +506,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             mainLoader.Start();
             Loading.LoaderTaskbarAdd(mainLoader);
             LoadingUi.Current?.RefreshDownloadButton();
-            PageRouter.Navigate(PageType.TaskManager);
+            PageRouter.Navigate(PageIds.TaskManager);
             return true;
         }
         catch (Exception ex)
@@ -512,7 +530,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Game"),
+                TitleKey = "Instance.Export.Option.Game",
                 DefaultChecked = true
             });
         basic.IsEnabled = false;
@@ -521,8 +539,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.GameSettings"),
-                Description = Lang.Text("Instance.Export.Option.GameSettings.Desc"),
+                TitleKey = "Instance.Export.Option.GameSettings",
+                DescriptionKey = "Instance.Export.Option.GameSettings.Desc",
                 Rules = "options.txt|configureddefaults/",
                 DefaultChecked = true
             });
@@ -530,15 +548,15 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.GameProfile"),
-                Description = Lang.Text("Instance.Export.Option.GameProfile.Desc"),
+                TitleKey = "Instance.Export.Option.GameProfile",
+                DescriptionKey = "Instance.Export.Option.GameProfile.Desc",
                 Rules = "hotbar.nbt|command_history.txt"
             });
         AddOption(
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.OptiFine"),
+                TitleKey = "Instance.Export.Option.OptiFine",
                 Rules = "optionsof.txt|optionsshaders.txt",
                 DefaultChecked = true,
                 RequireOptiFine = true
@@ -548,8 +566,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Mod"),
-                Description = Lang.Text("Instance.Export.Option.Mod.Desc"),
+                TitleKey = "Instance.Export.Option.Mod",
+                DescriptionKey = "Instance.Export.Option.Mod.Desc",
                 Rules =
                     "mods/|!mods/*.disabled|!mods/*.old|!mods/.connector/|coremods/|lib/|!mods/mcef-libraries/|!mods/mcef-cache/",
                 DefaultChecked = true,
@@ -559,15 +577,15 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             mod.Children,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.DisabledMod"),
+                TitleKey = "Instance.Export.Option.DisabledMod",
                 Rules = "mods/*.disabled|mods/*.old"
             });
         AddOption(
             mod.Children,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.ImportantData"),
-                Description = Lang.Text("Instance.Export.Option.ImportantData.Desc"),
+                TitleKey = "Instance.Export.Option.ImportantData",
+                DescriptionKey = "Instance.Export.Option.ImportantData.Desc",
                 Rules =
                     "addons/|multiblocked/|modpack-update-checker/|global_packs/|global_resource_packs/|global_data_packs/|optional_data_packs/|maps/|icon.png|mods-resourcepacks/|matmos/|resource_assorts/|resource_assorts.json|patchouli_books/|datapacks/|kubejs*/|!kubejs*/probe/|!kubejs*/exported/|!kubejs*/jsconfig.json|!kubejs*/README.txt|openloader/|worldshape/|resources/|scripts/|structures/|fontfiles/|oresources/|packmenu/|craftpresence/|pointblanks/|template*/|!template*/playerdata/|!template*/stats/",
                 DefaultChecked = true
@@ -576,7 +594,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             mod.Children,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.ModSettings"),
+                TitleKey = "Instance.Export.Option.ModSettings",
                 Rules =
                     "config/|!config/accountsx/|!config/jei/world/|!config/worldedit/|config/worldedit/worldedit.properties|!config/spark/|config/spark/config.json|defaultconfigs/|journeymap/config/|journeymap/server/|TrashSlotSaveState.json|customfov.txt|gg.essential.mod/|essential/|!essential/*/|!essential/*.jar*|!essential/screenshot-checksum-caches.json|!essential/microsoft_accounts.json|paragliderSettings.nbt|local/client_config.json|local/ftbl.json|local/client/sidebar_buttons.json|local/client/ftbutilities.cfg|local/client/ftblib.cfg|local/client/xencraft.cfg|liteloader.properties|default_reference.xml|CustomSkinLoader/CustomSkinLoader.json",
                 DefaultChecked = true
@@ -585,32 +603,32 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             mod.Children,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Maps"),
-                Description = Lang.Text("Instance.Export.Option.Maps.Desc"),
+                TitleKey = "Instance.Export.Option.Maps",
+                DescriptionKey = "Instance.Export.Option.Maps.Desc",
                 Rules = "journeymap/data/|xaero/|XaeroWaypoints/|XaeroWorldMap/"
             });
         AddOption(
             mod.Children,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Jei"),
-                Description = Lang.Text("Instance.Export.Option.Jei.Desc"),
+                TitleKey = "Instance.Export.Option.Jei",
+                DescriptionKey = "Instance.Export.Option.Jei.Desc",
                 Rules = "config/jei/world/"
             });
         AddOption(
             mod.Children,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Emi"),
-                Description = Lang.Text("Instance.Export.Option.Emi.Desc"),
+                TitleKey = "Instance.Export.Option.Emi",
+                DescriptionKey = "Instance.Export.Option.Emi.Desc",
                 Rules = "emi.json"
             });
         AddOption(
             mod.Children,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Patchouli"),
-                Description = Lang.Text("Instance.Export.Option.Patchouli.Desc"),
+                TitleKey = "Instance.Export.Option.Patchouli",
+                DescriptionKey = "Instance.Export.Option.Patchouli.Desc",
                 Rules = "patchouli_data.json"
             });
 
@@ -618,8 +636,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.ResourcePacks"),
-                Description = Lang.Text("Instance.Export.Option.ResourcePacks.Desc"),
+                TitleKey = "Instance.Export.Option.ResourcePacks",
+                DescriptionKey = "Instance.Export.Option.ResourcePacks.Desc",
                 ShowRules = "resourcepacks/|texturepacks/",
                 DefaultChecked = true
             });
@@ -629,7 +647,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.ShaderPacks"),
+                TitleKey = "Instance.Export.Option.ShaderPacks",
                 ShowRules = "shaderpacks/",
                 DefaultChecked = true,
                 RequireModLoaderOrOptiFine = true
@@ -640,23 +658,23 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Screenshots"),
+                TitleKey = "Instance.Export.Option.Screenshots",
                 Rules = "screenshots/"
             });
         AddOption(
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Structures"),
-                Description = Lang.Text("Instance.Export.Option.Structures.Desc"),
+                TitleKey = "Instance.Export.Option.Structures",
+                DescriptionKey = "Instance.Export.Option.Structures.Desc",
                 Rules = "schematics/"
             });
         AddOption(
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Replay"),
-                Description = Lang.Text("Instance.Export.Option.Replay.Desc"),
+                TitleKey = "Instance.Export.Option.Replay",
+                DescriptionKey = "Instance.Export.Option.Replay.Desc",
                 Rules = "replay_recordings/|replay_videos/",
                 RequireModLoader = true
             });
@@ -665,8 +683,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Saves"),
-                Description = Lang.Text("Instance.Export.Option.Saves.Desc"),
+                TitleKey = "Instance.Export.Option.Saves",
+                DescriptionKey = "Instance.Export.Option.Saves.Desc",
                 ShowRules = "saves/"
             });
         LoadSubOptions(saves, false, true, "saves");
@@ -675,7 +693,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Servers"),
+                TitleKey = "Instance.Export.Option.Servers",
                 Rules = "servers.dat"
             });
 
@@ -683,8 +701,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.OtherFolders"),
-                Description = Lang.Text("Instance.Export.Option.OtherFolders.Desc"),
+                TitleKey = "Instance.Export.Option.OtherFolders",
+                DescriptionKey = "Instance.Export.Option.OtherFolders.Desc",
                 PropagateCheckToChildren = true,
                 IsOtherFolders = true
             });
@@ -695,16 +713,16 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Options,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.Launcher"),
-                Description = Lang.Text("Instance.Export.Option.Launcher.Desc"),
+                TitleKey = "Instance.Export.Option.Launcher",
+                DescriptionKey = "Instance.Export.Option.Launcher.Desc",
                 IsLauncher = true
             });
         AddOption(
             launcher.Children,
             new ExportOption
             {
-                Title = Lang.Text("Instance.Export.Option.LauncherCustom"),
-                Description = Lang.Text("Instance.Export.Option.LauncherCustom.Desc"),
+                TitleKey = "Instance.Export.Option.LauncherCustom",
+                DescriptionKey = "Instance.Export.Option.LauncherCustom.Desc",
                 DefaultChecked = true,
                 IsLauncherCustom = true
             });
@@ -750,8 +768,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
                                 shaderConfig.Name,
                                 EscapePattern($"{folder}/{shaderConfig.Name}"),
                                 true,
-                                Lang.Text("Instance.Export.Config.ShaderConfigSuffix"),
-                                true));
+                                indent: true,
+                                descriptionKey: "Instance.Export.Config.ShaderConfigSuffix"));
                 }
 
             if (!acceptFolder)
@@ -787,8 +805,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
                             shaderConfig.Name,
                             EscapePattern($"{folder}/{shaderConfig.Name}"),
                             true,
-                            Lang.Text("Instance.Export.Config.ShaderConfigSuffix"),
-                            true));
+                            indent: true,
+                            descriptionKey: "Instance.Export.Config.ShaderConfigSuffix"));
             }
         }
     }
@@ -798,7 +816,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         string rules,
         bool defaultChecked,
         string description = "",
-        bool indent = false)
+        bool indent = false,
+        string descriptionKey = "")
     {
         return new ExportOption
         {
@@ -806,6 +825,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
             Rules = rules,
             DefaultChecked = defaultChecked,
             Description = description,
+            DescriptionKey = descriptionKey,
             IsIndented = indent
         };
     }
@@ -982,7 +1002,8 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         if (launcher is null)
             return;
 
-        var canIncludeLauncher = !Modrinth && PlatformRuntime.Current.Capabilities.SupportsBundledLauncher;
+        var canIncludeLauncher =
+            !Modrinth && ApplicationRuntime.Current.Platform.Capabilities.SupportsBundledLauncher;
         launcher.IsEnabled = canIncludeLauncher;
         if (!canIncludeLauncher && IncludePcl)
             IncludePcl = false;
@@ -1078,7 +1099,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         {
             if (!option.IsChecked || string.IsNullOrEmpty(option.Rules))
                 continue;
-            yield return $"# {option.Title}";
+            yield return $"# {option.DisplayTitle}";
             foreach (var rule in option.Rules.Split('|'))
                 yield return rule;
             yield return string.Empty;
@@ -1249,7 +1270,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         if (Directory.Exists(pclFolder))
             CopyDirectory(pclFolder, Path.Combine(overridesFolder, "PCL"));
 
-        if (includePcl && PlatformRuntime.Current.Capabilities.SupportsBundledLauncher)
+        if (includePcl && ApplicationRuntime.Current.Platform.Capabilities.SupportsBundledLauncher)
             try
             {
                 var launcherPath = Path.Combine(cacheFolder, "Plain Craft Launcher.exe");
@@ -1572,9 +1593,7 @@ public partial class PageInstanceExportViewModel : ViewModelBase
         {
             if (!downloads.TryGetValue(info.ModrinthHash, out var urls) || urls.Count == 0)
                 continue;
-            var downloadArray = new JsonArray();
-            foreach (var url in urls.OrderByDescending(u => u.Contains("modrinth.com")))
-                downloadArray.Add(url);
+            JsonArray downloadArray = [.. urls.OrderByDescending(u => u.Contains("modrinth.com"))];
             files.Add(
                 new JsonObject
                 {

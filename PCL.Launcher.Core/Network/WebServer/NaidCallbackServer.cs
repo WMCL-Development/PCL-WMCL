@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Net;
+﻿using System.Net;
+using PCL.Core.App;
 using PCL.Core.App.Localization;
 using PCL.Core.IO.Net.Http;
 
@@ -148,18 +148,21 @@ public static partial class WebServer
 
         private static Task<HttpRouteResponse> HandleIcon(HttpServerRequest request)
         {
-            var stream = LauncherCommon.GetResourceStream("Images/icon.ico");
-            return stream is null
-                ? HttpRouteResponse.NotFound.AsTask()
-                : HttpRouteResponse.Input(stream, "image/x-icon").AsTask();
+            return HttpRouteResponse
+                .Input(
+                    Basics.GetResourceStream("Images/icon.ico")
+                    ?? throw new FileNotFoundException("无法找到内置图标资源"))
+                .AsTask();
         }
 
         private static Task<HttpRouteResponse> HandleComplete(HttpServerRequest request)
         {
-            // 优先用程序集资源，取不到时回退到内联页面（Android 上资源读取可能失败）
-            var stream = LauncherCommon.GetResourceStream("Resources/oauth-complete.html")
-                         ?? new MemoryStream(System.Text.Encoding.UTF8.GetBytes(OAuthCompletePage.Html));
-            return HttpRouteResponse.Input(stream, "text/html").AsTask();
+            return HttpRouteResponse
+                .Input(
+                    Basics.GetResourceStream("Resources/oauth-complete.html")
+                    ?? throw new FileNotFoundException("无法找到内置回调页面资源"),
+                    "text/html")
+                .AsTask();
         }
     }
 }

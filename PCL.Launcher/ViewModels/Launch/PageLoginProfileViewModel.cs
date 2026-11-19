@@ -93,17 +93,20 @@ public partial class PageLoginProfileViewModel : ViewModelBase
             };
             if (includeOthers)
             {
-                options.Add(new DialogOption
-                {
-                    Text = Lang.Text("Launch.Account.Type.ThirdParty"),
-                    SvgIcon = "lucide/network"
-                });
-                options.Add(new DialogOption
-                {
-                    Text = Lang.Text("Launch.Account.Type.Offline"),
-                    SvgIcon = "lucide/link-2-off"
-                });
+                options.Add(
+                    new DialogOption
+                    {
+                        Text = Lang.Text("Launch.Account.Type.ThirdParty"),
+                        SvgIcon = "lucide/network"
+                    });
+                options.Add(
+                    new DialogOption
+                    {
+                        Text = Lang.Text("Launch.Account.Type.Offline"),
+                        SvgIcon = "lucide/link-2-off"
+                    });
             }
+
             var result = await Dialog.ShowAsync(
                 new SelectDialogRequest
                 {
@@ -222,12 +225,12 @@ public partial class PageLoginProfileViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public static void CopyUuid(ProfileItem item)
+    public static async Task CopyUuid(ProfileItem item)
     {
-        var clipboard = PlatformServices.Clipboard;
+        var clipboard = ApplicationRuntime.GetService<IClipboardService>();
         if (clipboard is null)
             return;
-        clipboard.SetText(item.Profile.Uuid);
+        await clipboard.SetTextAsync(item.Profile.Uuid);
         HintService.Show(Hints.Success(Lang.Text("Launch.Account.Profile.Uuid.Hint")));
     }
 
@@ -251,7 +254,6 @@ public sealed class ProfileItem
     public ProfileItem(McProfile profile)
     {
         Profile = profile;
-        Info = LaunchLoginHelper.GetProfileInfo(profile);
         var logoPath = GetHeadCachePath(profile);
         if (logoPath is not null)
         {
@@ -269,7 +271,7 @@ public sealed class ProfileItem
 
     public string Username => Profile.UserName;
 
-    public string Info { get; }
+    public string Info => LaunchLoginHelper.GetProfileInfo(Profile);
 
     public string Logo { get; }
 

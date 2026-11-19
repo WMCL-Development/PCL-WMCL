@@ -36,14 +36,15 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
         DatapackFileSize
     }
 
-    private readonly HashSet<string> _selected = new(StringComparer.OrdinalIgnoreCase);
+    private readonly LocalCompSelectionState _selection = new();
+
+    private int _filterAllCount;
+    private int _filterDisabledCount;
+    private int _filterEnabledCount;
+    private int _filterErrorCount;
+    private int _filterUpdatableCount;
 
     private IReadOnlyList<LocalComp.LocalCompFile> _searchScope = [];
-
-    public PageInstanceSavesDatapackViewModel()
-    {
-        UpdateSortText();
-    }
 
     [ObservableProperty]
     public partial DatapackFilterType Filter { get; set; } = DatapackFilterType.All;
@@ -51,7 +52,20 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
     [ObservableProperty]
     public partial DatapackSortMethod SortMethod { get; set; } = DatapackSortMethod.CompName;
 
-    [ObservableProperty] public partial string SortText { get; set; } = string.Empty;
+    public string SortText
+    {
+        get
+        {
+            var key = SortMethod switch
+            {
+                DatapackSortMethod.CompName => "Instance.Resource.Sort.ResourceName",
+                DatapackSortMethod.CreateTime => "Instance.Resource.Sort.AddTime",
+                DatapackSortMethod.DatapackFileSize => "Instance.Resource.Sort.FileSize",
+                _ => "Instance.Resource.Sort.FileName"
+            };
+            return Lang.Text("Instance.Resource.Sort.Text", Lang.Text(key));
+        }
+    }
 
     [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
 
@@ -75,17 +89,24 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
 
     [ObservableProperty] public partial bool ShowFilterError { get; set; }
 
-    [ObservableProperty] public partial string FilterAllText { get; set; } = string.Empty;
+    public string FilterAllText =>
+        IsSearching
+            ? Lang.Text("Instance.Resource.Filter.SearchResult")
+            : Lang.Text("Instance.Resource.Filter.AllWithCount", _filterAllCount);
 
-    [ObservableProperty] public partial string FilterEnabledText { get; set; } = string.Empty;
+    public string FilterEnabledText =>
+        Lang.Text("Instance.Resource.Filter.EnabledWithCount", _filterEnabledCount);
 
-    [ObservableProperty] public partial string FilterDisabledText { get; set; } = string.Empty;
+    public string FilterDisabledText =>
+        Lang.Text("Instance.Resource.Filter.DisabledWithCount", _filterDisabledCount);
 
-    [ObservableProperty] public partial string FilterCanUpdateText { get; set; } = string.Empty;
+    public string FilterCanUpdateText =>
+        Lang.Text("Instance.Resource.Filter.UpdatableWithCount", _filterUpdatableCount);
 
-    [ObservableProperty] public partial string FilterErrorText { get; set; } = string.Empty;
+    public string FilterErrorText =>
+        Lang.Text("Instance.Resource.Filter.ErrorWithCount", _filterErrorCount);
 
-    [ObservableProperty] public partial string SelectedText { get; set; } = string.Empty;
+    public string SelectedText => Lang.Text("Instance.Resource.SelectedCount", _selection.Count);
 
     [ObservableProperty] public partial bool CanEnable { get; set; }
 
@@ -101,7 +122,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
 
     public List<LocalComp.LocalCompFile> VisibleEntries { get; } = [];
 
-    public IReadOnlyCollection<string> SelectedKeys => _selected;
+    public IReadOnlyCollection<string> SelectedKeys => _selection.Keys;
 
     public McInstance? Instance { get; private set; }
 
@@ -135,8 +156,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
         SearchText = string.Empty;
         Filter = DatapackFilterType.All;
         SortMethod = DatapackSortMethod.CompName;
-        UpdateSortText();
-        _selected.Clear();
+        _selection.Clear();
         _searchScope = [];
         ShowSelection = false;
         UpdateSelectionState();
@@ -157,6 +177,11 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
         BuildList();
     }
 
+    partial void OnSortMethodChanged(DatapackSortMethod value)
+    {
+        OnPropertyChanged(nameof(SortText));
+    }
+
     public void SetFilter(int index)
     {
         Filter = (DatapackFilterType)Math.Clamp(index, 0, 4);
@@ -165,7 +190,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
     public void SetSortMethod(DatapackSortMethod method)
     {
         SortMethod = method;
-        UpdateSortText();
+        OnPropertyChanged(nameof(SortText));
         BuildList();
     }
 
@@ -178,18 +203,6 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             Lang.Text("Instance.Resource.Sort.AddTime"),
             Lang.Text("Instance.Resource.Sort.FileSize")
         ];
-    }
-
-    private void UpdateSortText()
-    {
-        var key = SortMethod switch
-        {
-            DatapackSortMethod.CompName => "Instance.Resource.Sort.ResourceName",
-            DatapackSortMethod.CreateTime => "Instance.Resource.Sort.AddTime",
-            DatapackSortMethod.DatapackFileSize => "Instance.Resource.Sort.FileSize",
-            _ => "Instance.Resource.Sort.FileName"
-        };
-        SortText = Lang.Text("Instance.Resource.Sort.Text", Lang.Text(key));
     }
 
     [RelayCommand]
@@ -263,9 +276,9 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                     loaderInput: data,
                     waitForExit: true);
                 var output = LocalComp.CompResourceListLoader.output;
-                if (output is null)
-                    return LoadEntriesDirectory(path);
-                return [.. output.OrderBy(entry => entry.path, StringComparer.OrdinalIgnoreCase)];
+                return output is null
+                    ? LoadEntriesDirectory(path)
+                    : [.. output.OrderBy(entry => entry.path, StringComparer.OrdinalIgnoreCase)];
             }
             catch
             {
@@ -276,9 +289,10 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
 
     private static List<LocalComp.LocalCompFile> LoadEntriesDirectory(string path)
     {
-        var result = new List<LocalComp.LocalCompFile>();
-        foreach (var directory in Directory.EnumerateDirectories(path))
-            result.Add(new LocalComp.LocalCompFile(Path.Combine(directory, "__FOLDER__")));
+        var result = Directory
+            .EnumerateDirectories(path)
+            .Select(directory => new LocalComp.LocalCompFile(Path.Combine(directory, "__FOLDER__")))
+            .ToList();
         foreach (var file in Directory.EnumerateFiles(path))
             if (LocalComp.LocalCompFile.IsCompFile(file, Comp.CompType.DataPack))
                 try
@@ -295,7 +309,8 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                         LauncherLogLevel.Developer);
                 }
 
-        result.Sort((a, b) => string.Compare(a.path, b.path, StringComparison.OrdinalIgnoreCase));
+        result.Sort((a, b) =>
+            string.Compare(a.path, b.path, StringComparison.OrdinalIgnoreCase));
         return result;
     }
 
@@ -315,7 +330,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
         var available = Entries
             .Select(entry => entry.path)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        _selected.RemoveWhere(key => !available.Contains(key));
+        _selection.RemoveWhere(key => !available.Contains(key));
 
         var scope = SearchEntries(Entries);
         _searchScope = scope;
@@ -326,13 +341,15 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             DatapackSortMethod.CompName => filtered.OrderBy(
                 entry => entry.IsFolder ? string.Empty : entry.Name,
                 StringComparer.OrdinalIgnoreCase),
-            DatapackSortMethod.CreateTime => filtered.OrderByDescending(SafeWriteTime),
-            DatapackSortMethod.DatapackFileSize => filtered.OrderByDescending(SafeSize),
+            DatapackSortMethod.CreateTime => filtered.OrderByDescending(
+                LocalCompFileOperations.GetSafeWriteTime),
+            DatapackSortMethod.DatapackFileSize => filtered.OrderByDescending(
+                LocalCompFileOperations.GetSafeSize),
             _ => filtered.OrderBy(entry => entry.Name, StringComparer.OrdinalIgnoreCase)
         }).ThenBy(entry => entry.Name, StringComparer.OrdinalIgnoreCase);
         filtered = [.. sorted.OrderBy(entry => entry.IsFolder ? 0 : 1)];
 
-        _selected.RemoveWhere(key =>
+        _selection.RemoveWhere(key =>
             !filtered.Any(entry => string.Equals(
                 entry.path,
                 key,
@@ -341,9 +358,9 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
         VisibleEntries.AddRange(filtered);
         ShowContent = Entries.Count > 0;
         ShowEmpty = !IsLoading && Entries.Count == 0;
-        ShowSelection = _selected.Count > 0;
+        ShowSelection = _selection.Count > 0;
         UpdateFilterState(scope);
-        UpdateSortText();
+        OnPropertyChanged(nameof(SortText));
         UpdateSelectionState();
     }
 
@@ -421,13 +438,16 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             scope.Count(entry => entry.State == LocalComp.LocalCompFile.LocalFileStatus.Fine);
         var disabled = scope.Count(entry =>
             entry.State == LocalComp.LocalCompFile.LocalFileStatus.Disabled);
-        FilterAllText = IsSearching
-            ? Lang.Text("Instance.Resource.Filter.SearchResult")
-            : Lang.Text("Instance.Resource.Filter.AllWithCount", scope.Count);
-        FilterEnabledText = Lang.Text("Instance.Resource.Filter.EnabledWithCount", enabled);
-        FilterDisabledText = Lang.Text("Instance.Resource.Filter.DisabledWithCount", disabled);
-        FilterCanUpdateText = Lang.Text("Instance.Resource.Filter.UpdatableWithCount", updatable);
-        FilterErrorText = Lang.Text("Instance.Resource.Filter.ErrorWithCount", unavailable);
+        _filterAllCount = scope.Count;
+        _filterEnabledCount = enabled;
+        _filterDisabledCount = disabled;
+        _filterUpdatableCount = updatable;
+        _filterErrorCount = unavailable;
+        OnPropertyChanged(nameof(FilterAllText));
+        OnPropertyChanged(nameof(FilterEnabledText));
+        OnPropertyChanged(nameof(FilterDisabledText));
+        OnPropertyChanged(nameof(FilterCanUpdateText));
+        OnPropertyChanged(nameof(FilterErrorText));
         ShowFilterCanUpdate = Filter == DatapackFilterType.CanUpdate || updatable > 0;
         ShowFilterError = Filter == DatapackFilterType.Unavailable || unavailable > 0;
         ShowFilterEnabled = Filter == DatapackFilterType.Enabled
@@ -438,20 +458,20 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
     public void SetSelected(LocalComp.LocalCompFile entry, bool selected)
     {
         if (selected)
-            _selected.Add(entry.path);
+            _selection.Add(entry.path);
         else
-            _selected.Remove(entry.path);
+            _selection.Remove(entry.path);
         UpdateSelectionState();
     }
 
     public bool IsSelected(LocalComp.LocalCompFile entry)
     {
-        return _selected.Contains(entry.path);
+        return _selection.Contains(entry.path);
     }
 
     public void ClearSelection()
     {
-        _selected.Clear();
+        _selection.Clear();
         UpdateSelectionState();
         ShowSelection = false;
     }
@@ -461,19 +481,19 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
     {
         if (VisibleEntries.Count == 0)
             return;
-        var allSelected = VisibleEntries.All(entry => _selected.Contains(entry.path));
+        var allSelected = VisibleEntries.All(entry => _selection.Contains(entry.path));
         foreach (var entry in VisibleEntries)
             if (allSelected)
-                _selected.Remove(entry.path);
+                _selection.Remove(entry.path);
             else
-                _selected.Add(entry.path);
+                _selection.Add(entry.path);
         BuildList();
     }
 
     private void UpdateSelectionState()
     {
-        ShowSelection = _selected.Count > 0;
-        if (_selected.Count == 0)
+        ShowSelection = _selection.Count > 0;
+        if (_selection.Count == 0)
         {
             CanEnable = false;
             CanDisable = false;
@@ -483,14 +503,14 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             return;
         }
 
-        SelectedText = Lang.Text("Instance.Resource.SelectedCount", _selected.Count);
-        var selected = Entries.Where(entry => _selected.Contains(entry.path)).ToList();
+        OnPropertyChanged(nameof(SelectedText));
+        var selected = Entries.Where(entry => _selection.Contains(entry.path)).ToList();
         CanEnable = selected.Any(entry =>
             entry.State == LocalComp.LocalCompFile.LocalFileStatus.Disabled);
         CanDisable =
             selected.Any(entry => entry.State == LocalComp.LocalCompFile.LocalFileStatus.Fine);
         CanUpdate = selected.Any(entry => entry.CanUpdate);
-        CanFavoriteAndShare = selected.Count == _selected.Count
+        CanFavoriteAndShare = selected.Count == _selection.Count
             && selected.All(entry => entry.Comp is not null);
         CanDelete = selected.Count > 0;
     }
@@ -518,11 +538,11 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
         var instance = PageInstanceLeft.ResolveInstance();
         if (instance is not null)
             PageRouter.Navigate(
-                PageType.Download,
-                PageSubType.DownloadDataPack,
+                PageIds.Download,
+                SubPageIds.DownloadDataPack,
                 new CompSearchContext(instance.Info.VanillaName, Comp.CompLoaderType.Any));
         else
-            PageRouter.Navigate(PageType.Download, PageSubType.DownloadDataPack);
+            PageRouter.Navigate(PageIds.Download, SubPageIds.DownloadDataPack);
     }
 
     public async Task InstallFilesAsync(IReadOnlyList<string> files)
@@ -662,10 +682,10 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                                 (entry.State != LocalComp.LocalCompFile.LocalFileStatus.Disabled)
                                 .ToString(),
                                 entry.IsFolder.ToString(),
-                                SafeSize(entry).ToString(),
+                                LocalCompFileOperations.GetSafeSize(entry).ToString(),
                                 entry.Version,
                                 entry.Description ?? string.Empty
-                            }.Select(CsvEscape)));
+                            }.Select(LocalCompFileOperations.CsvEscape)));
                 else
                     builder.AppendLine(entry.Name);
 
@@ -692,7 +712,8 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             return;
 
         var registeredFolders = targets
-            .Select(entry => Path.GetDirectoryName(GetEntryPath(entry)) ?? DatapacksPath)
+            .Select(entry => Path.GetDirectoryName(LocalCompFileOperations.GetEntryPath(entry))
+                ?? DatapacksPath)
             .Where(folder => !string.IsNullOrEmpty(folder))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -742,7 +763,8 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                 }
 
                 var folder = Path.GetFullPath(
-                    Path.GetDirectoryName(GetEntryPath(entry)) ?? DatapacksPath ?? string.Empty);
+                    Path.GetDirectoryName(LocalCompFileOperations.GetEntryPath(entry))
+                    ?? DatapacksPath ?? string.Empty);
                 if (string.IsNullOrEmpty(folder))
                     continue;
                 var targetPath = Path.GetFullPath(
@@ -827,8 +849,8 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                             }
 
                             foreach (var replacement in replacements)
-                                TryDeleteFile(replacement.DownloadPath);
-                            _selected.Clear();
+                                LocalCompFileOperations.TryDeleteFile(replacement.DownloadPath);
+                            _selection.Clear();
                             LauncherCommon.RunInUi(() => ReloadRequested?.Invoke());
                             Release();
                             break;
@@ -837,7 +859,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                         case LoadState.Failed:
                         {
                             foreach (var replacement in replacements)
-                                TryDeleteFile(replacement.DownloadPath);
+                                LocalCompFileOperations.TryDeleteFile(replacement.DownloadPath);
                             HintService.Show(
                                 Hints.Error(
                                     Lang.Text(
@@ -850,7 +872,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                         case LoadState.Aborted:
                         {
                             foreach (var replacement in replacements)
-                                TryDeleteFile(replacement.DownloadPath);
+                                LocalCompFileOperations.TryDeleteFile(replacement.DownloadPath);
                             HintService.Show(
                                 Hints.Info(Lang.Text("Instance.Resource.Update.Aborted")));
                             Release();
@@ -898,7 +920,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             if (!File.Exists(downloadPath))
                 continue;
             if (File.Exists(targetPath))
-                DeleteFileToRecycleBin(targetPath);
+                LocalCompFileOperations.DeleteFileToRecycleBin(targetPath);
             var directory = Path.GetDirectoryName(targetPath);
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
@@ -916,7 +938,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                         variant,
                         targetPath,
                         StringComparison.OrdinalIgnoreCase))
-                    DeleteFileToRecycleBin(variant);
+                    LocalCompFileOperations.DeleteFileToRecycleBin(variant);
         }
 
         return replaced;
@@ -932,7 +954,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
     {
         try
         {
-            var source = GetEntryPath(entry);
+            var source = LocalCompFileOperations.GetEntryPath(entry);
             var disabled = entry.State == LocalComp.LocalCompFile.LocalFileStatus.Disabled;
             var target = disabled
                 ? source.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase)
@@ -966,14 +988,14 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
     public void SetSelectedEnabled(bool enabled)
     {
         var targets = Entries
-            .Where(entry => _selected.Contains(entry.path))
+            .Where(entry => _selection.Contains(entry.path))
             .Where(entry => enabled
                 ? entry.State == LocalComp.LocalCompFile.LocalFileStatus.Disabled
                 : entry.State == LocalComp.LocalCompFile.LocalFileStatus.Fine)
             .ToList();
         foreach (var entry in targets)
             Toggle(entry, false);
-        _selected.Clear();
+        _selection.Clear();
         ReloadRequested?.Invoke();
     }
 
@@ -981,35 +1003,31 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
     public Task UpdateSelectedAsync()
     {
         var targets = Entries
-            .Where(entry => _selected.Contains(entry.path) && entry.CanUpdate)
+            .Where(entry => _selection.Contains(entry.path) && entry.CanUpdate)
             .ToList();
         return UpdateEntriesAsync(targets);
     }
 
     public List<Comp.CompProject> GetFavoriteProjects()
     {
-        return
-        [
-            .. Entries
-                .Where(entry => _selected.Contains(entry.path) && entry.Comp is not null)
-                .Select(entry => entry.Comp!)
-        ];
+        return LocalCompFileOperations.GetSelectedProjects(
+            Entries,
+            _selection.Keys,
+            entry => entry.path);
     }
 
     public IReadOnlyList<string> GetShareIds()
     {
-        return
-        [
-            .. Entries
-                .Where(entry => _selected.Contains(entry.path) && entry.Comp is not null)
-                .Select(entry => entry.Comp!.Id)
-        ];
+        return LocalCompFileOperations.GetSelectedShareIds(
+            Entries,
+            _selection.Keys,
+            entry => entry.path);
     }
 
     [RelayCommand]
     public async Task DeleteSelectedAsync()
     {
-        var targets = Entries.Where(entry => _selected.Contains(entry.path)).ToList();
+        var targets = Entries.Where(entry => _selection.Contains(entry.path)).ToList();
         if (targets.Count > 0)
             await DeleteAsync(targets);
     }
@@ -1023,7 +1041,8 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             var names = string.Join(", ", targets.Select(entry => entry.Name));
             var canRecycle = !permanentDelete
                 && targets.All(entry =>
-                    PlatformRuntime.Current.RecycleBin.IsSupported(GetEntryPath(entry)));
+                    ApplicationRuntime.Current.Platform.RecycleBin.IsSupported(
+                        LocalCompFileOperations.GetEntryPath(entry)));
             var result = await DialogService.Instance.ShowAsync(
                 new TextDialogRequest
                 {
@@ -1044,9 +1063,12 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             foreach (var entry in targets)
             {
                 var useRecycle = !permanentDelete
-                    && PlatformRuntime.Current.RecycleBin.IsSupported(GetEntryPath(entry));
+                    && ApplicationRuntime.Current.Platform.RecycleBin.IsSupported(
+                        LocalCompFileOperations.GetEntryPath(entry));
                 var outcome = useRecycle
-                    ? PlatformRuntime.Current.RecycleBin.Move(GetEntryPath(entry), out _)
+                    ? ApplicationRuntime.Current.Platform.RecycleBin.Move(
+                        LocalCompFileOperations.GetEntryPath(entry),
+                        out _)
                     : RecycleBinOutcome.Unsupported;
                 switch (outcome)
                 {
@@ -1056,9 +1078,9 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
 
                     case RecycleBinOutcome.Unsupported:
                         if (entry.IsFolder)
-                            Directory.Delete(GetEntryPath(entry), true);
+                            Directory.Delete(LocalCompFileOperations.GetEntryPath(entry), true);
                         else
-                            File.Delete(GetEntryPath(entry));
+                            File.Delete(LocalCompFileOperations.GetEntryPath(entry));
                         permanent++;
                         break;
 
@@ -1086,7 +1108,7 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
                             : Lang.Text(
                                 "Instance.Saves.Datapack.Delete.PermanentMultiple",
                                 permanent)));
-            _selected.Clear();
+            _selection.Clear();
             ReloadRequested?.Invoke();
         }
         catch (Exception ex)
@@ -1103,75 +1125,5 @@ public partial class PageInstanceSavesDatapackViewModel : ViewModelBase
             LauncherLogLevel.Feedback,
             userSummary: Lang.Text(titleKey));
         HintService.Show(Hints.Error(Lang.Text(titleKey)));
-    }
-
-    private static string CsvEscape(string? value)
-    {
-        value ??= string.Empty;
-        return value.Contains(',')
-            || value.Contains('"')
-            || value.Contains('\r')
-            || value.Contains('\n')
-                ? $"\"{value.Replace("\"", "\"\"")}\""
-                : value;
-    }
-
-    public static string GetEntryPath(LocalComp.LocalCompFile entry)
-    {
-        return entry.IsFolder ? entry.ActualPath : entry.path;
-    }
-
-    private static DateTime SafeWriteTime(LocalComp.LocalCompFile entry)
-    {
-        try
-        {
-            return entry.IsFolder
-                ? Directory.GetLastWriteTime(GetEntryPath(entry))
-                : File.GetLastWriteTime(GetEntryPath(entry));
-        }
-        catch
-        {
-            return DateTime.MinValue;
-        }
-    }
-
-    public static long GetSafeSize(LocalComp.LocalCompFile entry)
-    {
-        return SafeSize(entry);
-    }
-
-    private static long SafeSize(LocalComp.LocalCompFile entry)
-    {
-        try
-        {
-            return entry.IsFolder ? 0L : new FileInfo(GetEntryPath(entry)).Length;
-        }
-        catch
-        {
-            return 0L;
-        }
-    }
-
-    private static void DeleteFileToRecycleBin(string path)
-    {
-        if (!File.Exists(path))
-            return;
-        if (PlatformRuntime.Current.RecycleBin.IsSupported(path)
-            && PlatformRuntime.Current.RecycleBin.Move(path, out _) == RecycleBinOutcome.Moved)
-            return;
-        File.Delete(path);
-    }
-
-    private static void TryDeleteFile(string path)
-    {
-        try
-        {
-            if (File.Exists(path))
-                File.Delete(path);
-        }
-        catch
-        {
-            // ignored
-        }
     }
 }

@@ -5,6 +5,7 @@ using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Configuration.Storage;
 using PCL.Core.App.Localization;
+using PCL.Core.IO;
 using PCL.Core.Utils;
 using static PCL.Loading;
 
@@ -64,12 +65,15 @@ public static partial class Modpack
         var loader = new LoaderCombo<string>(loaderName, loaders)
         {
             OnStateChanged = ModpackUi.OnInstallStateChanged,
+            DisplayNameFactory = () => Lang.Text(
+                "Minecraft.Download.Modpack.Task.MmcInstall",
+                instanceName),
             Identifier = loaderIdentifier
         };
         loader.Start(request.targetInstanceFolder);
         LoaderTaskbarAdd(loader);
         CompUi.Current?.RefreshDownloadButton();
-        LauncherCommon.RunInUi(() => CompNavigation.ShowTaskManager());
+        LauncherCommon.RunInUi(CompNavigation.ShowTaskManager);
         return loader;
     }
 
@@ -80,14 +84,14 @@ public static partial class Modpack
     {
         var packJson = (JsonObject)
             LauncherCommon.GetJson(
-                LauncherCommon.ReadFile(
+                Files.ReadAllTextOrEmpty(
                     archive.GetEntry($"{archiveBaseFolder}mmc-pack.json")!.Open(),
                     Encoding.UTF8));
 
         var instanceCfgEntry = archive.GetEntry($"{archiveBaseFolder}instance.cfg");
         packInstance = instanceCfgEntry is null
             ? ""
-            : LauncherCommon.ReadFile(instanceCfgEntry.Open(), Encoding.UTF8);
+            : Files.ReadAllTextOrEmpty(instanceCfgEntry.Open(), Encoding.UTF8);
 
         return packJson;
     }
@@ -151,7 +155,9 @@ public static partial class Modpack
                     StringComparison.OrdinalIgnoreCase)
             select (JsonObject)
                 LauncherCommon.GetJson(
-                    LauncherCommon.ReadFile(archive.GetEntry(entry.FullName)!.Open(), Encoding.UTF8)
+                    Files.ReadAllTextOrEmpty(
+                        archive.GetEntry(entry.FullName)!.Open(),
+                        Encoding.UTF8)
                 )
             into patch
             select new KeyValuePair<JsonObject, int>(patch, (int)(patch["order"] ?? 0))
@@ -478,14 +484,14 @@ public static partial class Modpack
             return;
 
         var lines = (
-            from line in LauncherCommon
-                .ReadFile(mmcSetupFile)
+            from line in Files
+                .ReadAllTextOrEmpty(mmcSetupFile)
                 .Split(["\r", "\n"], StringSplitOptions.RemoveEmptyEntries)
             where line.Contains('=')
             select $"{line.BeforeFirst("=")}:{line.AfterFirst("=")}"
         ).ToList();
 
-        LauncherCommon.WriteFile(mmcSetupFile, lines.Join("\r\n"));
+        Files.WriteAllText(mmcSetupFile, lines.Join("\r\n"));
 
         _MigrateMmcPreLaunchCommand(mmcSetupFile, versionFolder);
         _MigrateMmcJoinServer(mmcSetupFile, versionFolder);
@@ -497,10 +503,10 @@ public static partial class Modpack
     private static void _MigrateMmcPreLaunchCommand(string mmcSetupFile, string versionFolder)
     {
         if (!Convert.ToBoolean(
-                LauncherCommon.ReadIni(mmcSetupFile, "OverrideCommands", false.ToString())))
+                Ini.Read(mmcSetupFile, "OverrideCommands", false.ToString())))
             return;
 
-        var preLaunchCommand = LauncherCommon.ReadIni(mmcSetupFile, "PreLaunchCommand");
+        var preLaunchCommand = Ini.Read(mmcSetupFile, "PreLaunchCommand");
         if (string.IsNullOrEmpty(preLaunchCommand))
             return;
 
@@ -520,11 +526,11 @@ public static partial class Modpack
     private static void _MigrateMmcJoinServer(string mmcSetupFile, string versionFolder)
     {
         if (!Convert.ToBoolean(
-                LauncherCommon.ReadIni(mmcSetupFile, "JoinServerOnLaunch", false.ToString())))
+                Ini.Read(mmcSetupFile, "JoinServerOnLaunch", false.ToString())))
             return;
 
-        var serverAddress = LauncherCommon
-            .ReadIni(mmcSetupFile, "JoinServerOnLaunchAddress")
+        var serverAddress = Ini
+            .Read(mmcSetupFile, "JoinServerOnLaunchAddress")
             .Replace(@"\""", "\"");
         Config.Instance.ServerToEnter[versionFolder] = serverAddress;
         LauncherCommon.Log($"[ModPack] 迁移 MultiMC 实例独立设置：自动进入服务器：{serverAddress}");
@@ -533,7 +539,7 @@ public static partial class Modpack
     private static void _MigrateMmcJavaCompatibility(string mmcSetupFile, string versionFolder)
     {
         if (!Convert.ToBoolean(
-                LauncherCommon.ReadIni(mmcSetupFile, "IgnoreJavaCompatibility", false.ToString())))
+                Ini.Read(mmcSetupFile, "IgnoreJavaCompatibility", false.ToString())))
             return;
 
         Config.Instance.IgnoreJavaCompatibility[versionFolder] = true;
@@ -547,14 +553,14 @@ public static partial class Modpack
         string instanceName,
         string versionFolder)
     {
-        var logo = Path.GetFileName(LauncherCommon.ReadIni(mmcSetupFile, "iconKey"));
+        var logo = Path.GetFileName(Ini.Read(mmcSetupFile, "iconKey"));
         if (string.IsNullOrEmpty(logo)
             || !File.Exists($"{installTemp}{archiveBaseFolder}{logo}.png"))
             return;
 
         States.Instance.IsLogoCustom[versionFolder] = true;
         States.Instance.LogoPath[versionFolder] = Path.Combine("PCL", "Logo.png");
-        LauncherCommon.CopyFile(
+        Files.CopyFile(
             $"{installTemp}{archiveBaseFolder}{logo}.png",
             Path.Combine(
                 GameFolders.mcFolderSelected!,
@@ -567,12 +573,12 @@ public static partial class Modpack
 
     private static void _MigrateMmcJvmArgs(string mmcSetupFile, string versionFolder)
     {
-        var jvmArgs = LauncherCommon.ReadIni(mmcSetupFile, "JvmArgs");
+        var jvmArgs = Ini.Read(mmcSetupFile, "JvmArgs");
         if (string.IsNullOrEmpty(jvmArgs))
             return;
 
         if (Convert.ToBoolean(
-                LauncherCommon.ReadIni(mmcSetupFile, "OverrideJavaArgs", false.ToString())))
+                Ini.Read(mmcSetupFile, "OverrideJavaArgs", false.ToString())))
         {
             Config.Instance.JvmArgs[versionFolder] = jvmArgs;
             LauncherCommon.Log($"[ModPack] 迁移 MultiMC 实例独立设置：JVM 参数（覆盖）：{jvmArgs}");

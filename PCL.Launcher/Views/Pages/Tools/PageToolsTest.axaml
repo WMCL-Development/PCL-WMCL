@@ -1,12 +1,12 @@
 <ui:MyPageRight xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:vm="using:PCL"
                 xmlns:ui="using:PCL.UI.Controls"
                xmlns:skin="using:PCL.UI.Controls.Skin"
                xmlns:vm="using:PCL.ViewModels.Pages"
                 xmlns:loc="using:PCL.Core.UI"
-        xmlns:conv="using:PCL.UI.Converters"
-        xmlns:mc="using:PCL.UI.Controls.Mc"
-                x:CompileBindings="False"
+                x:DataType="vm:PageToolsTestViewModel"
+                x:CompileBindings="True"
                 x:Class="PCL.Views.Pages.Tools.PageToolsTest">
     <Panel x:Name="PanMain">
     <ui:MyScrollViewer x:Name="PanBack"

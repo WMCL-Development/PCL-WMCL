@@ -2,15 +2,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.IO;
 using PCL.Core.UI.Hints;
 using PCL.Core.ViewModel;
 
 namespace PCL;
 
-/// <summary>
-///     实例资源列表条目需要宿主页面提供的操作入口。<br />
-///     把交互委托给页面，避免条目 ViewModel 反向依赖具体的页面类型。
-/// </summary>
+/// <summary>实例资源列表条目需要宿主页面提供的操作入口。<br /> 把交互委托给页面，避免条目 ViewModel 反向依赖具体的页面类型。</summary>
 public interface ILocalModItemHost
 {
     /// <summary>当前页面管理的资源类型。</summary>
@@ -80,9 +78,6 @@ public partial class MyLocalModItemViewModel : ViewModelBase
     /// <summary>本地化标签键；页面用这些键渲染标签以保证切换语言后自动刷新。</summary>
     public IReadOnlyList<string> TagKeys { get; private set; } = [];
 
-    /// <summary>标签的当前显示文本。</summary>
-    public IReadOnlyList<string> Tags { get; private set; } = [];
-
     /// <summary>“打开文件位置”按钮的提示文本。</summary>
     public string OpenFolderToolTip => Lang.Text("Instance.Saves.OpenFileLocation");
 
@@ -116,6 +111,12 @@ public partial class MyLocalModItemViewModel : ViewModelBase
         }
     }
 
+    protected override void OnLanguageChanged()
+    {
+        Refresh();
+        base.OnLanguageChanged();
+    }
+
     private void RefreshCore(LocalComp.LocalCompFile entry)
     {
         if (entry is { CanUpdate: true, UpdateFile: not null })
@@ -146,7 +147,7 @@ public partial class MyLocalModItemViewModel : ViewModelBase
                         entry
                             .path.Replace(".disabled", string.Empty)
                             .Replace(".old", string.Empty)),
-                _ => LauncherCommon.GetFileNameFromPath(entry.path)
+                _ => Files.GetFileNameFromPath(entry.path)
             };
 
         string title;
@@ -319,8 +320,7 @@ public partial class MyLocalModItemViewModel : ViewModelBase
                 .Where(tag => !string.IsNullOrEmpty(Lang.Text(tag)))
             ];
 
-        Tags = [.. TagKeys.Select(Lang.Text)];
-        IsTagsVisible = Tags.Count > 0;
+        IsTagsVisible = TagKeys.Count > 0;
     }
 
     [RelayCommand]

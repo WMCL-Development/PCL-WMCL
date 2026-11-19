@@ -1,9 +1,8 @@
 <!-- Formatted by xaml-lang-formatter at 2026-06-28T17:16:52. -->
-<ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-    xml:space="preserve">
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                    xml:space="preserve">
 
     <!-- Meta -->
 
@@ -1695,6 +1694,8 @@
     <sys:String x:Key="Launch.Homepage.LoadFailed.Retry">重試</sys:String>
     <sys:String x:Key="Launch.Homepage.LoadFailed.Title">載入首頁介面失敗</sys:String>
     <sys:String x:Key="Launch.Homepage.Loading">正在載入首頁……</sys:String>
+    <sys:String x:Key="Launch.Homepage.InvalidXaml">首頁內容不是有效的 XAML 或 AXAML。</sys:String>
+    <sys:String x:Key="Launch.Homepage.WpfMigrationToast">目前正在使用 WPF 自訂首頁，顯示可能會有問題。</sys:String>
     <sys:String x:Key="Launch.Homepage.News.Loading">載入中……</sys:String>
     <sys:String x:Key="Launch.Homepage.News.ViewDetail">檢視詳情</sys:String>
     <sys:String x:Key="Launch.Homepage.Preset.EchoCave.Removed">回聲洞 因為只有空殼因此已被移除，請前往設定選擇其他預設首頁</sys:String>
@@ -1988,7 +1989,7 @@
 
     <sys:String x:Key="Minecraft.Download.Loader.NewForge">新版 Forge</sys:String>
     <sys:String x:Key="Minecraft.Download.ServerBatch.InstructionEula">如果提示 "You need to agree to the EULA"，請編輯 eula.txt 同意協議!</sys:String>
-    <sys:String x:Key="Minecraft.Download.ServerBatch.InstructionJavaPath">如果服務端立即停止，請右鍵編輯該指令碼，使用!JAVA_HOME!取代%JAVA_HOME%</sys:String>
+    <sys:String x:Key="Minecraft.Download.ServerBatch.InstructionJavaPath">如果服務端立即停止，請編輯指令碼並確認 Java 路徑（可使用 JAVA_HOME）。</sys:String>
     <sys:String x:Key="Minecraft.Download.ServerBatch.InstructionPclSettings">你可以在 PCL CE 的 [設定 → 啟動選項 → 啟動器內 Java 路徑] 中將此版本選為合適的 Java 並啟用!</sys:String>
     <sys:String x:Key="Minecraft.Download.ServerBatch.ServerStopped">服務端已停止。</sys:String>
     <sys:String x:Key="Minecraft.Download.ServerBatch.Title">{0} 原版服務端</sys:String>
@@ -2217,6 +2218,9 @@
     <sys:String x:Key="Minecraft.Launch.Donate.Title">{0} 次啟動！</sys:String>
     <sys:String x:Key="Minecraft.Launch.ExportScript.Cancelled">已取消匯出啟動指令碼！</sys:String>
     <sys:String x:Key="Minecraft.Launch.ExportScript.Success">匯出啟動指令碼成功！</sys:String>
+    <sys:String x:Key="Minecraft.Launch.Script.Title">啟動 - {0}</sys:String>
+    <sys:String x:Key="Minecraft.Launch.Script.Starting">遊戲正在啟動，請稍候。</sys:String>
+    <sys:String x:Key="Minecraft.Launch.Script.Exited">遊戲已退出。</sys:String>
     <sys:String x:Key="Minecraft.Launch.PurchaseHint.Later">下次一定</sys:String>
     <sys:String x:Key="Minecraft.Launch.PurchaseHint.Message">看起來你似乎沒買游戲...&#xA;如果覺得 Minecraft 還不錯，可以購買支援一下，畢竟開發遊戲也真的很不容易...不要一直接嫖啦。&#xA;&#xA;在驗證一個微軟帳戶後，就不會出現這個提示了！</sys:String>
     <sys:String x:Key="Minecraft.Launch.PurchaseHint.Purchase">支援！</sys:String>
@@ -3007,6 +3011,7 @@
     <sys:String x:Key="Setup.Misc.Network.Proxy.Password">密碼</sys:String>
     <sys:String x:Key="Setup.Misc.Network.Proxy.System">使用系統 Proxy</sys:String>
     <sys:String x:Key="Setup.Misc.Network.Proxy.UntrustedWarning">請勿填寫不信任的 Proxy 位址</sys:String>
+    <sys:String x:Key="Setup.Misc.Network.Proxy.CustomHint">例如 http://127.0.0.1:1080/</sys:String>
     <sys:String x:Key="Setup.Misc.Network.Proxy.Username">帳戶</sys:String>
 
     <!-- Setup.Misc.System -->
@@ -3167,10 +3172,11 @@
     <sys:String x:Key="Setup.Ui.Homepage.GoToMarket">前往首頁市場</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.HintReferToModSetup">內容見 ModSetup</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.LocalFile">存取本機檔案</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.LocalFile.Hint">從 PCL 資料夾下的 Custom.xaml 存取首頁內容。&#xA;你可以手動編輯該檔案，向首頁新增文字、圖片、常用網站、快速啟動等功能。</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.LocalFile.Hint">從 PCL 資料夾下的 Custom.axaml 或 Custom.xaml 存取首頁內容。&#xA;你可以手動編輯該檔案，向首頁新增文字、圖片、常用網站、快速啟動等功能。</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.NetUpdate">連線更新</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.NetUpdate.Hint">從指定網址連網取得首頁內容。伺服器管理員也可以用於動態更新伺服器公告。&#xA;如果你製作了穩定執行的連網首頁，可以點擊這條提示投稿，若合格即可加入預設！</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.NetWarning">請謹慎使用陌生人提供的首頁，惡意程式碼可能會造成損害！</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.MigrationWarning">PCL CE 已全面遷移至 Avalonia UI，請優先使用 AXAML 格式的首頁文件。舊版 WPF XAML 自訂首頁的支援有限，不建議繼續使用，同時也建議首頁作者盡快改用新的 AXAML 格式。</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.PresetLabel">首頁預設</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Refresh">重新整理首頁</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Refresh.Success">已重新整理首頁！</sys:String>
@@ -3180,22 +3186,22 @@
     <!-- Setup.Ui.Homepage.Preset -->
 
     <sys:String x:Key="Setup.Ui.Homepage.Preset">預設</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.DailyModpack">每日模組包推薦（作者：wkea）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.DailyModpack">[WPF] 每日模組包推薦（作者：wkea）</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.EchoCave">回聲洞 (已移除)</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.GitHub">PCL GitHub 儀錶板（作者：Deep-Dark-Forest）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.Magazine">雜誌首頁（作者：CreeperIsASpy）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.McNews">Minecraft 新聞（作者：Nattiden）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.GitHub">[WPF] PCL GitHub 儀錶板（作者：Deep-Dark-Forest）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.Magazine">[WPF] 雜誌首頁（作者：CreeperIsASpy）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.McNews">[WPF] Minecraft 新聞（作者：Nattiden）</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.McOfficialFeed">Minecraft 官方資訊流</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.McSkin">Minecraft 外觀推薦（作者：wkea）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.McUpdateSummary">Minecraft 更新摘要（作者：pynickle，部分由 AI 生成）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.NewsToday">今日新聞熱點（作者：EYicheng）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.MinecraftKnowledge">Minecraft 芝士站（作者：awaEric233）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.ModpackRecommendation">模組包推薦引擎（作者：CHMYGZ）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.Bangumi">Bangumi 番劇首頁（作者：wzyaeu）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.OpenBmclapi">OpenBMCLAPI 儀錶板 Lite（作者：Silverteal、Mxmilu666）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.McSkin">[WPF] Minecraft 外觀推薦（作者：wkea）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.McUpdateSummary">[WPF] Minecraft 更新摘要（作者：pynickle，部分由 AI 生成）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.NewsToday">[WPF] 今日新聞熱點（作者：EYicheng）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.MinecraftKnowledge">[WPF] Minecraft 芝士站（作者：awaEric233）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.ModpackRecommendation">[WPF] 模組包推薦引擎（作者：CHMYGZ）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.Bangumi">[WPF] Bangumi 番劇首頁（作者：wzyaeu）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.OpenBmclapi">[WPF] OpenBMCLAPI 儀錶板 Lite（作者：Silverteal、Mxmilu666）</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.OpenMcim">OpenMCIM 儀錶板（作者：SALTWOOD）</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.PclAnnouncement">PCL CE 公告</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.PclManual">PCL 新功能說明書（作者：WForst-Breeze）</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.PclAnnouncement">[WPF] PCL CE 公告</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.PclManual">[WPF] PCL 新功能說明書（作者：WForst-Breeze）</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.PclMarket">PCL 首頁市場（作者：凌雲）</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.PclNews">PCL 新聞速報（作者：Joker2184）</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.SimpleHomepage">簡單首頁（作者：MFn233）</sys:String>
@@ -3264,8 +3270,8 @@
     <sys:String x:Key="Setup.Update.CheckAgain">再次檢查</sys:String>
     <sys:String x:Key="Setup.Update.CheckFailed">檢查更新時出錯</sys:String>
     <sys:String x:Key="Setup.Update.Checking">正在檢查更新...</sys:String>
-    <sys:String x:Key="Setup.Update.DotNetMissing.DownloadRuntime">下載 .NET 11 執行時</sys:String>
-    <sys:String x:Key="Setup.Update.DotNetMissing.Message">發現了啟動器更新（版本 {0}），但是新版本要求你的電腦安裝 .NET 11 才可以執行。&#xA;你需要先安裝 .NET 11 才可以繼續更新。&#xA;&#xA;點擊下方按鈕開啟網頁，然後選擇「.NET 桌面執行時」中的 {1} 選項下載。</sys:String>
+    <sys:String x:Key="Setup.Update.DotNetMissing.DownloadRuntime">下載 .NET {0} 執行時</sys:String>
+    <sys:String x:Key="Setup.Update.DotNetMissing.Message">發現了啟動器更新（版本 {1}），但是新版本要求你的電腦安裝 .NET {0} 才可以執行。&#xA;你需要先安裝 .NET {0} 才可以繼續更新。&#xA;&#xA;點擊下方按鈕開啟網頁，然後選擇「.NET 桌面執行時」中的 {2} 選項下載。</sys:String>
     <sys:String x:Key="Setup.Update.DotNetMissing.Title">啟動器更新 - 缺少執行環境</sys:String>
     <sys:String x:Key="Setup.Update.Error.NetworkFailed">無法取得最新版本資訊，請檢查網路連線</sys:String>
     <sys:String x:Key="Setup.Update.Install">下載並安裝</sys:String>
@@ -3334,7 +3340,7 @@
     <sys:String x:Key="SystemDialog.File.SelectTitle">選擇檔案</sys:String>
     <sys:String x:Key="SystemDialog.Folder.OpenFailed.Message">無法開啟檔案總管。請嘗試關閉安全軟體（例如 360 安全衛士）。&#xA;&#xA;路徑：{0}</sys:String>
     <sys:String x:Key="SystemDialog.Folder.SelectTitle">選擇資料夾</sys:String>
-    <sys:String x:Key="SystemDialog.Startup.DotNetRuntimeOutdated.Message">你的 .NET 桌面執行時已過期或損壞。請重新安裝 .NET 11。</sys:String>
+    <sys:String x:Key="SystemDialog.Startup.DotNetRuntimeOutdated.Message">你的 .NET 桌面執行時已過期或損壞。請重新安裝 .NET {0}。</sys:String>
     <sys:String x:Key="SystemDialog.Startup.InitializationTitle">PCL CE 初始化失敗</sys:String>
 
     <!-- SystemDialog.Error -->
@@ -3342,7 +3348,7 @@
     <sys:String x:Key="SystemDialog.Error.Detail.WithException">{0}&#xA;&#xA;詳細資訊：&#xA;{1}</sys:String>
     <sys:String x:Key="SystemDialog.Error.Message.WithLogExportGuidance">{0}&#xA;&#xA;若要尋求幫助，請不要關閉啟動器。請立即匯出日誌（設定 → 檢視日誌 → 匯出日誌），並傳送匯出的日誌壓縮檔；僅傳送此視窗的截圖通常無法幫助定位問題。</sys:String>
     <sys:String x:Key="SystemDialog.Error.OperationFailed.Message">執行操作時發生錯誤。&#xA;&#xA;操作資訊：&#xA;{0}&#xA;&#xA;詳細資訊：&#xA;{1}</sys:String>
-    <sys:String x:Key="SystemDialog.Error.OperationFailed.RuntimeMessage">執行操作時發生錯誤。&#xA;&#xA;操作資訊：&#xA;{0}&#xA;&#xA;詳細資訊：&#xA;{1}&#xA;&#xA;與系統底層互動失敗。請嘗試重新安裝 .NET 11。</sys:String>
+    <sys:String x:Key="SystemDialog.Error.OperationFailed.RuntimeMessage">執行操作時發生錯誤。&#xA;&#xA;操作資訊：&#xA;{1}&#xA;&#xA;詳細資訊：&#xA;{2}&#xA;&#xA;與系統底層互動失敗。請嘗試重新安裝 .NET {0}。</sys:String>
     <sys:String x:Key="SystemDialog.Error.Title">錯誤</sys:String>
     <sys:String x:Key="SystemDialog.Error.Unexpected.Message">發生意外錯誤。</sys:String>
     <sys:String x:Key="SystemDialog.Error.Unexpected.Title">發生意外錯誤</sys:String>

@@ -1,24 +1,33 @@
-using System.Diagnostics;
 using PCL.Core.Logging;
+using PCL.Core.Platform;
 
 namespace PCL.Core.UI;
 
 /// <summary>Linux 文件对话框：优先 portal，缺失时回退 kdialog/zenity。</summary>
-public sealed class LinuxFileDialogService : FileDialogService
+public sealed class LinuxFileDialogService(IExternalCommandRunner commandRunner) : FileDialogService
 {
+    private readonly IExternalCommandRunner _commandRunner =
+        commandRunner ?? throw new ArgumentNullException(nameof(commandRunner));
+
     public override bool IsAvailable =>
         GetStorageProvider() is not null
         || CommandExists("kdialog")
         || CommandExists("zenity");
 
-    public override string SelectSaveFile(
+    public override async Task<string> SelectSaveFileAsync(
         string? title,
         string fileName,
         string? fileFilter = null,
-        string? initialDirectory = null)
+        string? initialDirectory = null,
+        CancellationToken cancellationToken = default)
     {
         if (GetStorageProvider() is not null)
-            return base.SelectSaveFile(title, fileName, fileFilter, initialDirectory);
+            return await base.SelectSaveFileAsync(
+                title,
+                fileName,
+                fileFilter,
+                initialDirectory,
+                cancellationToken);
 
         var suggested = Path.Combine(
             string.IsNullOrWhiteSpace(initialDirectory) ? "" : initialDirectory,
@@ -32,7 +41,7 @@ public sealed class LinuxFileDialogService : FileDialogService
             args.Add(string.IsNullOrWhiteSpace(suggested) ? initialDirectory ?? "" : suggested);
             var filter = ToKDialogFilter(fileFilter);
             if (filter is not null) args.Add(filter);
-            var result = RunDialog("kdialog", args);
+            var result = await RunDialogAsync("kdialog", args, cancellationToken);
             if (result.Length > 0) return result[0];
         }
 
@@ -44,8 +53,9 @@ public sealed class LinuxFileDialogService : FileDialogService
             args.Add("--save");
             args.Add("--confirm-overwrite");
             if (!string.IsNullOrWhiteSpace(suggested)) args.Add("--filename=" + suggested);
-            args.AddRange(ToZenityFilters(fileFilter).Select(filter => "--file-filter=" + filter));
-            var result = RunDialog("zenity", args);
+            args.AddRange(
+                ToZenityFilters(fileFilter).Select(filter => "--file-filter=" + filter));
+            var result = await RunDialogAsync("zenity", args, cancellationToken);
             if (result.Length > 0) return result[0];
         }
 
@@ -53,14 +63,20 @@ public sealed class LinuxFileDialogService : FileDialogService
         return "";
     }
 
-    public override string[] SelectFiles(
+    public override async Task<string[]> SelectFilesAsync(
         string? fileFilter = null,
         string? title = null,
         string? initialDirectory = null,
-        bool allowMultiSelect = true)
+        bool allowMultiSelect = true,
+        CancellationToken cancellationToken = default)
     {
         if (GetStorageProvider() is not null)
-            return base.SelectFiles(fileFilter, title, initialDirectory, allowMultiSelect);
+            return await base.SelectFilesAsync(
+                fileFilter,
+                title,
+                initialDirectory,
+                allowMultiSelect,
+                cancellationToken);
 
         if (CommandExists("kdialog"))
         {
@@ -76,7 +92,7 @@ public sealed class LinuxFileDialogService : FileDialogService
                 args.Add("--separate-output");
             }
 
-            var result = RunDialog("kdialog", args);
+            var result = await RunDialogAsync("kdialog", args, cancellationToken);
             if (result.Length > 0) return result;
         }
 
@@ -88,8 +104,9 @@ public sealed class LinuxFileDialogService : FileDialogService
             if (allowMultiSelect) args.Add("--multiple");
             if (!string.IsNullOrWhiteSpace(initialDirectory))
                 args.Add("--filename=" + initialDirectory + Path.DirectorySeparatorChar);
-            args.AddRange(ToZenityFilters(fileFilter).Select(filter => "--file-filter=" + filter));
-            var result = RunDialog("zenity", args);
+            args.AddRange(
+                ToZenityFilters(fileFilter).Select(filter => "--file-filter=" + filter));
+            var result = await RunDialogAsync("zenity", args, cancellationToken);
             if (result.Length > 0) return result;
         }
 
@@ -97,10 +114,16 @@ public sealed class LinuxFileDialogService : FileDialogService
         return [];
     }
 
-    public override string SelectFolder(string? title = null, string? initialDirectory = null)
+    public override async Task<string> SelectFolderAsync(
+        string? title = null,
+        string? initialDirectory = null,
+        CancellationToken cancellationToken = default)
     {
         if (GetStorageProvider() is not null)
-            return base.SelectFolder(title, initialDirectory);
+            return await base.SelectFolderAsync(
+                title,
+                initialDirectory,
+                cancellationToken);
 
         if (CommandExists("kdialog"))
         {
@@ -108,7 +131,7 @@ public sealed class LinuxFileDialogService : FileDialogService
             AddTitle(args, title);
             args.Add("--getexistingdirectory");
             args.Add(string.IsNullOrWhiteSpace(initialDirectory) ? "" : initialDirectory);
-            var result = RunDialog("kdialog", args);
+            var result = await RunDialogAsync("kdialog", args, cancellationToken);
             if (result.Length > 0) return result[0];
         }
 
@@ -120,7 +143,7 @@ public sealed class LinuxFileDialogService : FileDialogService
             args.Add("--directory");
             if (!string.IsNullOrWhiteSpace(initialDirectory))
                 args.Add("--filename=" + initialDirectory + Path.DirectorySeparatorChar);
-            var result = RunDialog("zenity", args);
+            var result = await RunDialogAsync("zenity", args, cancellationToken);
             if (result.Length > 0) return result[0];
         }
 
@@ -156,40 +179,31 @@ public sealed class LinuxFileDialogService : FileDialogService
         }
     }
 
-    private static bool CommandExists(string command)
+    private bool CommandExists(string command)
     {
-        var path = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrWhiteSpace(path)) return false;
-        return path
-            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-            .Select(directory => Path.Combine(directory, command))
-            .Any(File.Exists);
+        return _commandRunner.ExistsOnPath(command);
     }
 
-    private static string[] RunDialog(string fileName, IReadOnlyList<string> arguments)
+    private async Task<string[]> RunDialogAsync(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = fileName,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            foreach (var argument in arguments)
-                startInfo.ArgumentList.Add(argument);
-            using var process = Process.Start(startInfo);
-            if (process is null) return [];
-            var errorTask = process.StandardError.ReadToEndAsync();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            _ = errorTask.GetAwaiter().GetResult();
-            if (process.ExitCode != 0) return [];
-            return output.Split(
+            var result = await _commandRunner.RunAsync(
+                fileName,
+                arguments,
+                TimeSpan.Zero,
+                cancellationToken);
+            if (!result.Succeeded) return [];
+            return result.StandardOutput.Split(
                 ['\r', '\n'],
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

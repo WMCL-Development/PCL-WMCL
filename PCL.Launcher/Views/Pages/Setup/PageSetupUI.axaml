@@ -2,7 +2,9 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:ui="using:PCL.UI.Controls"
                 xmlns:loc="using:PCL.Core.UI"
-                x:CompileBindings="False"
+                xmlns:vm="using:PCL"
+                x:DataType="vm:PageSetupUIViewModel"
+                x:CompileBindings="True"
                 x:Class="PCL.Views.Pages.Setup.PageSetupUI">
     <ui:MyScrollViewer x:Name="PanBack"
                        HorizontalScrollBarVisibility="Disabled"
@@ -529,6 +531,12 @@
                                        Height="22"
                                        Text="{loc:Loc Setup.Ui.Homepage.NetUpdate}" />
                     </Grid>
+                    <ui:MyHint x:Name="HintCustomMigrationWarn"
+                               Margin="0,15,0,-4"
+                               Theme="Yellow"
+                               CanClose="True"
+                               IsVisible="False"
+                               Text="{loc:Loc Setup.Ui.Homepage.MigrationWarning}" />
                     <ui:MyHint x:Name="HintCustom"
                                Margin="0,15,0,-4"
                                Theme="Blue"

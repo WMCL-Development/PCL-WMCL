@@ -5,6 +5,7 @@ using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Configuration.Storage;
 using PCL.Core.App.Localization;
+using PCL.Core.IO;
 using PCL.Core.Platform;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.UI.Hints;
@@ -18,17 +19,48 @@ namespace PCL;
 /// <summary>实例选择页右栏的视图模型：实例分组、搜索、隐藏、选择与实例操作。</summary>
 public partial class PageSelectRightViewModel : ViewModelBase
 {
-    [ObservableProperty]
-    public partial string EmptyContent { get; set; } = Lang.Text("Select.Instance.Empty.Message");
+    private string _emptySearchText = string.Empty;
+    private EmptyStateKind _emptyState;
 
-    [ObservableProperty] public partial string EmptySearchContent { get; set; } = string.Empty;
+    public string EmptyContent =>
+        _emptyState switch
+        {
+            EmptyStateKind.NoInstances when ShowHidden => Lang.Text(
+                "Select.Instance.Hidden.EmptyMessage"),
+            EmptyStateKind.NoInstances => Lang.Text("Select.Instance.Empty.Message"),
+            EmptyStateKind.AllHidden => Lang.Text("Select.Instance.AllHidden.Message"),
+            _ => string.Empty
+        };
 
-    [ObservableProperty]
-    public partial string EmptySearchTitle { get; set; } =
-        Lang.Text("Select.Instance.EmptySearch.Title");
+    public string EmptySearchContent =>
+        _emptyState switch
+        {
+            EmptyStateKind.HiddenSearch => string.IsNullOrWhiteSpace(_emptySearchText)
+                ? Lang.Text("Select.Instance.Search.EmptyInput")
+                : Lang.Text("Select.Instance.Search.NoHiddenResult", _emptySearchText),
+            EmptyStateKind.Search => string.IsNullOrWhiteSpace(_emptySearchText)
+                ? Lang.Text("Select.Instance.Search.EmptyInput")
+                : Lang.Text("Select.Instance.Search.NoResult", _emptySearchText),
+            _ => string.Empty
+        };
 
-    [ObservableProperty]
-    public partial string EmptyTitle { get; set; } = Lang.Text("Select.Instance.Empty.Title");
+    public string EmptySearchTitle =>
+        _emptyState switch
+        {
+            EmptyStateKind.HiddenSearch => Lang.Text("Select.Instance.Hidden.EmptySearchTitle"),
+            EmptyStateKind.Search => Lang.Text("Select.Instance.EmptySearch.Title"),
+            _ => string.Empty
+        };
+
+    public string EmptyTitle =>
+        _emptyState switch
+        {
+            EmptyStateKind.NoInstances when ShowHidden =>
+                Lang.Text("Select.Instance.Hidden.EmptyTitle"),
+            EmptyStateKind.NoInstances => Lang.Text("Select.Instance.Empty.Title"),
+            EmptyStateKind.AllHidden => Lang.Text("Select.Instance.AllHidden.Title"),
+            _ => string.Empty
+        };
 
     [ObservableProperty] public partial IReadOnlyList<InstanceCardGroup> Groups { get; set; } = [];
 
@@ -96,7 +128,7 @@ public partial class PageSelectRightViewModel : ViewModelBase
 
         if (force)
         {
-            LauncherCommon.WriteIni(Path.Combine(root, "PCL.ini"), "InstanceCache", "");
+            Ini.Write(Path.Combine(root, "PCL.ini"), "InstanceCache", "");
             InstanceList.mcInstanceListForceRefresh = true;
         }
 
@@ -120,14 +152,17 @@ public partial class PageSelectRightViewModel : ViewModelBase
 
     public static bool MatchesSearch(McInstance instance, string searchText)
     {
-        if (string.IsNullOrEmpty(searchText))
-            return true;
-        return (instance.Name ?? "").ToLower().Contains(searchText)
-            || (instance.Desc ?? "").ToLower().Contains(searchText)
+        return string.IsNullOrEmpty(searchText)
+            || (instance.Name ?? "").Contains(
+                searchText,
+                StringComparison.InvariantCultureIgnoreCase)
+            || (instance.Desc ?? "").Contains(
+                searchText,
+                StringComparison.InvariantCultureIgnoreCase)
             || instance
                 .GetDefaultDescription()
                 .Replace(",", "")
-                .ToLower()
+                .ToLowerInvariant()
                 .Trim()
                 .Contains(searchText);
     }
@@ -135,7 +170,7 @@ public partial class PageSelectRightViewModel : ViewModelBase
     [RelayCommand]
     public static void DownloadPage()
     {
-        PageRouter.Navigate(PageType.Download, PageSubType.DownloadInstall);
+        PageRouter.Navigate(PageIds.Download, SubPageIds.DownloadInstall);
     }
 
     [RelayCommand]
@@ -169,7 +204,7 @@ public partial class PageSelectRightViewModel : ViewModelBase
     public static void OpenInstanceSettings(McInstance version)
     {
         PageRouter.Navigate(
-            new PageStackData(PageType.InstanceSetup, PageSubType.VersionOverall, version));
+            new PageRoute(PageIds.InstanceSetup, SubPageIds.VersionOverall, version));
     }
 
     public async Task DeleteVersionAsync(McInstance instance, bool permanent)
@@ -179,7 +214,8 @@ public partial class PageSelectRightViewModel : ViewModelBase
             var isHintIndie = instance.state != McInstanceState.Error
                 && (instance.PathIndie ?? "") != (GameFolders.mcFolderSelected ?? "");
             var canRecycle = !permanent
-                && PlatformRuntime.Current.RecycleBin.IsSupported(instance.PathInstance);
+                && ApplicationRuntime.Current.Platform.RecycleBin.IsSupported(
+                    instance.PathInstance);
             var confirmMsg = !permanent && !canRecycle
                 ? Lang.Text("Select.Instance.Delete.RecycleBinUnavailable", instance.Name)
                 : Lang.Text(
@@ -214,14 +250,13 @@ public partial class PageSelectRightViewModel : ViewModelBase
             }
 
             LaunchLogCache(instance);
-            LauncherCommon.IniClearCache(Path.Combine(instance.PathIndie ?? "", "options.txt"));
             LauncherCommon.RunInNewThread(
                 () =>
                 {
                     try
                     {
                         if (!permanent && TryRecycleInstance(instance)) return;
-                        LauncherCommon.DeleteDirectory(instance.PathInstance);
+                        Directories.DeleteDirectory(instance.PathInstance);
                         HintService.Show(
                             Hints.Success(
                                 Lang.Text(
@@ -292,7 +327,7 @@ public partial class PageSelectRightViewModel : ViewModelBase
             try
             {
                 var jsonPath = Path.Combine(oldPath, $"{oldName}.json");
-                jsonObject = JsonNode.Parse(LauncherCommon.ReadFile(jsonPath)) as JsonObject
+                jsonObject = JsonNode.Parse(Files.ReadAllTextOrEmpty(jsonPath)) as JsonObject
                     ?? (JsonObject)instance.JsonObject.DeepClone();
             }
             catch (Exception ex)
@@ -303,7 +338,6 @@ public partial class PageSelectRightViewModel : ViewModelBase
 
             Directory.Move(oldPath, tempPath);
             Directory.Move(tempPath, newPath);
-            LauncherCommon.IniClearCache(Path.Combine(instance.PathIndie, "options.txt"));
 
             var oldNatives = Path.Combine(newPath, $"{oldName}-natives");
             if (Directory.Exists(oldNatives))
@@ -343,18 +377,18 @@ public partial class PageSelectRightViewModel : ViewModelBase
 
             var setupIni = Path.Combine(newPath, "PCL", "Setup.ini");
             if (File.Exists(setupIni))
-                LauncherCommon.WriteFile(
+                Files.WriteAllText(
                     setupIni,
-                    LauncherCommon.ReadFile(setupIni).Replace(oldPath, newPath));
+                    Files.ReadAllTextOrEmpty(setupIni).Replace(oldPath, newPath));
 
             var instanceIni = Path.Combine(GameFolders.mcFolderSelected ?? string.Empty, "PCL.ini");
-            if ((LauncherCommon.ReadIni(instanceIni, "Version") ?? string.Empty) == oldName)
-                LauncherCommon.WriteIni(instanceIni, "Version", newName);
+            if ((Ini.Read(instanceIni, "Version") ?? string.Empty) == oldName)
+                Ini.Write(instanceIni, "Version", newName);
 
             try
             {
                 jsonObject["id"] = newName;
-                LauncherCommon.WriteFile(
+                Files.WriteAllText(
                     Path.Combine(newPath, $"{newName}.json"),
                     jsonObject.ToString());
                 if (!isCaseChangedOnly)
@@ -402,30 +436,19 @@ public partial class PageSelectRightViewModel : ViewModelBase
             IsSearchBoxVisible = true;
             IsEmptyVisible = false;
             IsEmptySearchVisible = false;
+            SetEmptyState(EmptyStateKind.None, searchText);
             return;
         }
 
-        // 完全没有实例：显示空态；隐藏实例模式下提示无隐藏实例。
         if (!originalHasInstances)
         {
             IsBackVisible = false;
             IsSearchBoxVisible = false;
             IsEmptySearchVisible = false;
             IsEmptyVisible = true;
-            if (ShowHidden)
-            {
-                EmptyTitle = Lang.Text("Select.Instance.Hidden.EmptyTitle");
-                EmptyContent = Lang.Text("Select.Instance.Hidden.EmptyMessage");
-                IsDownloadVisible = false;
-            }
-            else
-            {
-                EmptyTitle = Lang.Text("Select.Instance.Empty.Title");
-                EmptyContent = Lang.Text("Select.Instance.Empty.Message");
-                IsDownloadVisible =
-                    HiddenFeatureState.ForceShow || !Config.Preference.Hide.PageDownload;
-            }
-
+            IsDownloadVisible = !ShowHidden
+                && (HiddenFeatureState.ForceShow || !Config.Preference.Hide.PageDownload);
+            SetEmptyState(EmptyStateKind.NoInstances, searchText);
             return;
         }
 
@@ -438,9 +461,8 @@ public partial class PageSelectRightViewModel : ViewModelBase
                 IsSearchBoxVisible = false;
                 IsEmptyVisible = true;
                 IsEmptySearchVisible = false;
-                EmptyTitle = Lang.Text("Select.Instance.AllHidden.Title");
-                EmptyContent = Lang.Text("Select.Instance.AllHidden.Message");
                 IsDownloadVisible = false;
+                SetEmptyState(EmptyStateKind.AllHidden, searchText);
                 return;
             }
 
@@ -454,10 +476,7 @@ public partial class PageSelectRightViewModel : ViewModelBase
                     IsSearchBoxVisible = true;
                     IsEmptyVisible = false;
                     IsEmptySearchVisible = true;
-                    EmptySearchTitle = Lang.Text("Select.Instance.Hidden.EmptySearchTitle");
-                    EmptySearchContent = string.IsNullOrWhiteSpace(searchText)
-                        ? Lang.Text("Select.Instance.Search.EmptyInput")
-                        : Lang.Text("Select.Instance.Search.NoHiddenResult", searchText);
+                    SetEmptyState(EmptyStateKind.HiddenSearch, searchText);
                 }
                 else
                 {
@@ -465,9 +484,8 @@ public partial class PageSelectRightViewModel : ViewModelBase
                     IsSearchBoxVisible = false;
                     IsEmptyVisible = true;
                     IsEmptySearchVisible = false;
-                    EmptyTitle = Lang.Text("Select.Instance.Hidden.EmptyTitle");
-                    EmptyContent = Lang.Text("Select.Instance.Hidden.EmptyMessage");
                     IsDownloadVisible = false;
+                    SetEmptyState(EmptyStateKind.NoInstances, searchText);
                 }
 
                 return;
@@ -478,10 +496,17 @@ public partial class PageSelectRightViewModel : ViewModelBase
         IsSearchBoxVisible = true;
         IsEmptyVisible = false;
         IsEmptySearchVisible = true;
-        EmptySearchTitle = Lang.Text("Select.Instance.EmptySearch.Title");
-        EmptySearchContent = string.IsNullOrWhiteSpace(searchText)
-            ? Lang.Text("Select.Instance.Search.EmptyInput")
-            : Lang.Text("Select.Instance.Search.NoResult", searchText);
+        SetEmptyState(EmptyStateKind.Search, searchText);
+    }
+
+    private void SetEmptyState(EmptyStateKind state, string searchText)
+    {
+        _emptyState = state;
+        _emptySearchText = searchText;
+        OnPropertyChanged(nameof(EmptyContent));
+        OnPropertyChanged(nameof(EmptySearchContent));
+        OnPropertyChanged(nameof(EmptySearchTitle));
+        OnPropertyChanged(nameof(EmptyTitle));
     }
 
     private static string GetCardNameKey(McInstanceCardType type, List<McInstance> instances)
@@ -531,7 +556,9 @@ public partial class PageSelectRightViewModel : ViewModelBase
 
     private static bool TryRecycleInstance(McInstance instance)
     {
-        var outcome = PlatformRuntime.Current.RecycleBin.Move(instance.PathInstance, out var error);
+        var outcome = ApplicationRuntime.Current.Platform.RecycleBin.Move(
+            instance.PathInstance,
+            out var error);
         switch (outcome)
         {
             case RecycleBinOutcome.Moved:
@@ -554,10 +581,22 @@ public partial class PageSelectRightViewModel : ViewModelBase
     {
         LauncherCommon.Log($"[Minecraft] 删除实例 {instance.Name}");
     }
+
+    private enum EmptyStateKind
+    {
+        None,
+        NoInstances,
+        AllHidden,
+        HiddenSearch,
+        Search
+    }
 }
 
 /// <summary>实例选择页中的一个卡片分组。</summary>
 public sealed record InstanceCardGroup(
     McInstanceCardType Type,
     string NameKey,
-    IReadOnlyList<McInstance> Instances);
+    IReadOnlyList<McInstance> Instances)
+{
+    public string Title => PageSelectRightViewModel.GetCardTitle(this);
+}

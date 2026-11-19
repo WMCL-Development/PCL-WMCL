@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.IO;
 using PCL.Core.Platform;
 using PCL.Core.UI;
 using PCL.Core.UI.Dialogs;
@@ -30,7 +31,14 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
     private readonly Dictionary<string, (DateTime CreationTime, long Length)> _fileInfoCache =
         new(StringComparer.OrdinalIgnoreCase);
 
-    private readonly HashSet<string> _selected = new(StringComparer.OrdinalIgnoreCase);
+    private readonly LocalCompSelectionState _selection = new();
+
+    private int _filterAllCount;
+    private int _filterDisabledCount;
+    private int _filterDuplicateCount;
+    private int _filterEnabledCount;
+    private int _filterErrorCount;
+    private int _filterUpdatableCount;
     private IReadOnlyList<LocalComp.LocalCompFile> _searchScope = [];
 
     [ObservableProperty] public partial Comp.CompType CompType { get; set; } = Comp.CompType.Mod;
@@ -49,17 +57,26 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
 
     [ObservableProperty] public partial bool HasError { get; set; }
 
-    [ObservableProperty] public partial string FilterAllText { get; set; } = string.Empty;
+    /// <summary>资源筛选按钮文本，随筛选计数与语言变化。</summary>
+    public string FilterAllText =>
+        string.IsNullOrWhiteSpace(SearchText)
+            ? Lang.Text("Instance.Resource.Filter.AllWithCount", _filterAllCount)
+            : Lang.Text("Instance.Resource.Filter.SearchResult");
 
-    [ObservableProperty] public partial string FilterEnabledText { get; set; } = string.Empty;
+    public string FilterEnabledText =>
+        Lang.Text("Instance.Resource.Filter.EnabledWithCount", _filterEnabledCount);
 
-    [ObservableProperty] public partial string FilterDisabledText { get; set; } = string.Empty;
+    public string FilterDisabledText =>
+        Lang.Text("Instance.Resource.Filter.DisabledWithCount", _filterDisabledCount);
 
-    [ObservableProperty] public partial string FilterUpdatableText { get; set; } = string.Empty;
+    public string FilterUpdatableText =>
+        Lang.Text("Instance.Resource.Filter.UpdatableWithCount", _filterUpdatableCount);
 
-    [ObservableProperty] public partial string FilterErrorText { get; set; } = string.Empty;
+    public string FilterErrorText =>
+        Lang.Text("Instance.Resource.Filter.ErrorWithCount", _filterErrorCount);
 
-    [ObservableProperty] public partial string FilterDuplicateText { get; set; } = string.Empty;
+    public string FilterDuplicateText =>
+        Lang.Text("Instance.Resource.Filter.DuplicateWithCount", _filterDuplicateCount);
 
     [ObservableProperty] public partial bool ShowFilterEnabled { get; set; }
 
@@ -71,9 +88,24 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
 
     [ObservableProperty] public partial bool ShowFilterDuplicate { get; set; }
 
-    [ObservableProperty] public partial string SortText { get; set; } = string.Empty;
+    public string SortText
+    {
+        get
+        {
+            var key = (SortMethod)SortIndex switch
+            {
+                SortMethod.CompName => "Instance.Resource.Sort.ResourceName",
+                SortMethod.TagNums => "Instance.Resource.Sort.TagCount",
+                SortMethod.CreateTime => "Instance.Resource.Sort.AddTime",
+                SortMethod.ModFileSize => "Instance.Resource.Sort.FileSize",
+                _ => "Instance.Resource.Sort.FileName"
+            };
+            return Lang.Text("Instance.Resource.Sort.Text", Lang.Text(key));
+        }
+    }
 
-    [ObservableProperty] public partial string SelectedText { get; set; } = string.Empty;
+    /// <summary>多选状态文本，随选中数量与语言变化。</summary>
+    public string SelectedText => Lang.Text("Instance.Resource.SelectedCount", _selection.Count);
 
     [ObservableProperty] public partial bool IsSelectionVisible { get; set; }
 
@@ -95,9 +127,19 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
 
     [ObservableProperty] public partial bool ShowSchematicEmpty { get; set; }
 
-    [ObservableProperty] public partial string EmptyTitle { get; set; } = string.Empty;
+    /// <summary>空状态标题，随当前目录与语言变化。</summary>
+    public string EmptyTitle =>
+        Lang.Text(
+            IsFolderView
+                ? "Instance.Resource.EmptyFolder.Title"
+                : "Instance.Resource.Empty.Title");
 
-    [ObservableProperty] public partial string EmptyDescription { get; set; } = string.Empty;
+    /// <summary>空状态说明，随当前目录与语言变化。</summary>
+    public string EmptyDescription =>
+        Lang.Text(
+            IsFolderView
+                ? "Instance.Resource.EmptyFolder.Description"
+                : "Instance.Resource.Empty.DescriptionWithDownload");
 
     [ObservableProperty] public partial bool ShowHintBack { get; set; }
 
@@ -107,7 +149,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
 
     public List<LocalComp.LocalCompFile> VisibleEntries { get; } = [];
 
-    public IReadOnlyCollection<string> SelectedPaths => _selected;
+    public IReadOnlyCollection<string> SelectedPaths => _selection.Keys;
 
     public string CompNameKey =>
         CompType switch
@@ -136,7 +178,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
                 || !Config.Preference.Hide.PageDownload);
         ShowHintDownload = compType != Comp.CompType.Schematic;
         UpdateFilterState();
-        UpdateSortText();
+        OnPropertyChanged(nameof(SortText));
     }
 
     public void SetCurrentFolder(string path)
@@ -181,15 +223,11 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
     {
         ShowEmptyPanel();
         var inSubFolder = !string.IsNullOrEmpty(CurrentFolderPath);
-        EmptyTitle = Lang.Text(
-            inSubFolder ? "Instance.Resource.EmptyFolder.Title" : "Instance.Resource.Empty.Title");
-        EmptyDescription = Lang.Text(
-            inSubFolder
-                ? "Instance.Resource.EmptyFolder.Description"
-                : "Instance.Resource.Empty.DescriptionWithDownload");
         ShowHintBack = inSubFolder;
         ShowManageBack = inSubFolder;
         ShowHintDownload = CompType != Comp.CompType.Schematic;
+        OnPropertyChanged(nameof(EmptyTitle));
+        OnPropertyChanged(nameof(EmptyDescription));
     }
 
     public void ApplySchematicEmptyState()
@@ -204,7 +242,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
 
     partial void OnSortIndexChanged(int value)
     {
-        UpdateSortText();
+        OnPropertyChanged(nameof(SortText));
         RebuildVisibleEntries();
     }
 
@@ -228,9 +266,9 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
     {
         SearchText = string.Empty;
         FilterIndex = 0;
-        _selected.Clear();
+        _selection.Clear();
         _searchScope = [];
-        UpdateSortText();
+        OnPropertyChanged(nameof(SortText));
         UpdateSelectionState();
     }
 
@@ -244,19 +282,17 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
 
     public void RebuildVisibleEntries()
     {
-        // 非搜索状态只展示当前目录；搜索状态展示整个资源根目录的命中项，
-        // 这样根目录下不会因为模组放在子文件夹里而“消失”。
         var source = GetListSource();
         var available = Entries
             .Select(entry => entry.RawPath)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        _selected.RemoveWhere(path => !available.Contains(path));
+        _selection.RemoveWhere(path => !available.Contains(path));
 
         var scope = FilterBySearch(source);
         _searchScope = scope;
         var filtered = scope.Where(MatchFilter).ToList();
         SortEntries(filtered);
-        _selected.RemoveWhere(path =>
+        _selection.RemoveWhere(path =>
             !filtered.Any(entry => string.Equals(
                 entry.RawPath,
                 path,
@@ -265,17 +301,15 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         VisibleEntries.Clear();
         VisibleEntries.AddRange(filtered);
         UpdateFilterState(scope);
-        UpdateSortText();
+        OnPropertyChanged(nameof(SortText));
         UpdateSelectionState();
     }
 
-    /// <summary>当前列表的数据源：搜索时为全部条目，否则为当前目录条目。</summary>
     public IReadOnlyList<LocalComp.LocalCompFile> GetListSource()
     {
         return IsSearching ? [.. Entries] : [.. GetFolderEntries()];
     }
 
-    /// <summary>按当前搜索文本过滤资源；独立于筛选和文件状态，便于测试与复用。</summary>
     public IReadOnlyList<LocalComp.LocalCompFile> FilterBySearch(
         IReadOnlyList<LocalComp.LocalCompFile> entries)
     {
@@ -344,21 +378,16 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
             var root = Path.GetFullPath(RootFolderPath.TrimEnd(Path.DirectorySeparatorChar));
             return Entries.Where(entry =>
                 string.Equals(
-                    Directory.GetParent(GetEntryPath(entry))?.FullName,
+                    Directory.GetParent(LocalCompFileOperations.GetEntryPath(entry))?.FullName,
                     root,
                     StringComparison.OrdinalIgnoreCase));
         }
 
         return Entries.Where(entry =>
             string.Equals(
-                Directory.GetParent(GetEntryPath(entry))?.FullName,
+                Directory.GetParent(LocalCompFileOperations.GetEntryPath(entry))?.FullName,
                 CurrentFolderPath,
                 StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static string GetEntryPath(LocalComp.LocalCompFile entry)
-    {
-        return entry.IsFolder ? entry.ActualPath : entry.path;
     }
 
     private bool MatchFilter(LocalComp.LocalCompFile entry)
@@ -453,32 +482,23 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
             entry.State == LocalComp.LocalCompFile.LocalFileStatus.Unavailable);
         var duplicate = scope.Count(entry => IsDuplicate(entry, scope));
 
-        FilterAllText = string.IsNullOrWhiteSpace(SearchText)
-            ? Lang.Text("Instance.Resource.Filter.AllWithCount", all)
-            : Lang.Text("Instance.Resource.Filter.SearchResult");
-        FilterEnabledText = Lang.Text("Instance.Resource.Filter.EnabledWithCount", enabled);
-        FilterDisabledText = Lang.Text("Instance.Resource.Filter.DisabledWithCount", disabled);
-        FilterUpdatableText = Lang.Text("Instance.Resource.Filter.UpdatableWithCount", updatable);
-        FilterErrorText = Lang.Text("Instance.Resource.Filter.ErrorWithCount", error);
-        FilterDuplicateText = Lang.Text("Instance.Resource.Filter.DuplicateWithCount", duplicate);
+        _filterAllCount = all;
+        _filterEnabledCount = enabled;
+        _filterDisabledCount = disabled;
+        _filterUpdatableCount = updatable;
+        _filterErrorCount = error;
+        _filterDuplicateCount = duplicate;
+        OnPropertyChanged(nameof(FilterAllText));
+        OnPropertyChanged(nameof(FilterEnabledText));
+        OnPropertyChanged(nameof(FilterDisabledText));
+        OnPropertyChanged(nameof(FilterUpdatableText));
+        OnPropertyChanged(nameof(FilterErrorText));
+        OnPropertyChanged(nameof(FilterDuplicateText));
         ShowFilterEnabled = FilterIndex == 1 || (enabled > 0 && enabled < all);
         ShowFilterDisabled = FilterIndex == 2 || disabled > 0;
         ShowFilterUpdatable = FilterIndex == 3 || updatable > 0;
         ShowFilterError = FilterIndex == 4 || error > 0;
         ShowFilterDuplicate = FilterIndex == 5 || duplicate > 0;
-    }
-
-    private void UpdateSortText()
-    {
-        var key = (SortMethod)SortIndex switch
-        {
-            SortMethod.CompName => "Instance.Resource.Sort.ResourceName",
-            SortMethod.TagNums => "Instance.Resource.Sort.TagCount",
-            SortMethod.CreateTime => "Instance.Resource.Sort.AddTime",
-            SortMethod.ModFileSize => "Instance.Resource.Sort.FileSize",
-            _ => "Instance.Resource.Sort.FileName"
-        };
-        SortText = Lang.Text("Instance.Resource.Sort.Text", Lang.Text(key));
     }
 
     public static IReadOnlyList<string> GetSortNames()
@@ -496,20 +516,20 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
     public void SetSelected(LocalComp.LocalCompFile entry, bool selected)
     {
         if (selected)
-            _selected.Add(entry.RawPath);
+            _selection.Add(entry.RawPath);
         else
-            _selected.Remove(entry.RawPath);
+            _selection.Remove(entry.RawPath);
         UpdateSelectionState();
     }
 
     public bool IsSelected(LocalComp.LocalCompFile entry)
     {
-        return _selected.Contains(entry.RawPath);
+        return _selection.Contains(entry.RawPath);
     }
 
     public void ClearSelection()
     {
-        _selected.Clear();
+        _selection.Clear();
         UpdateSelectionState();
     }
 
@@ -524,20 +544,20 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         var selectable = VisibleEntries.ToList();
         if (selectable.Count == 0)
             return;
-        var allSelected = selectable.All(entry => _selected.Contains(entry.RawPath));
+        var allSelected = selectable.All(entry => _selection.Contains(entry.RawPath));
         var target = select ?? !allSelected;
         foreach (var entry in selectable)
             if (target)
-                _selected.Add(entry.RawPath);
+                _selection.Add(entry.RawPath);
             else
-                _selected.Remove(entry.RawPath);
+                _selection.Remove(entry.RawPath);
         RebuildVisibleEntries();
     }
 
     public void SetSelectedEnabled(bool enabled)
     {
         var targets = Entries
-            .Where(entry => !entry.IsFolder && _selected.Contains(entry.RawPath))
+            .Where(entry => !entry.IsFolder && _selection.Contains(entry.RawPath))
             .Where(entry => enabled
                 ? entry.State == LocalComp.LocalCompFile.LocalFileStatus.Disabled
                 : entry.State == LocalComp.LocalCompFile.LocalFileStatus.Fine)
@@ -546,7 +566,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
             return;
         foreach (var entry in targets)
             ToggleEntry(entry, false);
-        _selected.Clear();
+        _selection.Clear();
         ReloadRequested?.Invoke();
     }
 
@@ -603,7 +623,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         if (toggled
             && entry.State is LocalComp.LocalCompFile.LocalFileStatus.Fine
                 or LocalComp.LocalCompFile.LocalFileStatus.Disabled)
-            _selected.Remove(entry.RawPath);
+            _selection.Remove(entry.RawPath);
         ReloadRequested?.Invoke();
     }
 
@@ -622,11 +642,11 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         if (File.Exists(source)
             && File.Exists(target)
             && !string.Equals(
-                LauncherCommon.GetFileMd5(source),
-                LauncherCommon.GetFileMd5(target),
+                Files.GetFileMd5(source),
+                Files.GetFileMd5(target),
                 StringComparison.OrdinalIgnoreCase))
         {
-            DialogService.Instance.Show(
+            DialogService.Instance.ShowNotification(
                 new TextDialogRequest
                 {
                     Title = Lang.Text("Instance.Resource.Ed.FileConflict"),
@@ -638,7 +658,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         }
 
         if (Directory.Exists(target))
-            LauncherCommon.DeleteDirectory(target);
+            Directories.DeleteDirectory(target);
         else
             File.Delete(target);
         MoveWithRegistry(source, target);
@@ -670,7 +690,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
     [RelayCommand]
     public async Task DeleteSelectedAsync()
     {
-        var targets = Entries.Where(entry => _selected.Contains(entry.RawPath)).ToList();
+        var targets = Entries.Where(entry => _selection.Contains(entry.RawPath)).ToList();
         if (targets.Count > 0)
             await DeleteEntriesAsync(targets);
     }
@@ -685,7 +705,8 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         {
             var canRecycle = !permanentDelete
                 && targets.All(entry =>
-                    PlatformRuntime.Current.RecycleBin.IsSupported(GetEntryPath(entry)));
+                    ApplicationRuntime.Current.Platform.RecycleBin
+                        .IsSupported(LocalCompFileOperations.GetEntryPath(entry)));
             var content = Lang.Text(
                 "Event.Safety.ConfirmMessage",
                 $"{Lang.Text("Common.Action.Delete")} {targets.Count}");
@@ -718,7 +739,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
                     LauncherCommon.Log(ex, $"删除资源失败：{entry.path}", LauncherLogLevel.Feedback);
                 }
 
-            _selected.Clear();
+            _selection.Clear();
             ShowDeleteResult(targets, moved, permanent);
             ReloadRequested?.Invoke();
         }
@@ -739,7 +760,8 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         try
         {
             var canRecycle = !permanentDelete
-                && PlatformRuntime.Current.RecycleBin.IsSupported(GetEntryPath(entry));
+                && ApplicationRuntime.Current.Platform.RecycleBin.IsSupported(
+                    LocalCompFileOperations.GetEntryPath(entry));
             var content = Lang.Text(
                 "Event.Safety.ConfirmMessage",
                 $"{Lang.Text("Common.Action.Delete")} {GetEntryDisplayName(entry)}");
@@ -799,21 +821,22 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         }
     }
 
-    /// <summary>删除单个条目；返回 true 表示已移入回收站，false 表示已永久删除。</summary>
     private static bool DeleteEntryCore(
         LocalComp.LocalCompFile entry,
         bool permanentDelete = false)
     {
-        var targetPath = GetEntryPath(entry);
+        var targetPath = LocalCompFileOperations.GetEntryPath(entry);
         var folder = Path.GetDirectoryName(targetPath);
         if (!string.IsNullOrEmpty(folder))
             CompLocalUpdateRegistry.Begin(folder);
         try
         {
             var isDirectory = entry.IsFolder || Directory.Exists(targetPath);
-            if (!permanentDelete && PlatformRuntime.Current.RecycleBin.IsSupported(targetPath))
+            if (!permanentDelete
+                && ApplicationRuntime.Current.Platform.RecycleBin.IsSupported(targetPath))
             {
-                var outcome = PlatformRuntime.Current.RecycleBin.Move(targetPath, out var error);
+                var outcome =
+                    ApplicationRuntime.Current.Platform.RecycleBin.Move(targetPath, out var error);
                 switch (outcome)
                 {
                     case RecycleBinOutcome.Moved:
@@ -832,7 +855,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
             }
 
             if (isDirectory)
-                LauncherCommon.DeleteDirectory(targetPath);
+                Directories.DeleteDirectory(targetPath);
             else
                 File.Delete(targetPath);
             return false;
@@ -940,7 +963,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
     public Task UpdateSelectedAsync()
     {
         var targets = Entries
-            .Where(entry => _selected.Contains(entry.RawPath)
+            .Where(entry => _selection.Contains(entry.RawPath)
                 && entry is { CanUpdate: true, UpdateFile: not null })
             .ToList();
         return UpdateEntriesAsync(targets);
@@ -1058,7 +1081,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
                                         continue;
 
                                     if (File.Exists(newPath))
-                                        DeleteFileToRecycleBin(newPath);
+                                        LocalCompFileOperations.DeleteFileToRecycleBin(newPath);
                                     var directory = Path.GetDirectoryName(newPath);
                                     if (!string.IsNullOrEmpty(directory))
                                         Directory.CreateDirectory(directory);
@@ -1076,7 +1099,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
                                                 variant,
                                                 newPath,
                                                 StringComparison.OrdinalIgnoreCase))
-                                            DeleteFileToRecycleBin(variant);
+                                            LocalCompFileOperations.DeleteFileToRecycleBin(variant);
                                 }
 
                                 HintService.Show(
@@ -1093,7 +1116,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
                                         Lang.Text("Instance.Resource.Update.Failed", ex.Message)));
                             }
 
-                            _selected.Clear();
+                            _selection.Clear();
                             LauncherCommon.RunInUi(() => ReloadRequested?.Invoke());
                             Release();
                             break;
@@ -1148,16 +1171,6 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         }
     }
 
-    private static void DeleteFileToRecycleBin(string path)
-    {
-        if (!File.Exists(path))
-            return;
-        if (PlatformRuntime.Current.RecycleBin.IsSupported(path)
-            && PlatformRuntime.Current.RecycleBin.Move(path, out _) == RecycleBinOutcome.Moved)
-            return;
-        File.Delete(path);
-    }
-
     public static void ShowUpdateLog(LocalComp.LocalCompFile entry)
     {
         try
@@ -1189,26 +1202,26 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
 
     public Comp.CompProject? GetFavoriteProject()
     {
-        return Entries
-            .Where(entry => _selected.Contains(entry.RawPath))
-            .Select(entry => entry.Comp)
-            .FirstOrDefault(comp => comp is not null);
+        return LocalCompFileOperations
+            .GetSelectedProjects(
+                Entries,
+                _selection.Keys,
+                entry => entry.RawPath)
+            .FirstOrDefault();
     }
 
     public List<Comp.CompProject> GetFavoriteProjects()
     {
-        return
-        [
-            .. Entries
-                .Where(entry => _selected.Contains(entry.RawPath) && entry.Comp is not null)
-                .Select(entry => entry.Comp!)
-        ];
+        return LocalCompFileOperations.GetSelectedProjects(
+            Entries,
+            _selection.Keys,
+            entry => entry.RawPath);
     }
 
     public string GetShareCode()
     {
         var ids = Entries
-            .Where(entry => _selected.Contains(entry.RawPath) && entry.Comp is not null)
+            .Where(entry => _selection.Contains(entry.RawPath) && entry.Comp is not null)
             .Select(entry => entry.Comp!.Id)
             .ToHashSet();
         return Comp.CompFavorites.GetShareCode(ids);
@@ -1216,12 +1229,10 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
 
     public IReadOnlyList<string> GetShareIds()
     {
-        return
-        [
-            .. Entries
-                .Where(entry => _selected.Contains(entry.RawPath) && entry.Comp is not null)
-                .Select(entry => entry.Comp!.Id)
-        ];
+        return LocalCompFileOperations.GetSelectedShareIds(
+            Entries,
+            _selection.Keys,
+            entry => entry.RawPath);
     }
 
     public static IReadOnlyList<string> BuildInfoLines(LocalComp.LocalCompFile entry)
@@ -1239,7 +1250,7 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
             Lang.Text(
                 "Instance.Resource.Item.Info.File",
                 entry.FileName,
-                InstancePageHelper.FormatSize(SafeFileSize(entry))));
+                InstancePageHelper.FormatSize(LocalCompFileOperations.GetSafeSize(entry))));
         if (!string.IsNullOrWhiteSpace(entry.Version))
             lines.Add(Lang.Text("Instance.Resource.Item.Info.Version", entry.Version));
         if (!string.IsNullOrWhiteSpace(entry.Description))
@@ -1448,11 +1459,12 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
                         entry.CompFile?.ReleaseDate.ToString("yyyy-MM-dd HH:mm:ss") ?? string.Empty,
                         entry.ModId ?? string.Empty,
                         entry.Comp?.Id ?? string.Empty,
-                        SafeFileSize(entry).ToString(),
+                        LocalCompFileOperations.GetSafeSize(entry).ToString(),
                         entry.path,
                         string.Join(";", FlattenEmbeddedNames(entry.EmbeddedMods))
                     };
-                    builder.AppendLine(string.Join(',', fields.Select(CsvEscape)));
+                    builder.AppendLine(
+                        string.Join(',', fields.Select(LocalCompFileOperations.CsvEscape)));
                 }
                 else
                 {
@@ -1499,20 +1511,9 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         }
     }
 
-    private static string CsvEscape(string? value)
-    {
-        value ??= string.Empty;
-        return value.Contains(',')
-            || value.Contains('"')
-            || value.Contains('\r')
-            || value.Contains('\n')
-                ? $"\"{value.Replace("\"", "\"\"")}\""
-                : value;
-    }
-
     private (DateTime CreationTime, long Length) GetFileInfo(LocalComp.LocalCompFile entry)
     {
-        var path = GetEntryPath(entry);
+        var path = LocalCompFileOperations.GetEntryPath(entry);
         if (_fileInfoCache.TryGetValue(path, out var cached))
             return cached;
 
@@ -1536,33 +1537,9 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
         return info;
     }
 
-    private static DateTime SafeCreationTime(LocalComp.LocalCompFile entry)
-    {
-        try
-        {
-            return File.GetCreationTime(entry.path);
-        }
-        catch
-        {
-            return DateTime.MinValue;
-        }
-    }
-
-    private static long SafeFileSize(LocalComp.LocalCompFile entry)
-    {
-        try
-        {
-            return new FileInfo(entry.path).Length;
-        }
-        catch
-        {
-            return 0L;
-        }
-    }
-
     private void UpdateSelectionState()
     {
-        var count = _selected.Count;
+        var count = _selection.Count;
         IsSelectionVisible = count > 0;
         if (count == 0)
         {
@@ -1573,8 +1550,8 @@ public partial class PageInstanceCompResourceViewModel : ViewModelBase
             return;
         }
 
-        SelectedText = Lang.Text("Instance.Resource.SelectedCount", count);
-        var selectedEntries = Entries.Where(entry => _selected.Contains(entry.RawPath)).ToList();
+        OnPropertyChanged(nameof(SelectedText));
+        var selectedEntries = Entries.Where(entry => _selection.Contains(entry.RawPath)).ToList();
         CanUpdateSelected = selectedEntries.Any(entry => entry.CanUpdate);
         CanEnableSelected = selectedEntries.Any(entry =>
             entry.State == LocalComp.LocalCompFile.LocalFileStatus.Disabled);

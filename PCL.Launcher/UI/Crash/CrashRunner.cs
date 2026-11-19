@@ -65,9 +65,16 @@ internal sealed class CrashRunner
         _context.LogAll = logs.All;
     }
 
-    public void Output(bool isHandAnalyze, List<string>? extraFiles)
+    public async void Output(bool isHandAnalyze, List<string>? extraFiles)
     {
-        CrashPresenter.Output(_context, isHandAnalyze, extraFiles);
+        try
+        {
+            await CrashPresenter.OutputAsync(_context, isHandAnalyze, extraFiles);
+        }
+        catch (Exception ex)
+        {
+            LogWrapper.Error(ex, "Crash", "展示崩溃报告失败");
+        }
     }
 }
 
@@ -76,7 +83,7 @@ internal static class CrashPresenter
     private static readonly CrashResultFormatter Formatter = new();
     private static readonly CrashReportExporter Exporter = new();
 
-    public static void Output(
+    public static async Task OutputAsync(
         CrashAnalysisContext context,
         bool isHandAnalyze,
         List<string>? extraFiles)
@@ -96,7 +103,7 @@ internal static class CrashPresenter
             ? ""
             : Lang.Text("Crash.Dialog.Button.ExportReport");
 
-        var selectedButton = UiInteraction.Message(
+        var selectedButton = await UiInteraction.MessageAsync(
             crashContent.Text,
             title,
             Lang.Text("Common.Action.Confirm"),
@@ -112,7 +119,7 @@ internal static class CrashPresenter
                     OpenDirectFile(directFile);
                 break;
             case 3:
-                _ = ExportReportAsync(context, extraFiles);
+                await ExportReportAsync(context, extraFiles);
                 break;
         }
     }
@@ -130,7 +137,7 @@ internal static class CrashPresenter
 
     private static void OpenModLoaderInstallPage(McInstance instance)
     {
-        PageRouter.Navigate(PageType.InstanceSetup, PageSubType.VersionInstall, instance);
+        PageRouter.Navigate(PageIds.InstanceSetup, SubPageIds.VersionInstall, instance);
     }
 
     private static void OpenDirectFile(CrashLogEntry directFile)
@@ -167,14 +174,14 @@ internal static class CrashPresenter
             LogWrapper.Error(ex, "Crash", "导出错误报告失败");
             var message = CreateExportFailureMessage(fileAddress, ex);
             var copyPressed = false;
-            UiInteraction.Message(
+            await UiInteraction.MessageAsync(
                 message,
                 Lang.Text("Crash.Export.Failed.Title"),
                 Lang.Text("Common.Action.Confirm"),
                 Lang.Text("Crash.Export.Failed.CopyDetails"),
                 button2Action: () => copyPressed = true);
-            if (copyPressed)
-                PlatformServices.Clipboard?.SetText(message);
+            if (copyPressed && ApplicationRuntime.GetService<IClipboardService>() is { } clipboard)
+                await clipboard.SetTextAsync(message);
         }
     }
 
@@ -186,9 +193,9 @@ internal static class CrashPresenter
         return ExceptionDetails.ComposeForDialog(summary, exception);
     }
 
-    private static async Task<string?> SelectReportSavePathAsync()
+    private static Task<string> SelectReportSavePathAsync()
     {
-        return await SystemDialogs.SelectSaveFileAsync(
+        return SystemDialogs.SelectSaveFileAsync(
             Lang.Text("Crash.Report.SaveDialog.Title"),
             GetDefaultReportFileName(),
             Lang.Text("Crash.Report.SaveDialog.Filter"));

@@ -3,8 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
-using PCL.Core.Logging;
-using PCL.Core.Minecraft;
 using PCL.Core.Minecraft.Java;
 using PCL.Core.Minecraft.Java.UserPreference;
 using PCL.Core.UI;
@@ -79,7 +77,10 @@ public partial class PageInstanceSetupViewModel : ViewModelBase
 
     [ObservableProperty] public partial bool DisableLf { get; set; }
 
-    [ObservableProperty] public partial string TitleHintText { get; set; } = string.Empty;
+    public string TitleHintText =>
+        UseGlobalTitle
+            ? Lang.Text("Common.Option.Default")
+            : Lang.Text("Instance.Setup.FollowGlobal");
 
     [ObservableProperty] public partial bool TitleDefaultVisible { get; set; }
 
@@ -448,9 +449,7 @@ public partial class PageInstanceSetupViewModel : ViewModelBase
 
     public void RefreshTitleHint()
     {
-        TitleHintText = UseGlobalTitle
-            ? Lang.Text("Common.Option.Default")
-            : Lang.Text("Instance.Setup.FollowGlobal");
+        OnPropertyChanged(nameof(TitleHintText));
         TitleDefaultVisible = string.IsNullOrEmpty(TitleText);
     }
 
@@ -498,10 +497,10 @@ public partial class PageInstanceSetupViewModel : ViewModelBase
 
         var instance = Instance;
         var ramGame = Math.Round(MemorySettings.GetRam(instance), 5);
-        var memory = KernelInterop.GetPhysicalMemoryBytes();
+        var memory = LauncherCommon.GetMemoryInfo();
         const double bytesPerGigabyte = 1024d * 1024d * 1024d;
-        var total = Math.Round(memory.Total / bytesPerGigabyte, 1);
-        var available = Math.Round(memory.Available / bytesPerGigabyte, 1);
+        var total = Math.Round(memory.TotalBytes / bytesPerGigabyte, 1);
+        var available = Math.Round(memory.AvailableBytes / bytesPerGigabyte, 1);
         var gameActual = Math.Round(Math.Min(ramGame, available), 5);
         var used = Math.Round(total - available, 5);
         var empty = Math.Round(Math.Clamp(total - used - ramGame, 0d, 1000d), 1);
@@ -688,7 +687,7 @@ public partial class PageInstanceSetupViewModel : ViewModelBase
     [RelayCommand]
     private static void OpenGlobalSettings()
     {
-        PageRouter.Navigate(PageType.Setup);
+        PageRouter.Navigate(PageIds.Setup);
     }
 
     [RelayCommand]
@@ -697,7 +696,7 @@ public partial class PageInstanceSetupViewModel : ViewModelBase
         if (!CanCreateOtherProfile())
             return;
         PageLoginAuth.PendingAuthServer = AuthServerAddress;
-        PageRouter.Navigate(PageType.Launch);
+        PageRouter.Navigate(PageIds.Launch);
         LauncherCommon.RunInNewThread(
             () =>
             {
