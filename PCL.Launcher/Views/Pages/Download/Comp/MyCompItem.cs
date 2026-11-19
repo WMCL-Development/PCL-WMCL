@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using PCL.UI;
 using PCL.UI.Controls;
 
 namespace PCL.Views.Pages.Download;
@@ -12,6 +13,7 @@ public sealed partial class MyCompItem : Grid
 {
     private readonly int _uuid = LauncherCommon.GetUuid();
     private bool _isMouseDown;
+    private bool _touchButtonsVisible;
     private string? _stateLast;
 
     public MyCompItem()
@@ -58,14 +60,15 @@ public sealed partial class MyCompItem : Grid
         UpdatePanButtons();
 
         LabInfo.PointerEntered += (_, _) => UpdateDescriptionToolTip();
+        // 触摸屏没有悬停，按钮透明度一直是 0，不能拿它当可点击门槛。
         BtnDownload.Click += (_, _) =>
         {
-            if (CanInteraction && PanButtons is { Opacity: > 0d })
+            if (CanInteraction)
                 Comp.QuickDownload(Project);
         };
         BtnFavorite.Click += (_, _) =>
         {
-            if (CanInteraction && PanButtons is { Opacity: > 0d })
+            if (CanInteraction)
                 CompFavoritesMenu.Show(Project, BtnFavorite, RefreshFavoriteStatus);
         };
 
@@ -214,16 +217,40 @@ public sealed partial class MyCompItem : Grid
         RefreshColor();
     }
 
+    /// <summary>触摸屏：切换右侧按钮组的显示状态。</summary>
+    private void SetTouchButtonsVisible(bool show)
+    {
+        _touchButtonsVisible = show;
+        PanButtons.IsHitTestVisible = show;
+        PanButtons.Opacity = show ? 1d : 0d;
+        RefreshColor();
+    }
+
     private void Button_MouseUp(object? sender, PointerReleasedEventArgs e)
     {
         var wasMouseDown = _isMouseDown;
         _isMouseDown = false;
 
+        // 触摸屏右侧 1/3：展开/收起按钮组，不触发行点击（与实例列表一致）。
+        if (e.Pointer.Type != PointerType.Mouse
+            && Bounds.Width > 0
+            && e.GetPosition(this).X > Bounds.Width * 2d / 3d)
+        {
+            if (CanInteraction)
+                SetTouchButtonsVisible(!_touchButtonsVisible);
+            e.Handled = true;
+            return;
+        }
+
         if (wasMouseDown
             && CanInteraction
             && e.InitialPressMouseButton == MouseButton.Left
             && !IsPointerOnActionButton(e.Source as Visual))
+        {
+            if (_touchButtonsVisible)
+                SetTouchButtonsVisible(false);
             ViewModel.ClickCommand.Execute(null);
+        }
 
         RefreshColor();
     }
@@ -239,7 +266,7 @@ public sealed partial class MyCompItem : Grid
             return;
         }
 
-        var stateNew = IsPointerOver
+        var stateNew = this.IsHoveredState()
             ? _isMouseDown ? "MouseDown" : "MouseOver"
             : "Idle";
         if ((_stateLast ?? string.Empty) == stateNew)
@@ -255,11 +282,13 @@ public sealed partial class MyCompItem : Grid
 
         var animations = new List<IAnimation>();
         var hasButtons = ShowFavoriteBtn || ShowDownloadBtn;
+        var showButtons = hasButtons && (_touchButtonsVisible || stateNew is "MouseOver" or "MouseDown");
+        PanButtons.IsHitTestVisible = hasButtons && (showButtons || IsPointerOver);
         var scale = EnsureBackScale();
 
         if (stateNew is "MouseOver" or "MouseDown")
         {
-            if (hasButtons)
+            if (showButtons)
                 animations.Add(
                     new OpacityAnimation(
                         PanButtons,
@@ -288,7 +317,13 @@ public sealed partial class MyCompItem : Grid
         }
         else
         {
-            if (hasButtons)
+            if (showButtons)
+                animations.Add(
+                    new OpacityAnimation(
+                        PanButtons,
+                        1d - PanButtons.Opacity,
+                        (int)Math.Round(time * 0.3d)));
+            else if (hasButtons)
                 animations.Add(
                     new OpacityAnimation(
                         PanButtons,
@@ -319,7 +354,9 @@ public sealed partial class MyCompItem : Grid
         AnimationService.CancelAnimationByName("CompItem Color " + _uuid);
 
         var hasButtons = ShowFavoriteBtn || ShowDownloadBtn;
-        PanButtons.Opacity = stateNew == "Idle" || !hasButtons ? 0d : 1d;
+        var showButtons = hasButtons && (_touchButtonsVisible || stateNew is "MouseOver" or "MouseDown");
+        PanButtons.Opacity = showButtons ? 1d : 0d;
+        PanButtons.IsHitTestVisible = hasButtons && (showButtons || IsPointerOver);
         RectBack.Opacity = stateNew == "Idle" ? 0d : 1d;
         ContainerTheme.BindDynamic(
             RectBack,

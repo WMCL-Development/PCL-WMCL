@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System.Globalization;
 using Avalonia.Controls;
 using PCL.Core.App;
@@ -111,7 +112,7 @@ internal static class CrashPresenter
                     OpenDirectFile(directFile);
                 break;
             case 3:
-                ExportReport(context, extraFiles);
+                _ = ExportReportAsync(context, extraFiles);
                 break;
         }
     }
@@ -145,14 +146,14 @@ internal static class CrashPresenter
         Basics.OpenPath(filePath);
     }
 
-    private static void ExportReport(
+    private static async Task ExportReportAsync(
         CrashAnalysisContext context,
         List<string>? extraFiles)
     {
         string? fileAddress = null;
         try
         {
-            fileAddress = SelectReportSavePath();
+            fileAddress = await SelectReportSavePathAsync();
             if (string.IsNullOrEmpty(fileAddress)) return;
 
             CrashReportExporter.Export(context, fileAddress, extraFiles);
@@ -185,14 +186,12 @@ internal static class CrashPresenter
         return ExceptionDetails.ComposeForDialog(summary, exception);
     }
 
-    private static string? SelectReportSavePath()
+    private static async Task<string?> SelectReportSavePathAsync()
     {
-        string? fileAddress = null;
-        LauncherCommon.RunInUiWait(() => fileAddress = SystemDialogs.SelectSaveFile(
+        return await SystemDialogs.SelectSaveFileAsync(
             Lang.Text("Crash.Report.SaveDialog.Title"),
             GetDefaultReportFileName(),
-            Lang.Text("Crash.Report.SaveDialog.Filter")));
-        return fileAddress;
+            Lang.Text("Crash.Report.SaveDialog.Filter"));
     }
 
     private static string GetDefaultReportFileName()

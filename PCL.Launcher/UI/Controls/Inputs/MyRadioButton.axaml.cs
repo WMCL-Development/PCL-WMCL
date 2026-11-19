@@ -554,7 +554,7 @@ public partial class MyRadioButton : UserControl
                     background = WithAlpha(pressTint, 0x78);
                     time = AnimationTimeOfPress;
                 }
-                else if (IsPointerOver)
+                else if (this.IsHoveredState())
                 {
                     background = WithAlpha(pressTint, 0x32);
                     time = AnimationTimeOfMouseIn;
@@ -582,7 +582,7 @@ public partial class MyRadioButton : UserControl
                         InputTheme.ColorOf(InputTheme.AccentLight(this), Colors.AliceBlue));
                     time = AnimationTimeOfMouseIn;
                 }
-                else if (IsPointerOver)
+                else if (this.IsHoveredState())
                 {
                     background = InputTheme.ColorOf(
                         InputTheme.AccentLight(this),

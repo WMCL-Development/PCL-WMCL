@@ -217,11 +217,33 @@ public class MyPageRight : Decorator, IPageView
     ///     需要切换到当前页面，并且原本的 Loaded 事件已执行完成。
     ///     需要根据加载器状态，从 Empty 切换到 ContentEnter、LoaderWait、LoaderEnter。
     /// </summary>
+    /// <summary>
+    ///     注册页面内容容器（无加载器的页面用）：进入/退出动画会作用在这个容器上，
+    ///     与走 <see cref="PageLoaderInit" /> 的页面保持一致。
+    /// </summary>
+    protected void SetPageContent(Control panContent, Control? panAlways = null)
+    {
+        _panContent = panContent;
+        _panAlways = panAlways;
+        // 不在这里隐藏内容：动画未执行完（或动画服务停摆）时会让页面变成白屏。
+        panAlways?.SetCurrentValue(IsVisibleProperty, false);
+    }
+
     public void PageOnEnter()
     {
         if (LauncherCommon.ModeDebug)
             LauncherCommon.Log("[UI] 已触发 PageOnEnter");
         RefreshLocalizationIfStale();
+
+        // 退出动画有时收不到回调（切换被打断 / 动画服务停摆），
+        // 状态会停在 PageExit，此时直接抛异常会让页面永久白屏。
+        // 这里把状态复位后重新进入，动画照常播放。
+        if (PageState is PageStates.PageExit or PageStates.ContentExit or PageStates.LoaderExit)
+        {
+            AnimationService.CancelAnimationByName(PageChangeAnimationKey);
+            PageState = PageStates.Empty;
+        }
+
         PageEnter?.Invoke();
         switch (PageState)
         {
@@ -793,6 +815,16 @@ public class MyPageRight : Decorator, IPageView
 
     public void TriggerEnterAnimation(params Control?[] elements)
     {
+        TriggerEnterAnimationCore(elements);
+    }
+
+    private void TriggerEnterAnimationCore(params Control?[] elements)
+    {
+        // PageOnForceExit 在无加载器时会隐藏整个 Child（根元素），
+        // 而进入动画只处理 _panAlways/_panContent，页面被复用时会一直白屏。
+        // Child 也一起恢复显示。
+        if (Child is not null) Child.IsVisible = true;
+
         var realElements = elements.Where(e => e is not null).Cast<Control>().ToList();
         foreach (var element in realElements)
             element.IsVisible = true;
@@ -1007,7 +1039,6 @@ public class MyPageRight : Decorator, IPageView
             switch (element)
             {
                 case MyListItem:
-                case MyCard:
                 case MyHint:
                 case MyExtraTextButton:
                 case TextBlock:
@@ -1041,6 +1072,11 @@ public class MyPageRight : Decorator, IPageView
 
                 case Panel panel:
                 {
+                    // 卡片本身参与动画，同时继续下探到卡片内容，
+                    // 这样卡片里的列表项也能逐个浮现（与桌面原版一致）。
+                    if (panel is MyCard card)
+                        allControls.Add(card);
+
                     foreach (var child in panel.Children.OfType<Control>())
                         _GetAllAnimControls(child, allControls, ignoreInvisibility);
                     break;

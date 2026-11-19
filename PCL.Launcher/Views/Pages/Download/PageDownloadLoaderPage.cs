@@ -373,7 +373,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
                         ? "Download.Version.Type.Stable"
                         : "Download.Version.Type.Preview")
             };
-            item.Click += (_, _) => SaveInstaller(
+            item.Click += async (_, _) => await SaveInstallerAsync(
                 [entry["url"]?.ToString() ?? ""],
                 LauncherCommon.GetFileNameFromPath(entry["url"]?.ToString() ?? title),
                 isLegacy
@@ -399,7 +399,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
 
     #endregion
 
-    private static void SaveInstaller(IEnumerable<string> urls, string fileName, string? filterKey)
+    private static async Task SaveInstallerAsync(IEnumerable<string> urls, string fileName, string? filterKey)
     {
         try
         {
@@ -410,7 +410,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
                 return;
             }
 
-            var target = SystemDialogs.SelectSaveFile(
+            var target = await SystemDialogs.SelectSaveFileAsync(
                 Lang.Text("Download.Version.SelectSaveLocation"),
                 fileName,
                 filterKey is null ? "*.jar|*.jar" : Lang.Text(filterKey));
@@ -500,7 +500,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
                 Theme = MyIconButton.Themes.Color
             };
             ToolTip.SetTip(saveButton, Lang.Text("Download.Version.SaveAs"));
-            saveButton.Click += (_, _) => SaveLabyMod(isSnapshot);
+            saveButton.Click += async (_, _) => await SaveLabyModAsync(isSnapshot);
 
             var changelogButton = new MyIconButton
             {
@@ -512,14 +512,14 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
             changelogButton.Click += (_, _) =>
                 LauncherUi.Interaction?.OpenWebsite("https://www.labymod.net/zh_Hans/download");
             item.Buttons = [saveButton, changelogButton];
-            item.Click += (_, _) => SaveLabyMod(isSnapshot);
+            item.Click += async (_, _) => await SaveLabyModAsync(isSnapshot);
             _panVersions.Children.Add(item);
         }
     }
 
-    internal static void SaveLabyMod(bool isSnapshot)
+    internal static async Task SaveLabyModAsync(bool isSnapshot)
     {
-        SaveInstaller(
+        await SaveInstallerAsync(
             [
                 isSnapshot
                     ? "https://releases.labymod.net/api/v1/installer/snapshot/java"
@@ -714,16 +714,16 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
         changelogButton.Click += (_, _) => LauncherUi.Interaction?.OpenWebsite(
             $"https://files.minecraftforge.net/maven/net/minecraftforge/forge/{entry.Inherit}-{entry.VersionName}/forge-{entry.Inherit}-{entry.VersionName}-changelog.txt");
         item.Buttons = [changelogButton];
-        item.Click += (_, _) => SaveForgelike(entry);
+        item.Click += async (_, _) => await SaveForgelikeAsync(entry);
         target.Children.Add(item);
     }
 
-    internal static void SaveForgelike(GameDownload.DlForgeVersionEntry entry)
+    internal static async Task SaveForgelikeAsync(GameDownload.DlForgeVersionEntry entry)
     {
         var inherit = entry.Inherit.Replace("-", "_");
         var fileName =
             $"{inherit}-{entry.FileVersion}/forge-{inherit}-{entry.FileVersion}-{entry.Category}.{entry.FileExtension}";
-        SaveInstaller(
+        await SaveInstallerAsync(
             [
                 $"https://bmclapi2.bangbang93.com/maven/net/minecraftforge/forge/{fileName}",
                 $"https://files.minecraftforge.net/maven/net/minecraftforge/forge/{fileName}"
@@ -898,7 +898,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
                 LauncherUi.Interaction?.OpenWebsite(url);
         };
         item.Buttons = [changelogButton];
-        item.Click += (_, _) => SaveForgelikeEntry(entry);
+        item.Click += async (_, _) => await SaveForgelikeEntryAsync(entry);
         target.Children.Add(item);
     }
 
@@ -912,12 +912,12 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
         };
     }
 
-    internal static void SaveForgelikeEntry(GameDownload.DlForgelikeEntry entry)
+    internal static async Task SaveForgelikeEntryAsync(GameDownload.DlForgelikeEntry entry)
     {
         switch (entry)
         {
             case GameDownload.DlNeoForgeListEntry neo:
-                SaveInstaller(
+                await SaveInstallerAsync(
                     [
                         $"{neo.UrlBase.Replace(
                             "maven.neoforged.net/releases",
@@ -928,7 +928,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
                     null);
                 break;
             case GameDownload.DlCleanroomListEntry cleanroom:
-                SaveInstaller(
+                await SaveInstallerAsync(
                     [$"{cleanroom.UrlBase}-installer.jar"],
                     $"cleanroom-{cleanroom.ApiName}-installer.jar",
                     null);
@@ -1050,11 +1050,11 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
         changelogButton.Click += (_, _) => LauncherUi.Interaction?.OpenWebsite(
             $"https://optifine.net/changelog?f={entry.NameFile}");
         item.Buttons = [changelogButton];
-        item.Click += (_, _) => SaveOptiFine(entry);
+        item.Click += async (_, _) => await SaveOptiFineAsync(entry);
         target.Children.Add(item);
     }
 
-    internal static void SaveOptiFine(GameDownload.DlOptiFineListEntry entry)
+    internal static async Task SaveOptiFineAsync(GameDownload.DlOptiFineListEntry entry)
     {
         var inherit = entry.Inherit ?? string.Empty;
         var displayName = entry.DisplayName ?? string.Empty;
@@ -1062,7 +1062,7 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
         var url = entry.IsPreview
             ? $"https://bmclapi2.bangbang93.com/optifine/{bmclapiInherit}/HD_U_{displayName.Replace($"{inherit} ", "").Replace(" ", "/")}"
             : $"https://bmclapi2.bangbang93.com/optifine/{bmclapiInherit}/HD_U/{displayName.Replace($"{inherit} ", "")}";
-        SaveInstaller(
+        await SaveInstallerAsync(
             [url, $"https://optifine.net/adloadx?f={entry.NameFile}"],
             entry.NameFile ?? $"OptiFine-{displayName}.jar",
             null);
@@ -1171,13 +1171,13 @@ internal sealed class PageDownloadLoaderPage : MyPageRight, IPageView, IRefresha
             item.Buttons = [listButton];
         }
 
-        item.Click += (_, _) => SaveLiteLoader(entry);
+        item.Click += async (_, _) => await SaveLiteLoaderAsync(entry);
         target.Children.Add(item);
     }
 
-    internal static void SaveLiteLoader(GameDownload.DlLiteLoaderListEntry entry)
+    internal static async Task SaveLiteLoaderAsync(GameDownload.DlLiteLoaderListEntry entry)
     {
-        SaveInstaller(
+        await SaveInstallerAsync(
             GetLiteLoaderUrls(entry),
             entry.FileName ?? "liteloader-installer.jar",
             null);

@@ -52,6 +52,11 @@ public partial class MyIconButton : Border
     private double _logoScale = 1d;
     private Themes _theme = Themes.Color;
 
+    private bool _touchHover;
+
+    /// <summary>触摸按下时也算悬停，让配色与鼠标悬停一致。</summary>
+    private bool IsHovered => this.IsHoveredState() || _touchHover;
+
     public MyIconButton()
     {
         InitializeComponent();
@@ -59,6 +64,9 @@ public partial class MyIconButton : Border
         _ApplyThemeClasses();
         RefreshAnim(false);
 
+        PointerPressed += (_, e) => SetTouchHover(e);
+        PointerReleased += (_, e) => ClearTouchHover(e);
+        PointerCaptureLost += (_, _) => ClearTouchHover(null);
         PointerPressed += _OnPointerPressed;
         PointerReleased += _OnPointerReleased;
         PointerEntered += (_, _) => RefreshAnim();
@@ -236,13 +244,13 @@ public partial class MyIconButton : Border
     {
         try
         {
-            var time = IsPointerOver ? AnimationColorIn : AnimationColorOut;
+            var time = IsHovered ? AnimationColorIn : AnimationColorOut;
             RefreshBackground(animate, time);
 
             if (_theme == Themes.Custom)
             {
                 var baseColor = Foreground is ISolidColorBrush brush ? brush.Color : Colors.Gray;
-                var alpha = IsPointerOver ? 255d : 160d;
+                var alpha = IsHovered ? 255d : 160d;
                 ButtonAnimation.ApplyColor(
                     Path,
                     Shape.FillProperty,
@@ -258,12 +266,12 @@ public partial class MyIconButton : Border
             {
                 Themes.White => (string.Empty, new NColor(234d, 242d, 254d)),
                 Themes.Black => (string.Empty, ThemeService.IsDarkMode
-                    ? new NColor(255d, 255d, 255d, IsPointerOver ? 230d : 160d)
-                    : new NColor(0d, 0d, 0d, IsPointerOver ? 230d : 160d)),
-                Themes.Red => IsPointerOver
+                    ? new NColor(255d, 255d, 255d, IsHovered ? 230d : 160d)
+                    : new NColor(0d, 0d, 0d, IsHovered ? 230d : 160d)),
+                Themes.Red => IsHovered
                     ? ("ColorBrushRedLight", null)
                     : ("ColorBrushRedLight", AlphaThemeColor("ColorBrushRedLight", 160d)),
-                _ => IsPointerOver
+                _ => IsHovered
                     ? ("ColorBrush2", null)
                     : ("ColorBrush4", null)
             };
@@ -295,7 +303,7 @@ public partial class MyIconButton : Border
     /// </summary>
     private void RefreshBackground(bool animate, int time)
     {
-        if (_theme == Themes.White && IsPointerOver)
+        if (_theme == Themes.White && IsHovered)
         {
             ButtonAnimation.ApplyColor(
                 PanBack,
@@ -316,6 +324,22 @@ public partial class MyIconButton : Border
             time,
             animate,
             BackgroundKey);
+    }
+
+    /// <summary>触摸按下时按悬停配色显示，抬起后恢复。</summary>
+    private void SetTouchHover(PointerPressedEventArgs e)
+    {
+        if (e.Pointer.Type == PointerType.Mouse || _touchHover) return;
+        _touchHover = true;
+        RefreshAnim();
+    }
+
+    private void ClearTouchHover(PointerEventArgs? e)
+    {
+        if (e is not null && e.Pointer.Type == PointerType.Mouse) return;
+        if (!_touchHover) return;
+        _touchHover = false;
+        RefreshAnim();
     }
 
     private void _OnPointerPressed(object? sender, PointerPressedEventArgs e)

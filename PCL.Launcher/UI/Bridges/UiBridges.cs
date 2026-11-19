@@ -782,7 +782,7 @@ public sealed class EventUiBridge : IEventUi
 
     public void StartCustomDownload(string url, string savePath, string? fileName)
     {
-        PageToolsTest.StartCustomDownload(url, fileName, savePath);
+        _ = PageToolsTest.StartCustomDownloadAsync(url, fileName, savePath);
     }
 
     public void OpenHelp(string location)

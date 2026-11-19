@@ -139,8 +139,20 @@ public sealed class McCreativeInventory : Control
         AffectsRender<McCreativeInventory>(ItemsProperty, ScaleProperty);
     }
 
-    /// <summary>实际渲染倍率：按控件最终宽度反推，保证面板正好铺满控件。</summary>
-    private double RenderScale => Math.Max(1, Bounds.Width / PanelWidth);
+    /// <summary>
+    ///     实际渲染倍率：同时受宽度与高度限制，避免只按宽度算导致面板被裁掉。
+    /// </summary>
+    private double RenderScale
+    {
+        get
+        {
+            var totalHeight = PanelHeight + TabLift + (TabCount > TopTabCount ? TabLift : 0);
+            var byWidth = Bounds.Width / PanelWidth;
+            var byHeight = Bounds.Height / totalHeight;
+            var scale = Math.Min(byWidth, byHeight);
+            return Math.Max(1, double.IsFinite(scale) && scale > 0 ? scale : 1);
+        }
+    }
 
     /// <summary>按可用宽度自动挑整数缩放倍率，保证整张面板放得下。</summary>
     protected override Size MeasureOverride(Size availableSize)
@@ -422,6 +434,7 @@ public sealed class McCreativeInventory : Control
     {
         var items = CurrentPageItems();
         var slots = Columns * Rows;
+
         for (var index = 0; index < slots; index++)
         {
             var column = index % Columns;
@@ -434,6 +447,11 @@ public sealed class McCreativeInventory : Control
             if (index < items.Count)
             {
                 var slot = items[index];
+
+                // 原版手感：悬停的格子把物品略微抬起并放大一点。
+                if (index == _hoverSlot)
+                    slotRect = slotRect.Translate(new Vector(0, -1 * scale)).Inflate(1 * scale);
+
                 var drawn = TryDrawQuads(context, slot.Id, slotRect);
                 if (!drawn && LoadIcon(slot.IconPath) is { } icon)
                 {
@@ -461,21 +479,47 @@ public sealed class McCreativeInventory : Control
         }
     }
 
+    /// <summary>滚动条滑块高度固定为两格，位置按偏移比例映射，避免不同页长度不一致。</summary>
+    private double ScrollerThumbHeight(double scale) => SlotPitch * 2 * scale;
+
+    private (double Top, double Height, double TrackTop, double TrackHeight) ScrollerGeometry(double scale)
+    {
+        var total = TabCount == 0 ? 0 : TabItems(SelectedTab).Count;
+        var trackTop = (TabLift + SlotOriginY) * scale;
+        // 滚动条凹槽比物品格区域略长，滑块行程按凹槽高度算才能滑到底。
+        var trackHeight = (PanelHeight - SlotOriginY - 19) * scale;
+        var visible = Columns * Rows;
+        var thumbHeight = total <= visible ? trackHeight : Math.Min(trackHeight, ScrollerThumbHeight(scale));
+        var maxOffset = Math.Max(0, total - visible);
+        var ratio = maxOffset == 0 ? 0d : Math.Min(1d, PageOffset / (double)maxOffset);
+        var thumbTop = trackTop + (trackHeight - thumbHeight) * ratio;
+        return (thumbTop, thumbHeight, trackTop, trackHeight);
+    }
+
     private void DrawScroller(DrawingContext context, double scale)
     {
         if (_scroller is null) return;
-        var total = TabCount == 0 ? 0 : TabItems(SelectedTab).Count;
-        var trackTop = (TabLift + SlotOriginY) * scale;
-        var trackHeight = Rows * SlotPitch * scale;
-        var visible = Columns * Rows;
-        var thumbHeight = total <= visible
-            ? trackHeight
-            : Math.Max(15d * scale / 2, trackHeight * visible / total);
-        var maxOffset = Math.Max(1, total - visible);
-        var thumbTop = trackTop + (trackHeight - thumbHeight) * Math.Min(1d, PageOffset / (double)maxOffset);
-
+        var (thumbTop, thumbHeight, _, _) = ScrollerGeometry(scale);
         context.DrawImage(_scroller, new Rect(0, 0, 12, 15),
             new Rect((PanelWidth - 20) * scale, thumbTop, 12 * scale, thumbHeight));
+    }
+
+    /// <summary>把滚动条上的位置换算成物品偏移量。</summary>
+    private void ScrollToPointer(double y, double scale)
+    {
+        var (_, thumbHeight, trackTop, trackHeight) = ScrollerGeometry(scale);
+        var total = TabItems(SelectedTab).Count;
+        var maxOffset = Math.Max(0, total - Columns * Rows);
+        if (maxOffset == 0) return;
+
+        var usable = Math.Max(1d, trackHeight - thumbHeight);
+        var ratio = Math.Clamp((y - trackTop - thumbHeight / 2d) / usable, 0d, 1d);
+        var offset = (int)Math.Round(ratio * maxOffset / Columns) * Columns;
+        offset = Math.Clamp(offset, 0, maxOffset);
+        if (offset == PageOffset) return;
+        PageOffset = offset;
+        _hoverSlot = -1;
+        InvalidateVisual();
     }
 
     private readonly List<InventorySlot> _flat = [];
@@ -536,6 +580,38 @@ public sealed class McCreativeInventory : Control
     {
         base.OnPointerMoved(e);
         var position = e.GetPosition(this);
+
+        if (_dragging)
+        {
+            var scaleNow = RenderScale;
+            var scrollerLeft = (PanelWidth - 20) * scaleNow;
+            if (position.X >= scrollerLeft)
+            {
+                ScrollToPointer(position.Y, scaleNow);
+                _dragMoved = true;
+                e.Handled = true;
+                return;
+            }
+
+            var rowsMoved = (int)((_dragStartY - position.Y) / (SlotPitch * scaleNow));
+            if (rowsMoved != 0)
+            {
+                _dragMoved = true;
+                var total = TabItems(SelectedTab).Count;
+                var maxOffset = Math.Max(0, total - Columns * Rows);
+                var next = Math.Clamp(_dragStartOffset + rowsMoved * Columns, 0, maxOffset);
+                if (next != PageOffset)
+                {
+                    PageOffset = next;
+                    _hoverSlot = -1;
+                    InvalidateVisual();
+                }
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         _hoverPoint = position;
         HoveredPoint = position;
         var slot = HitTestSlot(position);
@@ -557,11 +633,29 @@ public sealed class McCreativeInventory : Control
         InvalidateVisual();
     }
 
+    private bool _dragging;
+    private double _dragStartY;
+    private int _dragStartOffset;
+    private bool _dragMoved;
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
         var position = e.GetPosition(this);
         var scale = RenderScale;
+
+        // 触摸屏没有滚轮：在物品区按住拖动即滚动，拖动距离超过一格时不触发点击。
+        var scrollerLeft = (PanelWidth - 20) * scale;
+        if (position.X >= scrollerLeft && position.Y >= (TabLift + SlotOriginY) * scale)
+        {
+            ScrollToPointer(position.Y, scale);
+            _dragging = true;
+            _dragMoved = true;
+            e.Pointer.Capture(this);
+            e.Handled = true;
+            return;
+        }
+
         var bottomTop = (TabLift + PanelHeight - TabOverlap) * scale;
         var inTop = position.Y < TabLift * scale;
         var inBottom = TabCount > TopTabCount && position.Y >= bottomTop;
@@ -583,7 +677,25 @@ public sealed class McCreativeInventory : Control
             return;
         }
 
-        var slot = HitTestSlot(position);
+        _dragging = true;
+        _dragMoved = false;
+        _dragStartY = position.Y;
+        _dragStartOffset = PageOffset;
+        e.Pointer.Capture(this);
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        var wasDragging = _dragging;
+        var moved = _dragMoved;
+        _dragging = false;
+        _dragMoved = false;
+        e.Pointer.Capture(null);
+
+        if (!wasDragging || moved) return;
+
+        var slot = HitTestSlot(e.GetPosition(this));
         if (slot < 0) return;
         var items = CurrentPageItems();
         if (slot < items.Count) ItemActivated?.Invoke(this, items[slot]);

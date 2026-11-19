@@ -382,7 +382,7 @@ public class MyTextBox : TextBox
                     backgroundFallback = InputTheme.AccentLight(this);
                     time = AnimationTimeOfFocus;
                 }
-                else if (IsPointerOver)
+                else if (this.IsHoveredState())
                 {
                     borderKey = InputTheme.AccentHoverKey;
                     borderFallback = InputTheme.AccentHover(this);

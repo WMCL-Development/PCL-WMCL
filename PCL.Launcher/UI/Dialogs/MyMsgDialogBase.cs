@@ -148,7 +148,9 @@ public abstract class MyMsgDialogBase : UserControl
         {
             Margin = new Thickness(25d),
             MinWidth = 400d,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
+            // 宽屏（手机横屏、超宽显示器）下限制弹窗宽度并居中，避免内容被拉成一条。
+            MaxWidth = 680d,
+            HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Stretch
         };
         root.Children.Add(card);
@@ -310,6 +312,8 @@ public abstract class MyMsgDialogBase : UserControl
     /// <summary>把焦点放到弹窗内的起始控件；返回是否成功取得焦点。</summary>
     public virtual bool FocusInitial()
     {
+        // 手机上弹窗不抢焦点，避免一弹出就顶起输入法。
+        if (OperatingSystem.IsAndroid()) return false;
         if (_buttons[0].IsVisible && _buttons[0].Focus()) return true;
         return Focus();
     }

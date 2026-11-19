@@ -109,7 +109,12 @@ public class MySearchBox : MyCard
         layout.Children.Add(_rightPanel);
         Children.Add(layout);
 
-        Loaded += (_, _) => TextBox.Focus();
+        // 手机上不自动聚焦：否则每次打开带搜索框的页面都会弹出输入法。
+        Loaded += (_, _) =>
+        {
+            if (OperatingSystem.IsAndroid()) return;
+            TextBox.Focus();
+        };
     }
 
     private string ClearButtonKey => InputAnimation.Key("MySearchBox ClearBtn", uuid);

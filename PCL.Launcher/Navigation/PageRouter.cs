@@ -320,7 +320,14 @@ public static class PageRouter
             }
 
             if (left is IPageView leftView) leftView.OnNavigatedTo(stack.Parameter);
-            if (right is MyPageRight newRightPage) newRightPage.PageOnEnter();
+            if (right is MyPageRight newRightPage)
+                newRightPage.PageOnEnter();
+            else
+                // 非 MyPageRight 页面（如更多 › 帮助这类轻量页）没有内建动画，
+                // 这里补一段统一的淡入，保持与其它页面一致的观感。
+                AnimationService.Run(
+                    new OpacityAnimation(right, 1d - right.Opacity, 150),
+                    "Page Fade " + stack.Page);
             if (right is IPageView rightView) rightView.OnNavigatedTo(stack.Parameter);
             LayoutProbe.CheckAfterLayout(right, $"{stack.Page}/{stack.SubType}");
             FocusFirst(right);
@@ -333,6 +340,9 @@ public static class PageRouter
 
     private static void FocusFirst(Control page)
     {
+        // 手机上不自动聚焦：否则进入带输入框的页面会直接弹出输入法。
+        if (OperatingSystem.IsAndroid()) return;
+
         Dispatcher.UIThread.Post(
             () =>
             {

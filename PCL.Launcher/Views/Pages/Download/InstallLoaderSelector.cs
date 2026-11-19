@@ -1189,12 +1189,13 @@ internal sealed class InstallLoaderSelector : IDisposable
                         GetOptiFineInfo(version),
                         "Blocks/GrassPath.png");
                     var entry = version;
+                    item.TouchRevealButtons = true;
                     item.Buttons =
                     [
                         CreateItemButton(
                             "lucide/save",
                             "Download.Version.SaveAs",
-                            () => PageDownloadLoaderPage.SaveOptiFine(entry)),
+                            () => _ = PageDownloadLoaderPage.SaveOptiFineAsync(entry)),
                         CreateChangelogButton(() => OpenWebsite(
                             $"https://optifine.net/changelog?f={entry.NameFile}"))
                     ];
@@ -1220,7 +1221,8 @@ internal sealed class InstallLoaderSelector : IDisposable
                     var saveButton = CreateItemButton(
                         "lucide/save",
                         "Download.Version.SaveInstaller",
-                        () => PageDownloadLoaderPage.SaveLiteLoader(entry));
+                        () => _ = PageDownloadLoaderPage.SaveLiteLoaderAsync(entry));
+                    item.TouchRevealButtons = true;
                     item.Buttons = entry.IsLegacy
                         ?
                         [
@@ -1245,6 +1247,7 @@ internal sealed class InstallLoaderSelector : IDisposable
                 foreach (var version in GetFabricLoaderVersions())
                 {
                     var item = CreateJsonLoaderItem(kind, version, true);
+                    item.TouchRevealButtons = true;
                     item.Buttons =
                     [
                         CreateChangelogButton(() => OpenWebsite("https://fabricmc.net/blog"))
@@ -1294,12 +1297,13 @@ internal sealed class InstallLoaderSelector : IDisposable
                             : Lang.Text("Download.Version.Type.Stable"),
                         "Blocks/LabyMod.png");
                     var isSnapshot = choice.Channel == "snapshot";
+                    item.TouchRevealButtons = true;
                     item.Buttons =
                     [
                         CreateItemButton(
                             "lucide/save",
                             "Download.Version.SaveAs",
-                            () => PageDownloadLoaderPage.SaveLabyMod(isSnapshot)),
+                            () => _ = PageDownloadLoaderPage.SaveLabyModAsync(isSnapshot)),
                         CreateChangelogButton(() => OpenWebsite(
                             "https://www.labymod.net/zh_Hans/download"))
                     ];
@@ -1408,12 +1412,13 @@ internal sealed class InstallLoaderSelector : IDisposable
             entry.VersionName,
             info,
             "Blocks/Anvil.png");
+        item.TouchRevealButtons = true;
         item.Buttons =
         [
             CreateItemButton(
                 "lucide/save",
                 "Download.Version.SaveAs",
-                () => PageDownloadLoaderPage.SaveForgelike(entry)),
+                () => _ = PageDownloadLoaderPage.SaveForgelikeAsync(entry)),
             CreateChangelogButton(() => OpenWebsite(
                 $"https://files.minecraftforge.net/maven/net/minecraftforge/forge/{entry.Inherit}-{entry.VersionName}/forge-{entry.Inherit}-{entry.VersionName}-changelog.txt"))
         ];
@@ -1431,12 +1436,13 @@ internal sealed class InstallLoaderSelector : IDisposable
             entry.VersionName,
             info,
             kind == InstallLoaderKind.Cleanroom ? "Blocks/Cleanroom.png" : "Blocks/NeoForge.png");
+        item.TouchRevealButtons = true;
         item.Buttons =
         [
             CreateItemButton(
                 "lucide/save",
                 "Download.Version.SaveAs",
-                () => PageDownloadLoaderPage.SaveForgelikeEntry(entry)),
+                () => _ = PageDownloadLoaderPage.SaveForgelikeEntryAsync(entry)),
             CreateChangelogButton(() =>
             {
                 var url = PageDownloadLoaderPage.GetForgelikeChangelogUrl(entry);

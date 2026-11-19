@@ -30,5 +30,17 @@ public enum PageType
     Link = 13,
 
     /// <summary>更多：百宝箱、帮助、关于、反馈。</summary>
-    More = 14
+    More = 14,
+
+    /// <summary>启动 › 皮肤管理（二级页，带返回）。</summary>
+    LaunchSkin = 15,
+
+    /// <summary>百宝箱 › 收藏库。</summary>
+    Collection = 16,
+
+    /// <summary>百宝箱 › 选择物品。</summary>
+    ItemPicker = 17,
+
+    /// <summary>启动 › 皮肤编辑器（二级页，带返回）。</summary>
+    LaunchSkinEditor = 18
 }

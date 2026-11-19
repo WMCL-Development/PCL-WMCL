@@ -426,6 +426,7 @@ public partial class PageDownloadCompDetail : MyPageRight
 
         if (action == CompFileAction.Save)
         {
+            item.TouchRevealButtons = true;
             item.Buttons = [saveButton];
             item.Click += async (_, _) => await SaveFileAsync(file);
             return item;
@@ -437,6 +438,7 @@ public partial class PageDownloadCompDetail : MyPageRight
         };
         ToolTip.SetTip(installButton, Lang.Text("Common.Action.Install"));
         installButton.Click += async (_, _) => await RunInstallAsync(action, file);
+        item.TouchRevealButtons = true;
         item.Buttons = [installButton, saveButton];
         item.Click += async (_, _) => await RunInstallAsync(action, file);
         return item;
@@ -477,7 +479,7 @@ public partial class PageDownloadCompDetail : MyPageRight
             var defaultFolder = isModpack
                 ? null
                 : GetDefaultSaveFolder(file, project, subFolder);
-            var target = SystemDialogs.SelectSaveFile(
+            var target = await SystemDialogs.SelectSaveFileAsync(
                 Lang.Text("Download.Comp.Detail.SelectSaveLocation"),
                 Comp.CompFileNameGet(project, file),
                 BuildSaveFilter(file, desc),
@@ -1243,7 +1245,7 @@ public partial class PageDownloadCompDetail : MyPageRight
         try
         {
             var defaultFolder = GetWorldDefaultFolder();
-            var target = SystemDialogs.SelectSaveFile(
+            var target = await SystemDialogs.SelectSaveFileAsync(
                 Lang.Text("Download.Comp.Detail.SelectWorldInstallLocation"),
                 file.FileName ?? "",
                 Lang.Text("Download.Comp.Detail.WorldFile.Filter"),

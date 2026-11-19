@@ -125,7 +125,7 @@ public partial class MyTextButton : Label
             ? ("ColorBrush1", 200)
             : isMouseDown
                 ? ("ColorBrush4", 30)
-                : IsPointerOver
+                : this.IsHoveredState()
                     ? ("ColorBrush3", 100)
                     : ("ColorBrush1", 200);
 

@@ -66,7 +66,7 @@ public class MyScrollBar : ScrollBar
                 time = 50;
                 newColorKey = AccentHoverKey;
             }
-            else if (IsPointerOver)
+            else if (this.IsHoveredState())
             {
                 newOpacity = 0.9d;
                 time = 130;

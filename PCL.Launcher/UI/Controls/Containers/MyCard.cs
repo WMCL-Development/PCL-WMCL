@@ -621,7 +621,7 @@ public class MyCard : Grid
     private bool _IsInHeader(double positionY)
     {
         return positionY <= (IsSwapped ? SwapedHeight : SwapedHeight - 6d)
-            && !(positionY == 0d && !IsPointerOver);
+            && !(positionY == 0d && !this.IsHoveredState());
     }
 
     private bool _isCommandRunning;
@@ -746,7 +746,7 @@ public class MyCard : Grid
     /// </summary>
     private void AnimateTitleColors(bool animate)
     {
-        var hover = IsPointerOver && HasMouseAnimation;
+        var hover = this.IsHoveredState() && HasMouseAnimation;
         var brush = ContainerTheme.Brush(
             this,
             hover ? "ColorBrush2" : "ColorBrush1",

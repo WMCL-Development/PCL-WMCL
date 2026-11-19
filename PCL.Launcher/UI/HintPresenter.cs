@@ -118,6 +118,27 @@ public sealed class HintPresenter : IHintPresenter
         _Flush();
     }
 
+    /// <summary>仅绑定提示层，供没有窗口的平台使用（Android 单视图宿主）。</summary>
+    public void Attach(Panel layer)
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => Attach(layer));
+            return;
+        }
+
+        if (_window is null && ReferenceEquals(_layer, layer))
+        {
+            _Flush();
+            return;
+        }
+
+        _Detach();
+        _layer = layer;
+        _ApplyLayout(layer);
+        _Flush();
+    }
+
     private static void _Show(Panel layer, HintViewModel hint)
     {
         // 入场动画要求控件完成布局，因此把 Show 交给 Loaded；在此之前不参与布局、不可见，

@@ -187,6 +187,7 @@ public sealed partial class PageDownloadCompFavorites : MyPageRight, IPageView, 
             unfavoriteButton,
             Lang.Text("Download.Comp.Favorites.Action.Unfavorite"));
         unfavoriteButton.Click += (_, _) => ViewModel.RemoveFavorite(item);
+        listItem.TouchRevealButtons = true;
         listItem.Buttons = [editNoteButton, unfavoriteButton];
 
         listItem.PointerReleased += (_, e) =>
