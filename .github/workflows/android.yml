@@ -15,74 +15,17 @@ on:
       - 'PCL.Launcher/**'
       - 'scripts/fetch-easytier-android.sh'
       - '.github/workflows/android.yml'
+      - '.github/workflows/reusable-android.yml'
 
 permissions:
   contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            11.0.x
-            10.0.x
-
-      - name: Install Android workload
-        run: dotnet workload install android
-
-      # EasyTier 的 arm64 产物不再提交进仓库，构建前从 fork 的 release 下载：
-      # https://github.com/wenxiangL521/EasyTier/releases/tag/pcl-android-v2.6.4
-      - name: 下载 EasyTier Android 产物
-        run: bash scripts/fetch-easytier-android.sh
-
-      # Android 工程直接引用桌面端产物（HintPath 指向 Debug/net10.0），必须先构建桌面端。
-      - name: Build desktop
-        env:
-          PCL_WRITE_SECRET: 1
-          PCL_NAID_CLIENT_ID: ${{ secrets.NAID_CLIENT_ID }}
-          PCL_NAID_CLIENT_SECRET: ${{ secrets.NAID_CLIENT_SECRET }}
-          PCL_MS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          PCL_CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-          PCL_TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
-        run: |
-          dotnet build PCL.Launcher/PCL.Launcher.csproj \
-            -c Debug -p:UseSharedCompilation=false
-
-      - name: Resolve version
-        run: |
-          VERSION_NAME=$(python3 -c "import json;print(json.load(open('PCL.Launcher/Resources/metadata.json'))['version']['base'])")
-          VERSION_CODE=$((1000000 + GITHUB_RUN_NUMBER))
-          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
-          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
-          echo "versionName=$VERSION_NAME versionCode=$VERSION_CODE"
-
-      - name: Build APK
-        env:
-          PCL_WRITE_SECRET: 1
-          PCL_NAID_CLIENT_ID: ${{ secrets.NAID_CLIENT_ID }}
-          PCL_NAID_CLIENT_SECRET: ${{ secrets.NAID_CLIENT_SECRET }}
-          PCL_MS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          PCL_CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-          PCL_TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
-        run: |
-          dotnet build PCL.Launcher.Android/PCL.Launcher.Android.csproj \
-            -c Debug -p:AndroidPackageFormat=apk -p:UseSharedCompilation=false \
-            -p:ApplicationVersion="$VERSION_CODE" \
-            -p:ApplicationDisplayVersion="$VERSION_NAME"
-
-      - name: Collect APK
-        run: |
-          mkdir -p out
-          find PCL.Launcher.Android/bin -name '*.apk' -exec cp {} out/ \;
-          ls -lh out
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pcl-ce-android-apk
-          path: out/*.apk
-          if-no-files-found: error
+    name: Build signed APK
+    uses: ./.github/workflows/reusable-android.yml
+    with:
+      configuration: Debug
+      abi: universal
+      version_code: ${{ 1000000 + github.run_number }}
+    secrets: inherit

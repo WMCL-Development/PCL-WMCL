@@ -28,6 +28,10 @@ mkdir -p "$OUT"
   -c "$CONFIG" -r "$RID" -p:Platform="$PLATFORM" \
   --no-self-contained -o "$OUT"
 
+# 命令行工具随启动器一起发布（Windows/Linux/macOS 都可直接用）
+"$DOTNET" publish "$ROOT/PCL.Cli/PCL.Cli.csproj" \
+  -c "$CONFIG" -r "$RID" --no-self-contained -o "$OUT"
+
 find "$OUT" -name '*.pdb' -delete
 "$ROOT/scripts/verify-artifact.sh" "$RID" "$OUT"
 echo "published: $OUT"

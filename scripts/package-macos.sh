@@ -38,6 +38,11 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
   -p:DebugType=None -p:DebugSymbols=false \
   -o "$TEMP"
 
+"$DOTNET" publish "$ROOT/PCL.Cli/PCL.Cli.csproj" \
+  -c "$CONFIG" -r "$RID" --no-self-contained \
+  -p:DebugType=None -p:DebugSymbols=false \
+  -o "$TEMP"
+
 cp -a "$TEMP"/. "$APP/Contents/MacOS/"
 find "$APP/Contents/MacOS" -name '*.pdb' -delete
 chmod +x "$APP/Contents/MacOS/PCL.Launcher"

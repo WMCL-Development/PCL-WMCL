@@ -47,13 +47,13 @@
              安装后位于 nativeLibraryDir，具备可执行权限（Android 不允许执行应用数据目录里的文件）。 -->
         <!-- 二进制不提交进仓库：构建前运行 scripts/fetch-easytier-android.sh 下载。 -->
         <AndroidNativeLibrary Include="NativeLibs/arm64-v8a/libeasytier-cli.so"
-                              Condition="Exists('NativeLibs/arm64-v8a/libeasytier-cli.so')" />
+                              Condition="Exists('NativeLibs/arm64-v8a/libeasytier-cli.so') And ('$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'android-arm64')" />
         <AndroidNativeLibrary Include="NativeLibs/arm64-v8a/libeasytier_ffi.so"
-                              Condition="Exists('NativeLibs/arm64-v8a/libeasytier_ffi.so')" />
+                              Condition="Exists('NativeLibs/arm64-v8a/libeasytier_ffi.so') And ('$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'android-arm64')" />
         <AndroidNativeLibrary Include="NativeLibs/x86_64/libeasytier-cli.so"
-                              Condition="Exists('NativeLibs/x86_64/libeasytier-cli.so')" />
+                              Condition="Exists('NativeLibs/x86_64/libeasytier-cli.so') And ('$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'android-x64')" />
         <AndroidNativeLibrary Include="NativeLibs/x86_64/libeasytier_ffi.so"
-                              Condition="Exists('NativeLibs/x86_64/libeasytier_ffi.so')" />
+                              Condition="Exists('NativeLibs/x86_64/libeasytier_ffi.so') And ('$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'android-x64')" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\PCL.Core\PCL.Core.csproj" />
@@ -64,7 +64,7 @@
         <!-- 直接复用桌面端 UI：页面、视图模型与样式都来自 PCL.Launcher。
              桌面端是 Exe，不能作为工程引用，这里直接引用其产物程序集。 -->
         <Reference Include="PCL.Launcher">
-            <HintPath>..\PCL.Launcher\bin\Debug\net10.0\PCL.Launcher.dll</HintPath>
+            <HintPath>..\PCL.Launcher\bin\$(Configuration)\net10.0\PCL.Launcher.dll</HintPath>
             <Private>true</Private>
         </Reference>
     </ItemGroup>
