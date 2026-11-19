@@ -552,6 +552,9 @@ public static partial class GameLaunch
 
     private static void _ApplyProcessPriority(Process gameProcess)
     {
+        // PriorityClass / PriorityBoostEnabled 只在 Windows 上有效，其它平台会抛 PlatformNotSupportedException。
+        if (!PlatformRuntime.Current.Capabilities.SupportsProcessPriority) return;
+
         try
         {
             gameProcess.PriorityBoostEnabled = true;
@@ -678,6 +681,8 @@ public static partial class GameLaunch
 
     private static void _ApplyLauncherVisibility()
     {
+        if (!PlatformRuntime.Current.Capabilities.SupportsLauncherVisibility) return;
+
         switch (Config.Launch.LauncherVisibility)
         {
             case LauncherVisibility.ExitImmediately:

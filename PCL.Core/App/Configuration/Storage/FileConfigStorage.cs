@@ -36,12 +36,21 @@ public class FileConfigStorage : ConfigStorage
             {
                 while (!cancelToken.IsCancellationRequested)
                 {
-                    // 读入并合并暂存操作
-                    var (key, action) = await reader.ReadAsync(cancelToken);
-                    writeActionMap[key] = action;
+                    // 读入并合并暂存操作；没有新写入时也按间隔定时落盘，
+                    // 否则「改一项就不再操作」的配置在进程被杀时会丢失（Android 上尤其明显）。
+                    var wait = reader.WaitToReadAsync(cancelToken).AsTask();
+                    var delay = Task.Delay(
+                        TimeSpan.FromMilliseconds(Math.Max(200, syncInterval)),
+                        cancelToken);
+                    await Task.WhenAny(wait, delay).ConfigureAwait(false);
+
+                    while (reader.TryRead(out var item))
+                        writeActionMap[item.Item1] = item.Item2;
+
+                    if (writeActionMap.Count == 0) continue;
                     if (Environment.TickCount64 - lastSyncTick < syncInterval
-                        || cancelToken.IsCancellationRequested) continue;
-                    // 同步文件
+                        && !cancelToken.IsCancellationRequested) continue;
+
                     Sync();
                     lastSyncTick = Environment.TickCount64;
                     writeActionMap.Clear();

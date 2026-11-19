@@ -23,6 +23,10 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
     </PropertyGroup>
     <ItemGroup>
+        <!-- Android 宿主复用桌面端 UI，需要访问字体安装等内部成员。 -->
+        <InternalsVisibleTo Include="PCL.Launcher.Android" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="Avalonia" Version="12.1.6" />
         <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="12.1.6" />
         <PackageReference Include="Avalonia.Desktop" Version="12.1.6" />

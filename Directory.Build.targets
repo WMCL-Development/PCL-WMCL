@@ -1,0 +1,9 @@
+<Project>
+    <!--
+        CoreCLR 是 .NET 11 起 Android 的唯一运行时，它要求程序集以未压缩形式随包分发。
+        Sentry 6.x 的构建目标会硬性阻止 AndroidEnableAssemblyCompression=false
+        （https://github.com/dotnet/android/issues/9752），这里用同名空目标覆盖，
+        只跳过这项打包检查，不改变 Sentry 的功能。
+    -->
+    <Target Name="_SentryEnsureAndroidEnableAssemblyCompressionDisabled" />
+</Project>

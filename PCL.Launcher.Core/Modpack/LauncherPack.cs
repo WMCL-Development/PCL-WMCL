@@ -36,7 +36,7 @@ public static partial class Modpack
             Lang.Text("Common.Action.Install"),
             Lang.Text("Common.Action.Continue"),
             forceWait: true);
-        var targetFolder = SystemDialogs.SelectFolder(
+        var targetFolder = SystemDialogs.SelectFolderBlocking(
             Lang.Text("Minecraft.Download.Modpack.SelectTargetFolder.Title"));
 
         if (string.IsNullOrEmpty(targetFolder))

@@ -189,6 +189,36 @@ public static partial class Config
         [ConfigItem<string>("AstralVirtualIp", "")] public partial string AstralVirtualIp { get; set; }
         
         /// <summary>
+        /// EasyTier 直连：网络名。
+        /// </summary>
+        [ConfigItem<string>("LinkDirectNetworkName", "")] public partial string DirectNetworkName { get; set; }
+
+        /// <summary>
+        /// EasyTier 直连：网络密钥。
+        /// </summary>
+        [ConfigItem<string>("LinkDirectNetworkSecret", "")] public partial string DirectNetworkSecret { get; set; }
+
+        /// <summary>
+        /// EasyTier 直连：中继节点，逗号分隔。
+        /// </summary>
+        [ConfigItem<string>("LinkDirectPeers", "")] public partial string DirectPeers { get; set; }
+
+        /// <summary>
+        /// EasyTier 直连：房主虚拟 IP；留空表示自己是房主。
+        /// </summary>
+        [ConfigItem<string>("LinkDirectHostIp", "")] public partial string DirectHostIp { get; set; }
+
+        /// <summary>
+        /// EasyTier 直连：本地转发端口。
+        /// </summary>
+        [ConfigItem<int>("LinkDirectLocalPort", 25565)] public partial int DirectLocalPort { get; set; }
+
+        /// <summary>
+        /// 陶瓦联机：本地端口。
+        /// </summary>
+        [ConfigItem<int>("LinkTerracottaLocalPort", 25565)] public partial int TerracottaLocalPort { get; set; }
+
+        /// <summary>
         /// 在日志中输出 Cli 信息以用于调试。
         /// </summary>
         [ConfigItem<bool>("LinkEnableCliOutput", false)] public partial bool EnableCliOutput { get; set; }

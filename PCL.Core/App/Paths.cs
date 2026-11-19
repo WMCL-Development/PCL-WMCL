@@ -29,6 +29,23 @@ public static class Paths
 #endif
         PackageKind = _ReadPackageKind();
 
+        if (OperatingSystem.IsAndroid())
+        {
+            // Android 没有 XDG/AppData 之类的特殊文件夹，统一落到应用私有目录。
+            var root = _GetAndroidRoot();
+            _data = Path.Combine(root, "data");
+            _sharedData = Path.Combine(root, "shared");
+            _sharedLocalData = Path.Combine(root, "shared-local");
+            _temp = Path.Combine(root, "tmp");
+            OldSharedData = Path.Combine(root, "old-shared");
+            Directory.CreateDirectory(_data);
+            Directory.CreateDirectory(_sharedData);
+            Directory.CreateDirectory(_sharedLocalData);
+            Directory.CreateDirectory(_temp);
+            Directory.CreateDirectory(OldSharedData);
+            return;
+        }
+
         // fill paths
         _data = Path.Combine(DefaultDirectory, "PCL");
         _sharedData = GetSpecialPath(Special.ApplicationData, name);
@@ -56,6 +73,20 @@ public static class Paths
         Directory.CreateDirectory(_sharedData);
         Directory.CreateDirectory(_sharedLocalData);
         Directory.CreateDirectory(_temp);
+    }
+
+    /// <summary>
+    ///     解析 Android 上的数据根目录。优先使用 PCL_ANDROID_ROOT，
+    ///     否则退回进程可写目录（应用私有 files 目录）。
+    /// </summary>
+    private static string _GetAndroidRoot()
+    {
+        var overrideRoot = Environment.GetEnvironmentVariable("PCL_ANDROID_ROOT");
+        if (!string.IsNullOrWhiteSpace(overrideRoot))
+            return Path.GetFullPath(overrideRoot);
+
+        var baseDir = AppContext.BaseDirectory;
+        return string.IsNullOrWhiteSpace(baseDir) ? "." : baseDir.TrimEnd(Path.DirectorySeparatorChar);
     }
 
     /// <summary>The default directory used for relative path combining.</summary>

@@ -217,18 +217,26 @@ public static class GameFolders
         States.Game.Folders = string.Join("|", config);
     }
 
+    /// <summary>
+    ///     保证启动器默认游戏目录始终在列表里：用户添加别的文件夹后不会被顶掉，
+    ///     是否移除交给用户在界面上自己决定。
+    /// </summary>
     private static void _EnsureMinecraftFolder(List<McFolder> cacheMcFolderList)
     {
-        if (cacheMcFolderList.Count != 0)
+        var defaultFolder = LauncherPaths.DefaultMinecraftDirectory + Path.DirectorySeparatorChar;
+        if (cacheMcFolderList.Any(folder =>
+                string.Equals(
+                    folder.Location.TrimEnd(Path.DirectorySeparatorChar),
+                    defaultFolder.TrimEnd(Path.DirectorySeparatorChar),
+                    StringComparison.Ordinal)))
             return;
 
-        Directory.CreateDirectory(
-            Path.Combine(LauncherPaths.DefaultMinecraftDirectory, "versions"));
-        cacheMcFolderList.Add(
+        Directory.CreateDirectory(Path.Combine(LauncherPaths.DefaultMinecraftDirectory, "versions"));
+        cacheMcFolderList.Insert(
+            0,
             McFolder.CreateBuiltin(
                 "Select.Folder.CurrentFolder",
-                LauncherPaths.DefaultMinecraftDirectory
-                + Path.DirectorySeparatorChar,
+                defaultFolder,
                 McFolder.Types.Original));
     }
 

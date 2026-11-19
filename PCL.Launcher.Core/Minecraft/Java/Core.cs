@@ -328,6 +328,9 @@ public static partial class JavaRuntime
     /// </summary>
     public static bool IsGameSet64BitJava(McInstance? relatedVersion = null)
     {
+        // Android 上没有 Java 运行环境（JavaService 不启动），直接跳过这项检查。
+        if (OperatingSystem.IsAndroid()) return false;
+
         try
         {
             var userSetup = Config.Launch.SelectedJava;

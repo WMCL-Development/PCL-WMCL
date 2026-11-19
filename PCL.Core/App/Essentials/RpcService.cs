@@ -43,6 +43,13 @@ public sealed partial class RpcService
     [LifecycleStart]
     private void _Start()
     {
+        // Android 不提供命名管道，RPC 服务在该平台上不可用。
+        if (OperatingSystem.IsAndroid())
+        {
+            Context.Debug("当前平台不支持命名管道，跳过 RPC 服务");
+            return;
+        }
+
         _pipe = PipeComm.StartPipeServer("Echo", _EchoPipeName, _EchoPipeCallback);
     }
 

@@ -39,8 +39,8 @@ public static class AndroidFactories
         return new UiModule
         {
             Dispatcher = dispatcher,
-            Clipboard = new ClipboardService(),
-            FileDialogs = new FileDialogService(),
+            Clipboard = new AndroidClipboardService(),
+            FileDialogs = new AndroidFileDialogService(),
             ResourceStore = new ResourceStore(),
             Localization = new LocalizationBackend(dispatcher),
             Theme = new ThemeBackend(),
