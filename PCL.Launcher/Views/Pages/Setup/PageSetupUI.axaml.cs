@@ -1,5 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
@@ -306,6 +309,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 };
                 item.ContextMenu = BuildCustomThemeMenu(custom);
                 ContextMenuHelper.Attach(item, () => item.ContextMenu);
+                AttachCustomThemeLongPress(item, custom, combo);
                 combo.Items.Add(item);
             }
 
@@ -413,6 +417,11 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
 
     private async Task ShowThemeEditorAsync(CustomThemeInfo? existing)
     {
+        CloseThemeDropdowns();
+        var originalHue = Config.Preference.Theme.ThemeHueOffset;
+        var originalLight = Config.Preference.Theme.ThemeLightOffset;
+        var originalChroma = Config.Preference.Theme.ThemeChromaOffset;
+
         var nameBox = new MyTextBox
         {
             Text = existing?.Name ?? "",
@@ -422,6 +431,12 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         var hueSlider = CreateThemeValueSlider(existing?.Hue ?? ViewModel.ThemeHueOffset);
         var lightSlider = CreateThemeValueSlider(existing?.Light ?? ViewModel.ThemeLightOffset);
         var chromaSlider = CreateThemeValueSlider(existing?.Chroma ?? ViewModel.ThemeChromaOffset);
+
+        // 编辑已有主题时先按它的数值预览；拖动滑块也实时预览，取消时还原。
+        if (existing is not null) SetPreviewOffsets(existing.Hue, existing.Light, existing.Chroma);
+        hueSlider.Change += (_, _) => SetPreviewOffsets(hueSlider.Value, lightSlider.Value, chromaSlider.Value);
+        lightSlider.Change += (_, _) => SetPreviewOffsets(hueSlider.Value, lightSlider.Value, chromaSlider.Value);
+        chromaSlider.Change += (_, _) => SetPreviewOffsets(hueSlider.Value, lightSlider.Value, chromaSlider.Value);
 
         var panel = new StackPanel
         {
@@ -449,7 +464,15 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                     DialogButton.Create(Lang.Text("Common.Action.Cancel"))),
                 HighLight = false
             });
-        if (result.Button != 1) return;
+        if (result.Button != 1)
+        {
+            SetPreviewOffsets(originalHue, originalLight, originalChroma);
+            ViewModel.ThemeHueOffset = originalHue;
+            ViewModel.ThemeLightOffset = originalLight;
+            ViewModel.ThemeChromaOffset = originalChroma;
+            ThemeService.RefreshTheme();
+            return;
+        }
 
         var name = nameBox.Text?.Trim() ?? "";
         if (string.IsNullOrEmpty(name))
@@ -493,6 +516,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
 
     private async Task DeleteCustomThemeAsync(CustomThemeInfo custom)
     {
+        CloseThemeDropdowns();
         var result = await DialogService.Instance.ShowAsync(
             new TextDialogRequest
             {
@@ -515,6 +539,84 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         Reload();
         ThemeService.RefreshTheme();
         HintService.Show(Hints.Success(Lang.Text("Setup.Ui.Theme.Deleted")));
+    }
+
+    private void CloseThemeDropdowns()
+    {
+        ComboLightColor.IsDropDownOpen = false;
+        ComboDarkColor.IsDropDownOpen = false;
+    }
+
+    private void SetPreviewOffsets(int hue, int light, int chroma)
+    {
+        var theme = Config.Preference.Theme;
+        theme.ThemeHueOffset = Math.Clamp(hue, 0, 100);
+        theme.ThemeLightOffset = Math.Clamp(light, 0, 100);
+        theme.ThemeChromaOffset = Math.Clamp(chroma, 0, 100);
+        ThemeService.RefreshTheme();
+    }
+
+    /// <summary>
+    ///     下拉项在 Popup 独立窗口里，页面的长按辅助收不到事件，
+    ///     这里直接在项上做长按检测：达标后收起下拉并在下拉框上打开菜单。
+    /// </summary>
+    private void AttachCustomThemeLongPress(MyComboBoxItem item, CustomThemeInfo custom, MyComboBox combo)
+    {
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        var origin = new Point();
+        var pressed = false;
+        var fired = false;
+
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            if (!pressed || fired) return;
+            fired = true;
+            combo.IsDropDownOpen = false;
+            var menu = BuildCustomThemeMenu(custom);
+            Dispatcher.UIThread.Post(() => menu.Open(combo));
+        };
+
+        item.AddHandler(
+            InputElement.PointerPressedEvent,
+            (_, e) =>
+            {
+                if (!e.GetCurrentPoint(item).Properties.IsLeftButtonPressed) return;
+                pressed = true;
+                fired = false;
+                origin = e.GetPosition(item);
+                timer.Start();
+            },
+            RoutingStrategies.Tunnel,
+            true);
+
+        item.AddHandler(
+            InputElement.PointerMovedEvent,
+            (_, e) =>
+            {
+                if (!pressed || fired) return;
+                var delta = e.GetPosition(item) - origin;
+                if (Math.Abs(delta.X) > 12d || Math.Abs(delta.Y) > 12d)
+                {
+                    pressed = false;
+                    timer.Stop();
+                }
+            },
+            RoutingStrategies.Tunnel,
+            true);
+
+        item.AddHandler(
+            InputElement.PointerReleasedEvent,
+            (_, e) =>
+            {
+                timer.Stop();
+                pressed = false;
+                if (!fired) return;
+                fired = false;
+                e.Handled = true;
+            },
+            RoutingStrategies.Tunnel,
+            true);
     }
 
     private static MySlider CreateThemeValueSlider(int value)
