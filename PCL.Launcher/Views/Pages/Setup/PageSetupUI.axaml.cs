@@ -55,10 +55,6 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
             new Func<object, object>(PageSetupUIViewModel.FormatBackgroundOpacityHint);
         SliderBackgroundBlur.getHintText =
             new Func<object, object>(PageSetupUIViewModel.FormatPixelHint);
-        SliderBlurValue.getHintText =
-            new Func<object, object>(PageSetupUIViewModel.FormatPixelHint);
-        SliderBlurSamplingRate.getHintText =
-            new Func<object, object>(PageSetupUIViewModel.FormatSamplingRateHint);
         SliderMusicVolume.getHintText =
             new Func<object, object>(PageSetupUIViewModel.FormatMusicVolumeHint);
 
@@ -82,11 +78,6 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 CheckBackgroundColorful.Checked == true);
         CheckLogoLeft.Change += (_, _) => WriteIfReady(() =>
             Config.Preference.TopBarLeftAlign = CheckLogoLeft.Checked == true);
-        CheckBlur.Change += (_, _) => WriteIfReady(() =>
-        {
-            Config.Preference.Blur.IsEnabled = CheckBlur.Checked == true;
-            PanBlurValue.IsVisible = CheckBlur.Checked == true;
-        });
 
         CheckMusicRandom.Change += (_, _) => WriteIfReady(() =>
             Config.Preference.Music.ShufflePlayback = CheckMusicRandom.Checked == true);
@@ -224,9 +215,6 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
             ViewModel.Reload(Math.Max(1, ComboLightColor.ItemCount));
             CheckLockWindowSize.Checked = Config.Preference.LockWindowSize;
             CheckShowLaunchingHint.Checked = Config.Preference.ShowLaunchingHint;
-
-            CheckBlur.Checked = Config.Preference.Blur.IsEnabled;
-            PanBlurValue.IsVisible = Config.Preference.Blur.IsEnabled;
 
             ComboUiFont.SelectedFontTag = Config.Preference.Font;
             ComboUiMotdFont.SelectedFontTag = Config.Preference.MotdFont;
@@ -635,7 +623,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
             false,
             [
                 new HideCheckDefinition("UiHiddenSetupLaunch", "Setup.Ui.FeatureHide.Item.Launch"),
-                new HideCheckDefinition("UiHiddenSetupJava", null, "Java"),
+                new HideCheckDefinition("UiHiddenSetupJava", "Setup.Ui.FeatureHide.Item.Java"),
                 new HideCheckDefinition(
                     "UiHiddenSetupGameManage",
                     "Setup.Ui.FeatureHide.Item.GameManage"),

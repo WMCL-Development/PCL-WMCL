@@ -42,6 +42,7 @@ public static class LauncherServiceRegistration
         services.AddSingleton<PageHostFactory>();
         services.AddSingleton<PageViewFactory>();
         services.AddLauncherUi();
+        UiServiceRegistration.Validate(services);
 
         services.AddSingleton<IUpdatePolicy>(_ => kind switch
         {

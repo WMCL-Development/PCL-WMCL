@@ -144,6 +144,8 @@
     <sys:String x:Key="Config.Error.LoadFailed.Title">Configuration initialization failed</sys:String>
     <sys:String x:Key="Config.Error.SaveFailed.Message">Could not save the configuration file.&#xA;&#xA;Path: {0}</sys:String>
     <sys:String x:Key="Config.Error.SaveFailed.Title">Failed to save configuration file</sys:String>
+    <sys:String x:Key="Config.Error.StorageFallback">Configuration storage {0} is unavailable. This session will use in-memory defaults and changes will not be saved.&#xA;&#xA;{1}</sys:String>
+    <sys:String x:Key="Startup.SingleInstance.Unavailable">Could not create the single-instance lock. The launcher will continue in multi-instance mode.&#xA;&#xA;{0}</sys:String>
 
     <!-- Crash -->
 
@@ -1522,7 +1524,7 @@
     <sys:String x:Key="Launch.Error.Title">Launch failed</sys:String>
     <sys:String x:Key="Launch.Right.CommunityHint.HidePrompt">To permanently hide this notice, enter the correct PCL CE development organization name.</sys:String>
     <sys:String x:Key="Launch.Right.CommunityHint.InputTitle">Enter the PCL CE development organization name</sys:String>
-    <sys:String x:Key="Launch.Right.CommunityHint.Message">You are using PCL CE (PCL Community Edition)! This version is independently developed and maintained, and differs from the original version in its development path and user experience.&#xA;&#xA;If you downloaded the PCL CE by accident, we strongly recommend downloading the original PCL version for long-term use, as this distribution may not be user-friendly for newcomers.&#xA;Additionally, please submit PCL CE issues to the PCL CE repository, and do not report PCL CE issues to the original repository!</sys:String>
+    <sys:String x:Key="Launch.Right.CommunityHint.Message">You are using PCL CE (Plain Craft Launcher Community Edition)! This version is independently developed and maintained, and differs from the original version in its development path and user experience.&#xA;&#xA;If you downloaded the PCL CE by accident, we strongly recommend downloading the original PCL version for long-term use, as this distribution may not be user-friendly for newcomers.&#xA;Additionally, please submit PCL CE issues to the PCL CE repository, and do not report PCL CE issues to the original repository!</sys:String>
     <sys:String x:Key="Launch.Right.CommunityHint.Title">PCL CE notice</sys:String>
     <sys:String x:Key="Launch.Right.CommunityHint.WrongInput">Not quite right...</sys:String>
     <sys:String x:Key="Launch.Right.Log.Title">Launch log</sys:String>
@@ -3166,19 +3168,7 @@
 
     <!-- Setup.Ui.Basic -->
 
-    <sys:String x:Key="Setup.Ui.Basic.AdvancedMaterial">Advanced material</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.AdvancedMaterial.ToolTip">When enabled, blur effects will be applied to some transparent areas, such as cards.&#xA;Note that this feature consumes significant GPU resources and may cause lag!</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.BlueHint">Blue, blue, and more blue! Want to escape from the blue dilemma? Use the official snapshot build!</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurMethod">Blur method</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurMethod.Box">Box blur</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurMethod.Box.ToolTip">Uses linear average sampling over a small area around each pixel, which is faster but may produce color blocks.&#xA;This blur may lose detail information but has better performance. It can be used on devices with poor performance.</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurMethod.Gaussian">Gaussian blur</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurMethod.Gaussian.ToolTip">Uses weighted average sampling with a Gaussian convolution algorithm over a large area around each pixel, which is slower.&#xA;This blur has higher quality and handles details more finely. Recommended for devices with better performance.</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurMethod.ToolTip">Sets the blur method.</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurRadius">Blur radius</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurRadius.ToolTip">Sets the sampling radius of the blur effect. Larger values produce stronger blur.</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurSamplingRate">Sampling rate</sys:String>
-    <sys:String x:Key="Setup.Ui.Basic.BlurSamplingRate.ToolTip">Sets the sampling rate of the blur effect. Higher values produce finer blur.&#xA;If your device has poor performance, try lowering this value for better performance.</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.GetSnapshot">Get official snapshot build</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.LockWindow">Lock launcher size</sys:String>
     <sys:String x:Key="Setup.Ui.Basic.Opacity">Opacity</sys:String>
@@ -3259,7 +3249,7 @@
     <sys:String x:Key="Setup.Ui.Homepage.Preset.DailyModpack">[WPF] Daily Modpack Recommendation (Author: wkea)</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.EchoCave">Echo Cave (removed)</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.GitHub">[WPF] PCL GitHub Dashboard (Author: Deep-Dark-Forest)</sys:String>
-    <sys:String x:Key="Setup.Ui.Homepage.Preset.Magazine">[WPF] Magazine Homepage (Author: CreeperIsASpy)</sys:String>
+    <sys:String x:Key="Setup.Ui.Homepage.Preset.Magazine">[WPF] Magazine Homepage (Author: Neclyon)</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.McNews">[WPF] Minecraft News (Author: Nattiden)</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.McOfficialFeed">Minecraft Official Feed</sys:String>
     <sys:String x:Key="Setup.Ui.Homepage.Preset.McSkin">[WPF] Minecraft Skin Recommendation (Author: wkea)</sys:String>
