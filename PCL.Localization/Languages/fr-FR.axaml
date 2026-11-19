@@ -432,4 +432,9 @@
     <sys:String x:Key="Launch.Homepage.LoadFailed.Retry">Réessayer</sys:String>
     <sys:String x:Key="Launch.Homepage.SlowWarning">Le chargement de la page d'accueil est trop lent ({0} secondes). Veuillez signaler ce problème à l'auteur de la page d'accueil, ou cesser temporairement d'utiliser cette page.</sys:String>
 
+    <sys:String x:Key="Skin.Editor.Hue">Teinte</sys:String>
+    <sys:String x:Key="Skin.Editor.Alpha">Opacité {0:0} %</sys:String>
+    <sys:String x:Key="Skin.Editor.CommonColors">Couleurs courantes · Tons de peau</sys:String>
+    <sys:String x:Key="Skin.Editor.RecentColors">Couleurs récentes</sys:String>
+    <sys:String x:Key="Skin.Editor.Transparent">Transparent</sys:String>
 </ResourceDictionary>

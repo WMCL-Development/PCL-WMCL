@@ -1673,6 +1673,11 @@
     <sys:String x:Key="Skin.Editor.ResetView">Reset view</sys:String>
     <sys:String x:Key="Skin.Editor.Color">Colour</sys:String>
     <sys:String x:Key="Skin.Editor.Save">Save as PNG</sys:String>
+    <sys:String x:Key="Skin.Editor.Hue">Hue</sys:String>
+    <sys:String x:Key="Skin.Editor.Alpha">Opacity {0:0}%</sys:String>
+    <sys:String x:Key="Skin.Editor.CommonColors">Common colors · Skin tones</sys:String>
+    <sys:String x:Key="Skin.Editor.RecentColors">Recently used</sys:String>
+    <sys:String x:Key="Skin.Editor.Transparent">Transparent</sys:String>
     <sys:String x:Key="Skin.Editor.NoSkin">No skin loaded</sys:String>
     <sys:String x:Key="Skin.Editor.Loaded">Loaded {0}×{1} skin</sys:String>
     <sys:String x:Key="Skin.Editor.Filled">Filled {0} pixels</sys:String>
@@ -3464,6 +3469,7 @@
     <sys:String x:Key="Tools.GameLink.Join.Clear">Clear</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Description">1. Paste the lobby code or Terracotta code your friend sent you, then click Join&#xA;2. Launch the game, open Multiplayer, and join the LAN world</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.IdHint">Lobby codes look like U/NNNN-AAAA-SSSS-EEEE; Terracotta codes look like ABCDE-FGHIJ-KLMNO-PQRST-UVWXY</sys:String>
+    <sys:String x:Key="Tools.GameLink.Join.TerracottaNotSupported">The lobby does not support Terracotta codes; switch to the Terracotta page</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.InvalidText">Invalid lobby ID. Please check and enter it again.</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Paste">Paste</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Title">Join lobby</sys:String>
@@ -3583,6 +3589,7 @@
     <sys:String x:Key="Tools.Astral.List.Join">Join selected</sys:String>
     <sys:String x:Key="Tools.Astral.List.Remove">Remove</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Title">Share with friends</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.ShortCode">Short code</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Short">Short link</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Long">Long link</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Copy">Copy</sys:String>
@@ -3710,6 +3717,7 @@
     <sys:String x:Key="Tools.GameLink.Direct.Start">Start</sys:String>
     <sys:String x:Key="Tools.GameLink.Direct.Stop">Disconnect</sys:String>
     <sys:String x:Key="Tools.GameLink.Direct.Running">Connected, local port {0}</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.TerracottaInLobby">Terracotta code (switch to the Terracotta page)</sys:String>
     <sys:String x:Key="Tools.GameLink.Code.Terracotta">Detected: Terracotta room</sys:String>
     <sys:String x:Key="Tools.GameLink.Code.Lobby">Detected: PCL CE lobby</sys:String>
     <sys:String x:Key="Tools.GameLink.Code.Unknown">Unrecognised code</sys:String>
@@ -3723,6 +3731,7 @@
     <sys:String x:Key="Tools.Terracotta.Host.Starting">Preparing…</sys:String>
     <sys:String x:Key="Tools.Terracotta.Host.Failed">Create failed; check that EasyTier is available</sys:String>
     <sys:String x:Key="Tools.Terracotta.Host.Ready">Room ready: port {0} in the code is forwarded to local {1}</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.CopyHint">Tap to copy</sys:String>
     <sys:String x:Key="Tools.Terracotta.Host.CodeLabel">Room created</sys:String>
     <sys:String x:Key="Tools.Terracotta.Host.Hint">Send the code above to your friends and open the world to LAN</sys:String>
     <sys:String x:Key="Tools.Terracotta.Join.Title">Join Terracotta room</sys:String>

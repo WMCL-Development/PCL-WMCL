@@ -1673,6 +1673,11 @@
     <sys:String x:Key="Skin.Editor.ResetView">重置视图</sys:String>
     <sys:String x:Key="Skin.Editor.Color">颜色</sys:String>
     <sys:String x:Key="Skin.Editor.Save">保存为 PNG</sys:String>
+    <sys:String x:Key="Skin.Editor.Hue">色相</sys:String>
+    <sys:String x:Key="Skin.Editor.Alpha">不透明度 {0:0}%</sys:String>
+    <sys:String x:Key="Skin.Editor.CommonColors">常用颜色 · 肤色</sys:String>
+    <sys:String x:Key="Skin.Editor.RecentColors">最近使用</sys:String>
+    <sys:String x:Key="Skin.Editor.Transparent">透明</sys:String>
     <sys:String x:Key="Skin.Editor.NoSkin">未加载皮肤</sys:String>
     <sys:String x:Key="Skin.Editor.Loaded">已加载 {0}×{1} 皮肤</sys:String>
     <sys:String x:Key="Skin.Editor.Filled">已填充 {0} 个像素</sys:String>
@@ -3463,7 +3468,8 @@
     <sys:String x:Key="Tools.GameLink.Join.Action">加入</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Clear">清除</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Description">1、在下方输入朋友发送给你的大厅编号或陶瓦编号，单击【加入】&#xA;2、启动游戏，选择【多人游戏】，在局域网游戏中加入大厅</sys:String>
-    <sys:String x:Key="Tools.GameLink.Join.IdHint">大厅编号形如 U/NNNN-AAAA-SSSS-EEEE，陶瓦编号形如 ABCDE-FGHIJ-KLMNO-PQRST-UVWXY</sys:String>
+    <sys:String x:Key="Tools.GameLink.Join.IdHint">大厅编号形如 U/NNNN-AAAA-SSSS-EEEE</sys:String>
+    <sys:String x:Key="Tools.GameLink.Join.TerracottaNotSupported">联机大厅不支持陶瓦编号，请切换到「陶瓦联机」页面</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.InvalidText">大厅编号不正确，请检查后重新输入</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Paste">粘贴</sys:String>
     <sys:String x:Key="Tools.GameLink.Join.Title">加入大厅</sys:String>
@@ -3583,6 +3589,7 @@
     <sys:String x:Key="Tools.Astral.List.Join">加入选中</sys:String>
     <sys:String x:Key="Tools.Astral.List.Remove">移除</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Title">分享给朋友</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.ShortCode">短码</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Short">短链</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Long">长链</sys:String>
     <sys:String x:Key="Tools.Astral.Share.Copy">复制</sys:String>
@@ -3710,6 +3717,7 @@
     <sys:String x:Key="Tools.GameLink.Direct.Start">开始</sys:String>
     <sys:String x:Key="Tools.GameLink.Direct.Stop">断开</sys:String>
     <sys:String x:Key="Tools.GameLink.Direct.Running">已连接，本地端口 {0}</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.TerracottaInLobby">陶瓦编号（请切换到陶瓦联机）</sys:String>
     <sys:String x:Key="Tools.GameLink.Code.Terracotta">识别为：陶瓦房间</sys:String>
     <sys:String x:Key="Tools.GameLink.Code.Lobby">识别为：PCL CE 大厅</sys:String>
     <sys:String x:Key="Tools.GameLink.Code.Unknown">无法识别该编号</sys:String>
@@ -3723,6 +3731,7 @@
     <sys:String x:Key="Tools.Terracotta.Host.Starting">正在准备…</sys:String>
     <sys:String x:Key="Tools.Terracotta.Host.Failed">创建失败，请检查 EasyTier 是否可用</sys:String>
     <sys:String x:Key="Tools.Terracotta.Host.Ready">房间已创建，编号里的端口 {0} 已转发到本机 {1}</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.CopyHint">点击复制</sys:String>
     <sys:String x:Key="Tools.Terracotta.Host.CodeLabel">已创建房间</sys:String>
     <sys:String x:Key="Tools.Terracotta.Host.Hint">把上方编号发给朋友，并在游戏里对局域网开放</sys:String>
     <sys:String x:Key="Tools.Terracotta.Join.Title">加入陶瓦房间</sys:String>

@@ -1625,6 +1625,11 @@
     <sys:String x:Key="Skin.Editor.ResetView">重置視圖</sys:String>
     <sys:String x:Key="Skin.Editor.Color">顏色</sys:String>
     <sys:String x:Key="Skin.Editor.Save">儲存為 PNG</sys:String>
+    <sys:String x:Key="Skin.Editor.Hue">色相</sys:String>
+    <sys:String x:Key="Skin.Editor.Alpha">不透明度 {0:0}%</sys:String>
+    <sys:String x:Key="Skin.Editor.CommonColors">常用顏色 · 膚色</sys:String>
+    <sys:String x:Key="Skin.Editor.RecentColors">最近使用</sys:String>
+    <sys:String x:Key="Skin.Editor.Transparent">透明</sys:String>
     <sys:String x:Key="Skin.Editor.NoSkin">未載入皮膚</sys:String>
     <sys:String x:Key="Skin.Editor.Loaded">已載入 {0}×{1} 皮膚</sys:String>
     <sys:String x:Key="Skin.Editor.Filled">已填充 {0} 個像素</sys:String>

@@ -1,0 +1,46 @@
+<ui:MyPageRight xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:ui="using:PCL.UI.Controls"
+                xmlns:loc="using:PCL.Core.UI"
+                x:Class="PCL.Views.Pages.Tools.PageItemPicker">
+    <Grid>
+        <!-- 物品栏居中显示（与收藏库同一套可用空间，保证缩放一致） -->
+        <Border x:Name="PanContent"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" />
+
+        <!-- 底部操作条浮在内容之上，不占用物品栏的可用高度 -->
+        <StackPanel Margin="20,0,20,16"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Spacing="10">
+            <TextBlock x:Name="LabSelected"
+                       VerticalAlignment="Center"
+                       FontSize="13"
+                       Opacity="0.75" />
+            <ui:MyButton x:Name="BtnConfirm"
+                         MinWidth="96"
+                         MinHeight="34"
+                         Padding="16,0"
+                         Text="{loc:Loc Common.Action.Confirm}" />
+        </StackPanel>
+
+        <!-- 加载遮罩：铺满内容区并居中显示加载动画 -->
+        <Panel x:Name="PanMask"
+               IsVisible="False"
+               Background="#B3FFFFFF">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="10">
+                <ui:MyLoading Width="42"
+                              Height="42"
+                              HorizontalAlignment="Center" />
+                <TextBlock x:Name="LabLoading"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           Opacity="0.8" />
+            </StackPanel>
+        </Panel>
+    </Grid>
+</ui:MyPageRight>

@@ -10,4 +10,9 @@
     <sys:String x:Key="Meta.Code">es-ES</sys:String>
     <sys:String x:Key="Meta.Name">Español (España)</sys:String>
 
+    <sys:String x:Key="Skin.Editor.Hue">Tono</sys:String>
+    <sys:String x:Key="Skin.Editor.Alpha">Opacidad {0:0} %</sys:String>
+    <sys:String x:Key="Skin.Editor.CommonColors">Colores comunes · Tonos de piel</sys:String>
+    <sys:String x:Key="Skin.Editor.RecentColors">Colores recientes</sys:String>
+    <sys:String x:Key="Skin.Editor.Transparent">Transparente</sys:String>
 </ResourceDictionary>
