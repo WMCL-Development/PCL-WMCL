@@ -150,7 +150,7 @@ public class EasyTierArgumentsTest
         Assert.IsFalse(args.Contains("no-tun", StringComparison.Ordinal), "Astral 需要 tun");
         Assert.IsFalse(args.Contains("p2p-only", StringComparison.Ordinal), "Astral 允许中继");
         StringAssert.Contains(args, "private-mode=false");
-        StringAssert.Contains(args, "10.144.144.1");
+        StringAssert.Contains(args, AstralLobbyProvider.HostVirtualIp);
         StringAssert.Contains(args, "tcp://astral-a:11010");
         StringAssert.Contains(args, "udp://astral-b:11010");
     }

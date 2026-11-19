@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using PCL;
 
 namespace PCL.Cli;
@@ -21,6 +22,11 @@ internal sealed class CliLaunchUi : ILaunchUi
 
     public void SetGpuPreference(string javaExePath, bool preference)
     {
+    }
+
+    public Task<int?> ShowSelectAsync(string caption, IReadOnlyList<string> options)
+    {
+        return Task.FromResult(ShowSelect(caption, options));
     }
 
     public int? ShowSelect(string caption, IReadOnlyList<string> options)

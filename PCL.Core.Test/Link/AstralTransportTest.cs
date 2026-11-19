@@ -20,7 +20,7 @@ public class AstralRoomFactoryTest
         var second = AstralRoomFactory.Create("乙");
 
         Assert.AreEqual("甲", first.Name);
-        Assert.AreEqual(8, first.NetworkName.Length);
+        Assert.AreEqual("astral-".Length + 8, first.NetworkName.Length);
         Assert.AreEqual(16, first.NetworkSecret.Length);
         Assert.AreNotEqual(first.NetworkName, second.NetworkName);
         Assert.AreNotEqual(first.NetworkSecret, second.NetworkSecret);
@@ -34,7 +34,8 @@ public class AstralRoomFactoryTest
         for (var i = 0; i < 20; i++)
         {
             var room = AstralRoomFactory.Create();
-            foreach (var ch in room.NetworkName + room.NetworkSecret)
+            // "astral-" 前缀是固定文案，只检查派生部分。
+            foreach (var ch in room.NetworkName["astral-".Length..] + room.NetworkSecret)
                 Assert.IsFalse(ambiguous.Contains(ch, StringComparison.Ordinal), "出现了易混淆字符: " + ch);
         }
     }

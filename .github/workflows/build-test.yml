@@ -5,7 +5,7 @@ permissions:
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ dev, sync/upstream ]
     paths-ignore: &ignored
       - '**/.editorconfig'
       - '**/.gitignore'
@@ -77,6 +77,9 @@ jobs:
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: 11.0.x
+
+      - name: Build CLI
+        run: dotnet build PCL.Cli/PCL.Cli.csproj -c Debug --nologo
 
       - name: Run tests
         timeout-minutes: 15

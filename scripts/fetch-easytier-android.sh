@@ -9,7 +9,7 @@
 #
 # 可用环境变量覆盖：
 #   PCL_EASYTIER_REPO    fork 仓库，默认 wenxiangL521/EasyTier
-#   PCL_EASYTIER_TAG     release tag，默认 wmcl-android-v2.6.4
+#   PCL_EASYTIER_TAG     release tag，默认 wmcl-easytier-v2.6.4
 #   PCL_EASYTIER_MIRRORS 额外镜像前缀，空格分隔
 set -euo pipefail
 

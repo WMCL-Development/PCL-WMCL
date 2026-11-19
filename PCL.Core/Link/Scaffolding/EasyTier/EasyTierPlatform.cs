@@ -43,6 +43,9 @@ public static class EasyTierPlatform
     public static EasyTierPackage Current { get; } =
         Resolve(CurrentOs, RuntimeInformation.OSArchitecture);
 
+    /// <summary>Android 的 EasyTier 由启动器随 APK 自带，无需下载或安装。</summary>
+    public static bool IsBundled => CurrentOs == PlatformKind.Android;
+
     /// <summary>将平台与架构解析为官方依赖包描述。纯函数，便于单元测试。</summary>
     /// <exception cref="PlatformNotSupportedException">官方没有对应架构的依赖包。</exception>
     public static EasyTierPackage Resolve(PlatformKind os, Architecture architecture)

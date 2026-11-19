@@ -12,7 +12,6 @@ internal static class AccountCommands
 {
     public static int Login(CliOptions options)
     {
-        LoginProfile.Current = new CliProfileUi();
         CliConsole.Line("开始 Microsoft 设备码登录…");
 
         var loader = GameLaunch.mcLoginMsLoader;

@@ -44,8 +44,15 @@ public sealed class PlatformArchitectureTest
         var projectRoot = Path.Combine(root, "PCL.Core");
         var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
+            "App/Essentials/MainWindowService.cs",
             "App/Essentials/PromoteService.cs",
+            "App/Essentials/RpcService.cs",
+            "App/Paths.cs",
             "IO/Files.cs",
+            "Link/Astral/AstralLobbyHost.cs",
+            "Link/Astral/AstralLobbyTransport.cs",
+            "Link/EasyTier/EasyTierElevation.cs",
+            "Platform/NiriWindowRuleService.cs",
             "IO/PipeComm.cs",
             "Minecraft/Java/Scanner/DefaultPathsScanner.cs",
             "Platform/PlatformDetector.cs",

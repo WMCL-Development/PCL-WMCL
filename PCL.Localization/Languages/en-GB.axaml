@@ -3966,4 +3966,6 @@
     <sys:String x:Key="Setup.Ui.Background.ImageLoadFailed">Failed to load the image, trying to play the file as a video: {0}</sys:String>
     <sys:String x:Key="Setup.Ui.Background.PauseVideo">Pause video backgrounds whilst an instance is running</sys:String>
     <sys:String x:Key="Setup.Ui.Background.PauseVideo.ToolTip">If enabled, the background cannot be refreshed whilst the game is running</sys:String>
+    <sys:String x:Key="Common.State.Failed">Failed</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Failed">Connection failed</sys:String>
 </ResourceDictionary>

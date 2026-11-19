@@ -3962,4 +3962,10 @@
     <sys:String x:Key="Setup.Ui.Background.ImageLoadFailed">圖片載入失敗，嘗試將檔案作為影片播放：{0}</sys:String>
     <sys:String x:Key="Setup.Ui.Background.PauseVideo">遊戲啟動後暫停影片背景，遊戲退出後重新播放</sys:String>
     <sys:String x:Key="Setup.Ui.Background.PauseVideo.ToolTip">若啟用此項設定，遊戲時將無法重新整理背景</sys:String>
+    <sys:String x:Key="Common.State.Failed">失敗</sys:String>
+    <sys:String x:Key="Tools.GameLink.Direct.Failed">連線失敗</sys:String>
+    <sys:String x:Key="Tools.GameLink.Join.TerracottaNotSupported">聯機大廳不支援陶瓦編號，請切換到「陶瓦聯機」頁面</sys:String>
+    <sys:String x:Key="Tools.Astral.Share.ShortCode">短碼</sys:String>
+    <sys:String x:Key="Tools.GameLink.Code.TerracottaInLobby">陶瓦編號（請切換到陶瓦聯機）</sys:String>
+    <sys:String x:Key="Tools.Terracotta.Host.CopyHint">點擊複製</sys:String>
 </ResourceDictionary>

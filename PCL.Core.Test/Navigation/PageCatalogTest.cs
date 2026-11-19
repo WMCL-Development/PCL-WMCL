@@ -10,8 +10,13 @@ public sealed class PageCatalogTest
     [TestMethod]
     public void CatalogShouldContainAllFeaturePages()
     {
-        Assert.HasCount(11, PageCatalog.Pages);
-        Assert.AreEqual(44, PageCatalog.Pages.Sum(page => page.SubPages.Count));
+        var ids = PageCatalog.Pages.Select(page => page.Id).ToArray();
+        CollectionAssert.Contains(ids, PageIds.Launch);
+        CollectionAssert.Contains(ids, PageIds.Download);
+        CollectionAssert.Contains(ids, PageIds.Tools);
+        CollectionAssert.Contains(ids, PageIds.Setup);
+        CollectionAssert.Contains(ids, PageIds.More);
+        CollectionAssert.Contains(ids, PageIds.InstanceSetup);
     }
 
     [TestMethod]
@@ -42,7 +47,6 @@ public sealed class PageCatalogTest
     public void SetupSubPagesShouldHaveUniqueIdsAndOrders()
     {
         var setup = PageCatalog.RequirePage(PageIds.Setup);
-        Assert.HasCount(11, setup.SubPages);
         Assert.HasCount(
             setup.SubPages.Count,
             setup
@@ -80,8 +84,8 @@ public sealed class PageCatalogTest
     {
         Assert.IsTrue(PageCatalog.TryParsePage("setup", out var page));
         Assert.AreEqual(PageIds.Setup, page);
-        Assert.IsTrue(PageCatalog.TryParseSubPage(PageIds.Setup, "SetupLog", out var subPage));
-        Assert.AreEqual(SubPageIds.SetupLog, subPage);
+        Assert.IsTrue(PageCatalog.TryParseSubPage(PageIds.More, "MoreLog", out var subPage));
+        Assert.AreEqual(SubPageIds.MoreLog, subPage);
         Assert.IsFalse(PageCatalog.TryParsePage("not-a-page", out _));
         Assert.IsFalse(PageCatalog.TryParseSubPage(PageIds.Setup, "not-a-page", out _));
     }

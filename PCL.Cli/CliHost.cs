@@ -1,9 +1,12 @@
 using System;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 using PCL;
 using PCL.Core.App;
 using PCL.Core.Logging;
 using PCL.Core.Platform;
+using PCL.Core.UI;
+using PCL.Platform;
 
 namespace PCL.Cli;
 
@@ -54,17 +57,23 @@ internal static class CliHost
         if (!ApplicationRuntime.IsInitialized)
         {
             var kind = PlatformDetector.Detect();
+            var services = new ServiceCollection();
+            services.AddPlatformServices(kind);
+            services.AddAvaloniaUi(kind);
+            // 无头实现：界面回调与提示都输出到终端。
+            services.AddSingleton<ILaunchUi, CliLaunchUi>();
+            services.AddSingleton<ILoadingUi, CliLoadingUi>();
+            services.AddSingleton<IProfileUi, CliProfileUi>();
+
             ApplicationRuntime.Initialize(new ApplicationServices
             {
                 Platform = PCL.Platform.PlatformModuleFactory.Create(kind),
-                Ui = PCL.Core.UI.UiModuleFactory.Create(kind)
+                Ui = PCL.Core.UI.UiModuleFactory.Create(kind),
+                Services = services.BuildServiceProvider()
             });
         }
 
-        // 5. 加载器进度与提示走终端实现。
         LauncherCommon.HeadlessMode = true;
-        LaunchUi.Current = new CliLaunchUi();
-        LoadingUi.Current = new CliLoadingUi();
         LauncherCommon.UiLogHandler = (_, text, level, _, userSummary) =>
         {
             var message = userSummary ?? text;

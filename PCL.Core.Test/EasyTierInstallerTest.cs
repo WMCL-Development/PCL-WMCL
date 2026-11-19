@@ -16,16 +16,12 @@ public sealed class EasyTierInstallerTest
         var package = EasyTierPlatform.Resolve(PlatformKind.Linux, Architecture.X64);
         var urls = EasyTierInstaller.GetDownloadUrls("2.6.4", package);
 
-        Assert.HasCount(3, urls);
-        Assert.AreEqual(
-            "https://staticassets.naids.com/resources/pclce/static/easytier/easytier-linux-x86_64-v2.6.4.zip",
-            urls[0]);
-        Assert.AreEqual(
-            "https://s3.pysio.online/pcl2-ce/static/easytier/easytier-linux-x86_64-v2.6.4.zip",
-            urls[1]);
-        Assert.AreEqual(
-            "https://github.com/EasyTier/EasyTier/releases/download/v2.6.4/easytier-linux-x86_64-v2.6.4.zip",
-            urls[2]);
+        Assert.HasCount(4, urls);
+        const string release = "https://github.com/wenxiangL521/EasyTier/releases/download/wmcl-easytier-v2.6.4";
+        Assert.AreEqual(release + "/easytier-linux-x86_64-v2.6.4.zip", urls[0]);
+        Assert.AreEqual("https://ghfast.top/" + release + "/easytier-linux-x86_64-v2.6.4.zip", urls[1]);
+        Assert.AreEqual("https://gh-proxy.com/" + release + "/easytier-linux-x86_64-v2.6.4.zip", urls[2]);
+        Assert.AreEqual("https://ghproxy.net/" + release + "/easytier-linux-x86_64-v2.6.4.zip", urls[3]);
     }
 
     [TestMethod]
