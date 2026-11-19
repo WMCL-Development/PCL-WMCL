@@ -31,7 +31,9 @@ public static class LongPressContextMenu
         private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(HoldMilliseconds) };
         private Point _origin;
         private Visual? _source;
+        private Visual? _menuSource;
         private bool _armed;
+        private bool _menuReady;
 
         public void OnPressed(object? sender, PointerPressedEventArgs e)
         {
@@ -42,6 +44,8 @@ public static class LongPressContextMenu
             _source = e.Source as Visual;
             _origin = e.GetPosition(root);
             _armed = _source is not null;
+            _menuReady = false;
+            _menuSource = null;
 
             _timer.Stop();
             _timer.Tick -= OnTick;
@@ -58,9 +62,29 @@ public static class LongPressContextMenu
                 Cancel();
         }
 
-        public void OnReleased(object? sender, PointerReleasedEventArgs e) => Cancel();
+        public void OnReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            // 长按达标后不在这里直接弹菜单：先吞掉本次松手，避免它被组合框等控件当成一次点击，
+            // 等事件派发结束后再打开菜单，这样菜单不会刚出现就被点掉。
+            if (_menuReady && _menuSource is { } source)
+            {
+                _menuReady = false;
+                _menuSource = null;
+                _armed = false;
+                _source = null;
+                e.Handled = true;
+                Dispatcher.UIThread.Post(() => OpenMenu(source));
+                return;
+            }
 
-        public void OnCaptureLost(object? sender, PointerCaptureLostEventArgs e) => Cancel();
+            Cancel();
+        }
+
+        public void OnCaptureLost(object? sender, PointerCaptureLostEventArgs e)
+        {
+            if (_menuReady) return;
+            Cancel();
+        }
 
         private void Cancel()
         {
@@ -74,7 +98,12 @@ public static class LongPressContextMenu
             _timer.Stop();
             if (!_armed || _source is not { } source) return;
             _armed = false;
+            _menuReady = true;
+            _menuSource = source;
+        }
 
+        private void OpenMenu(Visual source)
+        {
             try
             {
                 for (var current = source; current is not null; current = current.GetVisualParent())
@@ -97,10 +126,6 @@ public static class LongPressContextMenu
             catch (Exception exception)
             {
                 AndroidBootstrap.RecordFatal("longpress:ContextMenu", exception);
-            }
-            finally
-            {
-                _source = null;
             }
         }
     }
