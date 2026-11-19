@@ -6,7 +6,7 @@
                 xmlns:tools="using:PCL.Views.Pages.Tools"
                 x:CompileBindings="False"
                 x:Class="PCL.Views.Pages.Tools.PageToolsGameLink">
-    <Grid RowDefinitions="Auto,*">
+    <Grid x:Name="PanMain" RowDefinitions="Auto,*">
         <StackPanel Grid.Row="0"
                     Margin="20,6,20,0"
                     HorizontalAlignment="Right"
@@ -509,6 +509,18 @@
                         <ui:MyTextBox Grid.Column="1"
                                       Text="{Binding DirectPeers, Mode=TwoWay}"
                                       Watermark="例如 tcp://game.udad.top:61123" />
+                    </Grid>
+                    <Grid ColumnDefinitions="120,*" Margin="0,0,0,8">
+                        <TextBlock VerticalAlignment="Center" Text="房主虚拟 IP" />
+                        <ui:MyTextBox Grid.Column="1"
+                                      Text="{Binding DirectHostIp, Mode=TwoWay}"
+                                      Watermark="10.126.126.1（无虚拟网卡时填，用于端口转发）" />
+                    </Grid>
+                    <Grid ColumnDefinitions="120,*" Margin="0,0,0,10">
+                        <TextBlock VerticalAlignment="Center" Text="本地端口" />
+                        <ui:MyTextBox Grid.Column="1"
+                                      Text="{Binding DirectLocalPort, Mode=TwoWay}"
+                                      Watermark="25565" />
                     </Grid>
                     <WrapPanel>
                         <ui:MyButton MinWidth="110"
