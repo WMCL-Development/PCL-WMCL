@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 生成 Linux 发行包：AppImage、deb、rpm。
+# 生成 Linux 发行包：AppImage、deb、rpm、Arch Linux（.pkg.tar.zst）。
 # 用法：scripts/package-linux.sh <linux-x64|linux-arm64> [configuration] [version] [output-dir]
 set -euo pipefail
 
@@ -205,6 +205,15 @@ for f in "$PKG_DIR"/*.rpm; do
   mv -f "$f" "$OUT/${ASSET_PREFIX}_${RPM_ARCH}.rpm"
 done
 rm -rf "$PKG_DIR"
+
+# ── Arch Linux ──────────────────────────────────────────────────────────────
+case "$RID" in
+  linux-x64) ARCH_PKG_ARCH=x86_64 ;;
+  linux-arm64) ARCH_PKG_ARCH=aarch64 ;;
+  *) fail "unsupported RID for Arch package: $RID" ;;
+esac
+bash "$ROOT/scripts/package-arch.sh" \
+  "$ARCH_PKG_ARCH" "$VERSION" "$PUBLISH" "$OUT" "$ASSET_PREFIX"
 
 echo "[linux-package] created:"
 ls -lh "$OUT/${ASSET_PREFIX}"*

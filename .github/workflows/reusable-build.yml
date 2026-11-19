@@ -99,6 +99,10 @@ jobs:
           curl -sSfL -o "$HOME/.local/bin/appimagetool" \
             "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage"
           chmod 0755 "$HOME/.local/bin/appimagetool"
+          if ! command -v zstd >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq zstd
+          fi
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Package Windows
@@ -138,4 +142,5 @@ jobs:
             dist/*.AppImage
             dist/*.deb
             dist/*.rpm
+            dist/*.pkg.tar.zst
           if-no-files-found: error

@@ -136,6 +136,7 @@ jobs:
             release/*.AppImage
             release/*.deb
             release/*.rpm
+            release/*.pkg.tar.zst
             release/*.apk
           verify: true
           verify-cert-identity: https://github.com/${{ github.repository }}/.github/workflows/release-publish.yml@refs/heads/dev

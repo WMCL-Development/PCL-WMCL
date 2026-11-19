@@ -16,7 +16,7 @@ public static class LinuxDesktopEntry
     {
         try
         {
-            if (Paths.PackageKind is "deb" or "rpm" or "appimage") return;
+            if (Paths.PackageKind is "deb" or "rpm" or "appimage" or "arch") return;
 
             var executable = Environment.ProcessPath;
             var iconPath = Path.Combine(
