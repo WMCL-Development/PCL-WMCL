@@ -87,7 +87,7 @@ public partial class PageInstanceServer : MyPageRight, IRefreshable
         card.CopyRequested += server =>
             _ = ViewModel.CopyAddressAsync(
                 server.ViewModel,
-                TopLevel.GetTopLevel(this)?.Clipboard);
+                PCL.UI.ClipboardHelper.Service);
         card.RefreshRequested += server =>
             _ = ViewModel.RefreshServerAndPersistAsync(server.ViewModel);
         card.EditRequested += server => _ = EditServerAsync(server.ViewModel);

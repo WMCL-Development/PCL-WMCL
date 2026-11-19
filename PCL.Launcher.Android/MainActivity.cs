@@ -1,6 +1,9 @@
 using Android.Content;
 using Android.App;
 using Android.Content.PM;
+using Android.Graphics;
+using Android.Views;
+using Android.Widget;
 using Android.OS;
 using Avalonia.Android;
 
@@ -8,8 +11,8 @@ namespace PCL.Android;
 
 [Activity(
     Label = "PCL CE",
-    Theme = "@style/Theme.AppCompat.DayNight.NoActionBar",
-    Icon = "@android:drawable/ic_menu_manage",
+    Theme = "@style/AppTheme",
+    Icon = "@mipmap/ic_launcher",
     MainLauncher = true,
     Exported = true,
     LaunchMode = LaunchMode.SingleTop,
@@ -17,9 +20,17 @@ namespace PCL.Android;
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity
 {
+    private static MainActivity? _current;
+    private View? _splashOverlay;
+
+    /// <summary>当前 Activity，供崩溃对话框等原生界面使用。</summary>
+    public static MainActivity? Current => _current;
+
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
+        _current = this;
+        ShowSplashOverlay();
         AndroidPermissions.Activity = this;
         AndroidFilePicker.Initialize(this);
         AndroidBootstrap.Breadcrumb("activity: onCreate");
@@ -84,10 +95,89 @@ public class MainActivity : AvaloniaMainActivity
         OAuthKeepAliveService.Stop(this);
     }
 
+    /// <summary>启动遮罩：Avalonia 首帧渲染前先显示品牌背景 + 图标 + 加载动画，避免冷启动白屏。</summary>
+    private void ShowSplashOverlay()
+    {
+        try
+        {
+            if (Window?.DecorView is not ViewGroup root)
+                return;
+
+            var density = Resources?.DisplayMetrics?.Density ?? 1f;
+
+            var overlay = new FrameLayout(this)
+            {
+                Clickable = false,
+                Focusable = false
+            };
+            overlay.SetBackgroundColor(Color.ParseColor("#FF1C8CE8"));
+
+            var content = new LinearLayout(this)
+            {
+                Orientation = Orientation.Vertical
+            };
+            content.SetGravity(GravityFlags.Center);
+
+            var logoSize = (int)(96 * density);
+            var logo = new ImageView(this);
+            logo.SetImageResource(Resource.Drawable.splash_logo);
+            logo.SetScaleType(ImageView.ScaleType.FitCenter);
+            content.AddView(logo, new LinearLayout.LayoutParams(logoSize, logoSize));
+
+            var progressSize = (int)(28 * density);
+            var progress = new ProgressBar(this)
+            {
+                Indeterminate = true,
+                IndeterminateTintList = global::Android.Content.Res.ColorStateList.ValueOf(Color.White)
+            };
+            var progressParams = new LinearLayout.LayoutParams(progressSize, progressSize)
+            {
+                TopMargin = (int)(18 * density)
+            };
+            content.AddView(progress, progressParams);
+
+            overlay.AddView(content, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MatchParent,
+                ViewGroup.LayoutParams.MatchParent));
+
+            root.AddView(overlay, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MatchParent,
+                ViewGroup.LayoutParams.MatchParent));
+            _splashOverlay = overlay;
+        }
+        catch (Exception ex)
+        {
+            PCL.Core.Logging.LogWrapper.Warn("Android", "显示启动遮罩失败：" + ex.Message);
+        }
+    }
+
+    /// <summary>UI 首帧可见后由 DesktopShell 调用，移除原生启动遮罩。</summary>
+    public static void HideSplash()
+    {
+        var activity = _current;
+        if (activity is null)
+            return;
+
+        activity.RunOnUiThread(() =>
+        {
+            try
+            {
+                if (activity._splashOverlay?.Parent is ViewGroup parent)
+                    parent.RemoveView(activity._splashOverlay);
+                activity._splashOverlay = null;
+            }
+            catch (Exception ex)
+            {
+                PCL.Core.Logging.LogWrapper.Warn("Android", "移除启动遮罩失败：" + ex.Message);
+            }
+        });
+    }
+
     protected override void OnDestroy()
     {
         base.OnDestroy();
         OAuthKeepAliveService.Stop(this);
         AndroidRuntimeSetup.Shutdown();
+        _current = null;
     }
 }

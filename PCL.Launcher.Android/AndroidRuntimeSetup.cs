@@ -24,6 +24,9 @@ public static class AndroidRuntimeSetup
 
         Step("platform-ui", AndroidComposition.Initialize);
         Step("bootstrap", AndroidBootstrap.Initialize);
+        // 日志服务在桌面由 IoC 生命周期启动；Android 没有完整的生命周期，这里手动初始化，
+        // 否则「查看日志」页面拿不到 Logger，日志也不会落盘到 Paths.Data/Log。
+        Step("logging", LogService.InitializeStandalone);
         Step("animation", AnimationRegistration.Register);
         Step("dialogs", () =>
         {
@@ -70,7 +73,11 @@ public static class AndroidRuntimeSetup
     }
 
     /// <summary>Activity 销毁时结束宿主循环。</summary>
-    public static void Shutdown() => Host?.Shutdown();
+    public static void Shutdown()
+    {
+        LogService.ShutdownStandalone();
+        Host?.Shutdown();
+    }
 
     private static void Step(string name, Action action)
     {

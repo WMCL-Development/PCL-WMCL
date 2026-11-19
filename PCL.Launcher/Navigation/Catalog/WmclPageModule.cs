@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PCL.Core.App;
 using PCL.Views.Pages.Launch;
 using PCL.Views.Pages.More;
 using PCL.Views.Pages.Setup;
@@ -16,7 +17,7 @@ public sealed class WmclPageModule : IPageModule
             PageIds.More,
             SubPageIds.MoreToolbox,
             "More.Left.Toolbox",
-            "lucide/gift",
+            "lucide/box",
             "tools",
             0,
             (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTest>(sp)),
@@ -31,19 +32,39 @@ public sealed class WmclPageModule : IPageModule
         Sub(
             PageIds.More,
             SubPageIds.MoreAbout,
-            "More.Left.About",
+            "Setup.Left.Item.About",
             "lucide/info",
             "info",
             2,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupAbout>(sp)),
+            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupAbout>(sp),
+            () => !Config.Preference.Hide.SetupAbout),
+        Sub(
+            PageIds.More,
+            SubPageIds.MoreUpdate,
+            "Setup.Left.Item.Update",
+            "lucide/refresh-cw",
+            "other",
+            3,
+            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupUpdate>(sp),
+            () => !Config.Preference.Hide.SetupUpdate),
         Sub(
             PageIds.More,
             SubPageIds.MoreFeedback,
-            "More.Left.Feedback",
-            "lucide/message-square",
-            "info",
-            3,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupFeedback>(sp))
+            "Setup.Left.Item.Feedback",
+            "lucide/message-circle",
+            "other",
+            4,
+            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupFeedback>(sp),
+            () => !Config.Preference.Hide.SetupFeedback),
+        Sub(
+            PageIds.More,
+            SubPageIds.MoreLog,
+            "Setup.Left.Item.Log",
+            "lucide/scroll-text",
+            "other",
+            5,
+            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupLog>(sp),
+            () => !Config.Preference.Hide.SetupLog)
     ];
 
     public IReadOnlyList<PageDescriptor> Pages { get; } =
@@ -57,7 +78,8 @@ public sealed class WmclPageModule : IPageModule
             SubPageIds.MoreToolbox,
             [
                 new PageGroupDescriptor("tools", "More.Left.Tools", 0),
-                new PageGroupDescriptor("info", "More.Left.Info", 1)
+                new PageGroupDescriptor("info", "More.Left.Info", 1),
+                new PageGroupDescriptor("other", "Setup.Left.Category.About", 2)
             ],
             MoreSubPages,
             (sp, descriptor) => ActivatorUtilities.CreateInstance<MorePageHost>(sp, descriptor)),

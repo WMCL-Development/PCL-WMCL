@@ -59,7 +59,6 @@ public partial class PageToolsGameLink : MyPageRight
     {
         InitializeComponent();
         PanScroll = PanContent;
-        SetPageContent(PanMain);
         DataContext = ViewModel;
 
         _load = this.FindControl<MyLoading>("Load")!;
@@ -85,7 +84,8 @@ public partial class PageToolsGameLink : MyPageRight
         _panTerracotta = this.FindControl<PageToolsTerracotta>("PanTerracotta")!;
         _panDirect = this.FindControl<ScrollViewer>("PanDirect")!;
         _btnModeSwitch.IsVisible = false;
-        ApplyConnectionMethod(Config.Link.ConnectionMethod);
+        _labMode.IsVisible = false;
+        ApplyConnectionMethod("lobby");
 
         Current = this;
         ViewModel.PlayerRows.CollectionChanged += (_, _) => RebuildPlayerList();
@@ -143,6 +143,7 @@ public partial class PageToolsGameLink : MyPageRight
             ViewModel.Reload();
         };
         Unloaded += (_, _) => ViewModel.Suspend();
+        PCL.Core.App.Localization.LocalizationService.LanguageChanged += OnLanguageChanged;
     }
 
     public static PageToolsGameLink? Current { get; private set; }
@@ -175,7 +176,7 @@ public partial class PageToolsGameLink : MyPageRight
         ViewModel.Reload();
     }
 
-    protected override void RefreshLocalization()
+    private void OnLanguageChanged()
     {
         ViewModel.RefreshLocalization();
         UpdateLoadState();
@@ -271,7 +272,6 @@ public partial class PageToolsGameLink : MyPageRight
                             Lang.Text("Common.Action.Copy"),
                             () => _ = _CopyTextAsync(ip)),
                         DialogButton.Create(Lang.Text("Tools.GameLink.CopyIp.Back"))),
-                    ForceWait = true
                 });
         }
         catch (Exception ex)
@@ -328,10 +328,9 @@ public partial class PageToolsGameLink : MyPageRight
     }
 
     /// <summary>在「联机大厅」与「Astral 联机」之间切换，两套逻辑互不影响。</summary>
-    public override void OnNavigatedTo(object? parameter)
+    public override void OnNavigatedTo(PCL.Navigation.PageParameter? parameter)
     {
-        // 页面会被缓存，从设置页改完连接方式再回来时重新应用一次。
-        ApplyConnectionMethod(Config.Link.ConnectionMethod);
+        ApplyConnectionMethod("lobby");
         base.OnNavigatedTo(parameter);
     }
 

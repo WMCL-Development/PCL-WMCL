@@ -1,10 +1,11 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ui:MyPageRight xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="using:PCL.UI.Controls"
              xmlns:loc="using:PCL.Core.UI"
              x:CompileBindings="False"
              x:Class="PCL.Views.Pages.Tools.PageToolsTerracotta">
-    <ui:MyScrollViewer HorizontalScrollBarVisibility="Disabled"
+    <ui:MyScrollViewer x:Name="PanBack"
+                       HorizontalScrollBarVisibility="Disabled"
                        VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="10">
             <ui:MyCard Margin="10" Title="{loc:Loc Tools.Terracotta.Join.Title}">
@@ -82,4 +83,4 @@
             </ui:MyCard>
         </StackPanel>
     </ui:MyScrollViewer>
-</UserControl>
+</ui:MyPageRight>

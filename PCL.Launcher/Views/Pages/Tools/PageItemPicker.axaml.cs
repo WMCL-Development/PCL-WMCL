@@ -33,6 +33,8 @@ public partial class PageItemPicker : MyPageRight
             var inventory = new McCreativeInventory
             {
                 Scale = 2,
+                Width = 390,
+                Height = 384,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
             };
             inventory.Items = items;

@@ -14,6 +14,7 @@ using PCL.Views.Pages.Log;
 using PCL.Views.Pages.Select;
 using PCL.Views.Pages.Setup;
 using PCL.Views.Pages.Speed;
+using PCL.Views.Pages.More;
 using PCL.Views.Pages.Tools;
 
 namespace PCL;
@@ -66,6 +67,7 @@ public static class LauncherServiceRegistration
         services.AddTransient<PageDownloadLeft>();
         services.AddTransient<PageSetupLeft>();
         services.AddTransient<PageToolsLeft>();
+        services.AddTransient<PageMoreLeft>();
         services.AddTransient<PageInstanceLeft>();
         services.AddTransient<PageInstanceSavesLeft>();
         services.AddTransient<PageSelectLeft>();

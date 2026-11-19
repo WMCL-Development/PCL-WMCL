@@ -53,6 +53,54 @@ public partial class PageSetupUIViewModel : ViewModelBase
 
     [ObservableProperty] private int _launcherOpacity = Config.Preference.Theme.WindowOpacity;
 
+    /// <summary>主题微调：色相（0–100，50 为不变）。</summary>
+    [ObservableProperty] private int _themeHueOffset = Config.Preference.Theme.ThemeHueOffset;
+
+    /// <summary>主题微调：明度。</summary>
+    [ObservableProperty] private int _themeLightOffset = Config.Preference.Theme.ThemeLightOffset;
+
+    /// <summary>主题微调：色度。</summary>
+    [ObservableProperty] private int _themeChromaOffset = Config.Preference.Theme.ThemeChromaOffset;
+
+    partial void OnThemeHueOffsetChanged(int value)
+    {
+        if (_reloading) return;
+        Config.Preference.Theme.ThemeHueOffset = Math.Clamp(value, 0, 100);
+        PCL.Core.UI.Theme.ThemeService.ApplyColorResources();
+    }
+
+    partial void OnThemeLightOffsetChanged(int value)
+    {
+        if (_reloading) return;
+        Config.Preference.Theme.ThemeLightOffset = Math.Clamp(value, 0, 100);
+        PCL.Core.UI.Theme.ThemeService.ApplyColorResources();
+    }
+
+    partial void OnThemeChromaOffsetChanged(int value)
+    {
+        if (_reloading) return;
+        Config.Preference.Theme.ThemeChromaOffset = Math.Clamp(value, 0, 100);
+        PCL.Core.UI.Theme.ThemeService.ApplyColorResources();
+    }
+
+    /// <summary>界面缩放百分比（80–150）。</summary>
+    [ObservableProperty] private int _uiScalePercent = Config.Preference.UiScalePercent;
+
+    /// <summary>滑块值：0 对应 80%，70 对应 150%。</summary>
+    public int UiScaleOffset
+    {
+        get => Math.Clamp(UiScalePercent - 80, 0, 70);
+        set => UiScalePercent = Math.Clamp(value, 0, 70) + 80;
+    }
+
+    partial void OnUiScalePercentChanged(int value)
+    {
+        if (_reloading) return;
+        Config.Preference.UiScalePercent = Math.Clamp(value, 80, 150);
+        OnPropertyChanged(nameof(UiScaleOffset));
+        PCL.UI.UiScaleNotifier.Notify();
+    }
+
     [ObservableProperty] private int _lightColorSelectedIndex = -1;
 
     [ObservableProperty] private string _logoText = string.Empty;
@@ -166,6 +214,10 @@ public partial class PageSetupUIViewModel : ViewModelBase
             var theme = Config.Preference.Theme;
             var colorMax = Math.Max(0, themeColorCount - 1);
             LauncherOpacity = theme.WindowOpacity;
+            ThemeHueOffset = theme.ThemeHueOffset;
+            ThemeLightOffset = theme.ThemeLightOffset;
+            ThemeChromaOffset = theme.ThemeChromaOffset;
+            UiScalePercent = Config.Preference.UiScalePercent;
             DarkModeSelectedIndex = Math.Clamp((int)theme.ColorMode, 0, 2);
             LightColorSelectedIndex = Math.Clamp((int)theme.LightColor, 0, colorMax);
             DarkColorSelectedIndex = Math.Clamp((int)theme.DarkColor, 0, colorMax);

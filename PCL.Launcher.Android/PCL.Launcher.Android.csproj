@@ -40,6 +40,10 @@
                               Condition="Exists('NativeLibs/arm64-v8a/libeasytier-cli.so')" />
         <AndroidNativeLibrary Include="NativeLibs/arm64-v8a/libeasytier_ffi.so"
                               Condition="Exists('NativeLibs/arm64-v8a/libeasytier_ffi.so')" />
+        <AndroidNativeLibrary Include="NativeLibs/x86_64/libeasytier-cli.so"
+                              Condition="Exists('NativeLibs/x86_64/libeasytier-cli.so')" />
+        <AndroidNativeLibrary Include="NativeLibs/x86_64/libeasytier_ffi.so"
+                              Condition="Exists('NativeLibs/x86_64/libeasytier_ffi.so')" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\PCL.Core\PCL.Core.csproj" />

@@ -456,7 +456,7 @@ public partial class PageToolsTestViewModel : ViewModelBase
         // 崩溃测试对所有构建可见（手动触发崩溃用于验证崩溃报告）。
         CrashButtonVisible = true;
         DownloadFolder = string.IsNullOrWhiteSpace(States.Tool.DownloadFolder)
-            ? Path.Combine(Paths.Data, "MyDownload")
+            ? GetDefaultDownloadFolder()
             : States.Tool.DownloadFolder;
         try
         {
@@ -464,7 +464,7 @@ public partial class PageToolsTestViewModel : ViewModelBase
         }
         catch
         {
-            DownloadFolder = Path.Combine(Paths.Data, "MyDownload");
+            DownloadFolder = GetDefaultDownloadFolder();
         }
 
         DownloadOpenEnabled = !string.IsNullOrWhiteSpace(DownloadFolder);
@@ -506,6 +506,33 @@ public partial class PageToolsTestViewModel : ViewModelBase
     [ObservableProperty] public partial bool CrashButtonVisible { get; set; }
 
     [ObservableProperty] public partial bool DownloadOpenEnabled { get; set; }
+
+    /// <summary>
+    ///     默认下载目录：Android 用公共 Download/WMCL，这样系统文件管理器可以直接打开；
+    ///     私有目录无法被其他应用访问，不设为默认。
+    /// </summary>
+    private static string GetDefaultDownloadFolder()
+    {
+        if (OperatingSystem.IsAndroid())
+        {
+            try
+            {
+                const string publicDownload = "/storage/emulated/0/Download";
+                if (Directory.Exists(publicDownload))
+                {
+                    var target = Path.Combine(publicDownload, "WMCL");
+                    Directory.CreateDirectory(target);
+                    return target;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogWrapper.Warn("Tools", "创建公共下载目录失败：" + ex.Message);
+            }
+        }
+
+        return Path.Combine(Paths.Data, "MyDownload");
+    }
 
     [ObservableProperty] public partial string DownloadFolder { get; set; } = string.Empty;
 
@@ -707,7 +734,24 @@ public partial class PageToolsTestViewModel : ViewModelBase
     [RelayCommand]
     public static void Crash()
     {
-        throw new InvalidOperationException(Lang.Text("Tools.Test.Crash.ManualCrash"));
+        Exception exception;
+        try
+        {
+            throw new InvalidOperationException(Lang.Text("Tools.Test.Crash.ManualCrash"));
+        }
+        catch (Exception captured)
+        {
+            exception = captured;
+        }
+
+        // Android 没有桌面端那种独立崩溃进程，由平台层接管为崩溃对话框。
+        if (CrashHooks.ReportCrash is { } reportCrash)
+        {
+            reportCrash(exception);
+            return;
+        }
+
+        System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
     }
 
     [RelayCommand]

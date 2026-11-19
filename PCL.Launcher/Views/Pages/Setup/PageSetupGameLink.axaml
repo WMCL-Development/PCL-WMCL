@@ -10,6 +10,7 @@
                        HorizontalScrollBarVisibility="Disabled"
                        VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="25,10">
+
             <ui:MyCard Margin="0,15"
                        Title="EasyTier">
                 <StackPanel Margin="25,40,25,15"

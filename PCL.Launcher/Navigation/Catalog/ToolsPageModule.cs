@@ -5,6 +5,7 @@ using static PCL.Navigation.PageDescriptorFactory;
 
 namespace PCL.Navigation.Catalog;
 
+/// <summary>联机页：左侧子页菜单切换 大厅 / Astral / 陶瓦 / EasyTier 直连。</summary>
 public sealed class ToolsPageModule : IPageModule
 {
     private static SubPageDescriptor[] ToolsSubPages { get; } =
@@ -37,13 +38,12 @@ public sealed class ToolsPageModule : IPageModule
             (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTerracotta>(sp)),
         Sub(
             PageIds.Tools,
-            SubPageIds.ToolsTest,
-            "Tools.Left.Utilities.Title",
-            "lucide/tool-case",
-            "utilities",
+            SubPageIds.ToolsDirect,
+            "Tools.GameLink.Direct.Title",
+            "lucide/network",
+            "multiplayer",
             3,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTest>(sp),
-            () => !Config.Preference.Hide.ToolsTest)
+            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsDirect>(sp))
     ];
 
     public IReadOnlyList<PageDescriptor> Pages { get; } =
@@ -56,8 +56,7 @@ public sealed class ToolsPageModule : IPageModule
             150d,
             SubPageIds.ToolsGameLink,
             [
-                new PageGroupDescriptor("multiplayer", "Tools.Left.Multiplayer", 0),
-                new PageGroupDescriptor("utilities", "Tools.Left.Utilities", 1)
+                new PageGroupDescriptor("multiplayer", "Tools.Left.Multiplayer", 0)
             ],
             ToolsSubPages,
             (sp, descriptor) => ActivatorUtilities.CreateInstance<ToolsPageHost>(sp, descriptor))

@@ -66,6 +66,7 @@ public static class SubPageIds
     public static readonly SubPageId ToolsGameLink = new(PageIds.Tools, "ToolsGameLink");
     public static readonly SubPageId ToolsAstral = new(PageIds.Tools, "ToolsAstral");
     public static readonly SubPageId ToolsTerracotta = new(PageIds.Tools, "ToolsTerracotta");
+    public static readonly SubPageId ToolsDirect = new(PageIds.Tools, "ToolsDirect");
     public static readonly SubPageId ToolsTest = new(PageIds.Tools, "ToolsTest");
 
     // 更多页
@@ -73,6 +74,8 @@ public static class SubPageIds
     public static readonly SubPageId MoreHelp = new(PageIds.More, "MoreHelp");
     public static readonly SubPageId MoreAbout = new(PageIds.More, "MoreAbout");
     public static readonly SubPageId MoreFeedback = new(PageIds.More, "MoreFeedback");
+    public static readonly SubPageId MoreUpdate = new(PageIds.More, "MoreUpdate");
+    public static readonly SubPageId MoreLog = new(PageIds.More, "MoreLog");
 
     public static readonly SubPageId VersionOverall = new(PageIds.InstanceSetup, "VersionOverall");
     public static readonly SubPageId VersionSetup = new(PageIds.InstanceSetup, "VersionSetup");

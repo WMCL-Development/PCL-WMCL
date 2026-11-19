@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using PCL.UI.Controls;
 using Avalonia.Input.Platform;
 using PCL.Core.App.Localization;
 using PCL.Core.UI.Hints;
@@ -10,11 +11,12 @@ namespace PCL.Views.Pages.Tools;
 ///     Astral 联机面板：嵌在联机大厅页里，用顶部按钮切换显示。
 ///     联机逻辑在 PCL.Core，这里只做绑定与剪贴板。
 /// </summary>
-public partial class PageToolsAstral : UserControl
+public partial class PageToolsAstral : MyPageRight
 {
     public PageToolsAstral()
     {
         InitializeComponent();
+        PanScroll = PanBack;
         DataContext = ViewModel;
 
         BtnCopyShort.Click += (_, _) => _ = CopyAsync(ViewModel.ShareShortLink, "短链");
@@ -32,7 +34,7 @@ public partial class PageToolsAstral : UserControl
             return;
         }
 
-        if (TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard)
+        if (PCL.UI.ClipboardHelper.Service is not { } clipboard)
         {
             HintService.Show(Hints.Warning("没有可用的剪贴板。"));
             return;

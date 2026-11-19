@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using PCL.UI.Controls;
 using PCL.Core.App.Localization;
 using PCL.Core.Platform;
 using PCL.Core.Logging;
@@ -8,11 +9,12 @@ using PCL.ViewModels.Pages;
 namespace PCL.Views.Pages.Tools;
 
 /// <summary>陶瓦联机面板：只认陶瓦编号，加入时不校验账号。</summary>
-public partial class PageToolsTerracotta : UserControl
+public partial class PageToolsTerracotta : MyPageRight
 {
     public PageToolsTerracotta()
     {
         InitializeComponent();
+        PanScroll = PanBack;
         DataContext = new PageToolsTerracottaViewModel();
         PanHostCode.PointerReleased += (_, _) => CopyHostCodeAsync();
     }

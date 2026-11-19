@@ -16,7 +16,8 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="1"
                     Grid.Column="1"
-                    VerticalAlignment="Top">
+                    VerticalAlignment="Top"
+                    Background="Transparent">
             <launch:MySkin x:Name="Skin"
                            Margin="0,0,0,10"
                            HorizontalAlignment="Center"

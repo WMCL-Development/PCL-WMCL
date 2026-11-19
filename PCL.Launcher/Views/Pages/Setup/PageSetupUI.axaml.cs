@@ -49,6 +49,8 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
 
         SliderLauncherOpacity.getHintText =
             new Func<object, object>(PageSetupUIViewModel.FormatLauncherOpacityHint);
+        SliderUiScale.getHintText =
+            new Func<object, object>(value => $"{Convert.ToInt32(value) + 80}%");
         SliderBackgroundOpacity.getHintText =
             new Func<object, object>(PageSetupUIViewModel.FormatBackgroundOpacityHint);
         SliderBackgroundBlur.getHintText =
@@ -136,7 +138,6 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         ComboUiMotdFont.SelectionChanged += (_, _) =>
             WriteIfReady(() => Config.Preference.MotdFont = ComboUiMotdFont.SelectedFontTag);
 
-        BtnLauncherDonate.Click += (_, _) => Basics.OpenPath("https://afdian.com/a/LTCat");
         BtnLogoChange.Click += (_, _) => OnChangeLogo();
         BtnLogoDelete.Click += (_, _) => OnDeleteLogo();
         BtnBackgroundOpen.Click += (_, _) => OpenBackgroundFolder();

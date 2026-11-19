@@ -1767,7 +1767,6 @@ public partial class PageToolsGameLinkViewModel : ViewModelBase
                         Title = Lang.Text("Tools.GameLink.Exit.DisbandedTitle"),
                         Content = Lang.Text("Tools.GameLink.Exit.Disbanded"),
                         Buttons = DialogButtons.Ok,
-                        ForceWait = true
                     })
                 .ConfigureAwait(true);
             await LobbyService.LeaveLobbyAsync().ConfigureAwait(true);

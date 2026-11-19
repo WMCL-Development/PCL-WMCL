@@ -56,15 +56,24 @@ public static class AndroidBootstrap
         if (_done) return;
         _done = true;
 
-        // 最先挂上崩溃钩子，保证后续任何异常都能落盘。
+        // 最先挂上崩溃钩子，保证后续任何异常都能落盘并弹出崩溃界面。
+        CrashHooks.ReportCrash = AndroidCrashDialog.Show;
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
             WriteCrash("UnhandledException", e.ExceptionObject as Exception);
+            if (e.ExceptionObject is Exception exception)
+                AndroidCrashDialog.Show(exception);
+        };
         TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
             WriteCrash("UnobservedTaskException", e.Exception);
+            AndroidCrashDialog.Show(e.Exception);
+        };
         AndroidEnvironment.UnhandledExceptionRaiser += (_, e) =>
         {
             WriteCrash("AndroidUnhandled", e.Exception);
             e.Handled = true;
+            AndroidCrashDialog.Show(e.Exception);
         };
 
         // Android 精简运行时缺少 GB18030 等代码页，需要显式注册。

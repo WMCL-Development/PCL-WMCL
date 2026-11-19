@@ -79,43 +79,6 @@ public sealed class SetupPageModule : IPageModule
             (sp, _) => ActivatorUtilities.CreateInstance<PageSetupLauncherMisc>(sp),
             () => !Config.Preference.Hide.SetupLauncherMisc,
             reset: "Setup.Left.Reset.Misc.Message"),
-        Sub(
-            PageIds.Setup,
-            SubPageIds.SetupAbout,
-            "Setup.Left.Item.About",
-            "lucide/info",
-            "about",
-            7,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupAbout>(sp),
-            () => !Config.Preference.Hide.SetupAbout),
-        Sub(
-            PageIds.Setup,
-            SubPageIds.SetupUpdate,
-            "Setup.Left.Item.Update",
-            "lucide/refresh-cw",
-            "about",
-            8,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupUpdate>(sp),
-            () => !Config.Preference.Hide.SetupUpdate),
-        Sub(
-            PageIds.Setup,
-            SubPageIds.SetupFeedback,
-            "Setup.Left.Item.Feedback",
-            "lucide/message-circle",
-            "about",
-            9,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupFeedback>(sp),
-            () => !Config.Preference.Hide.SetupFeedback,
-            true),
-        Sub(
-            PageIds.Setup,
-            SubPageIds.SetupLog,
-            "Setup.Left.Item.Log",
-            "lucide/scroll-text",
-            "about",
-            10,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupLog>(sp),
-            () => !Config.Preference.Hide.SetupLog)
     ];
 
     public IReadOnlyList<PageDescriptor> Pages { get; } =
@@ -130,8 +93,7 @@ public sealed class SetupPageModule : IPageModule
             [
                 new PageGroupDescriptor("game", "Setup.Left.Category.Game", 0),
                 new PageGroupDescriptor("tools", "Setup.Left.Category.Tools", 1),
-                new PageGroupDescriptor("launcher", "Setup.Left.Category.Launcher", 2),
-                new PageGroupDescriptor("about", "Setup.Left.Category.About", 3)
+                new PageGroupDescriptor("launcher", "Setup.Left.Category.Launcher", 2)
             ],
             SetupSubPages,
             (sp, descriptor) => ActivatorUtilities.CreateInstance<PageSetupHost>(sp, descriptor))
@@ -144,7 +106,7 @@ public sealed class SetupPageModule : IPageModule
             PageIds.Setup,
             "Main.Tab.Settings",
             "lucide/settings",
-            2,
+            3,
             1.1d)
     ];
 }

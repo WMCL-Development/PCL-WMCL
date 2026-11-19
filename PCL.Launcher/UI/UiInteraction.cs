@@ -233,11 +233,8 @@ internal static class UiInteraction
     {
         try
         {
-            Process.Start(
-                new ProcessStartInfo(url)
-                {
-                    UseShellExecute = true
-                });
+            // 统一走平台 Shell：Android 用 Intent 拉起系统浏览器，桌面用系统默认浏览器。
+            PCL.Core.App.Basics.OpenUrl(url);
         }
         catch (Exception ex)
         {
@@ -255,6 +252,9 @@ internal static class UiInteraction
     /// <summary>更新完成后重启：交给生命周期在服务停止（含单实例锁释放）后以相同参数重新拉起当前可执行文件。</summary>
     internal static void Restart()
     {
+        // Android 单视图应用没有重启管线的语义，直接返回，避免清理工具误触发。
+        if (OperatingSystem.IsAndroid()) return;
+
         try
         {
             Lifecycle.RequestRestartOnExit(_GetRestartArguments());

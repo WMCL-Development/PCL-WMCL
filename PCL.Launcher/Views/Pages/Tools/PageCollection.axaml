@@ -17,7 +17,8 @@
                         Spacing="10">
                 <ui:MyLoading Width="42"
                               Height="42"
-                              HorizontalAlignment="Center" />
+                              HorizontalAlignment="Center"
+                              UseDefaultText="False" />
                 <TextBlock x:Name="LabLoading"
                            FontSize="13"
                            HorizontalAlignment="Center"

@@ -400,7 +400,7 @@ public partial class PageInstanceServerViewModel : ViewModelBase
         }
     }
 
-    public async Task CopyAddressAsync(ServerCardViewModel card, IClipboard? clipboard)
+    public async Task CopyAddressAsync(ServerCardViewModel card, PCL.Core.Platform.IClipboardService? clipboard)
     {
         try
         {

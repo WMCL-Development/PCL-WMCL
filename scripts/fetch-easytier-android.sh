@@ -14,9 +14,10 @@
 set -euo pipefail
 
 REPO="${PCL_EASYTIER_REPO:-wenxiangL521/EasyTier}"
-TAG="${PCL_EASYTIER_TAG:-wmcl-android-v2.6.4}"
+TAG="${PCL_EASYTIER_TAG:-wmcl-easytier-v2.6.4}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DEST="$ROOT/PCL.Launcher.Android/NativeLibs/arm64-v8a"
+DEST_ARM64="$ROOT/PCL.Launcher.Android/NativeLibs/arm64-v8a"
+DEST_X86_64="$ROOT/PCL.Launcher.Android/NativeLibs/x86_64"
 GITHUB_BASE="https://github.com/$REPO/releases/download/$TAG"
 
 # 100 KB/s 阈值 + 5 秒测速窗口；curl 的 --speed-limit/--speed-time 正好对应。
@@ -35,7 +36,7 @@ if [ -n "${PCL_EASYTIER_MIRRORS:-}" ]; then
     MIRRORS=($PCL_EASYTIER_MIRRORS)
 fi
 
-mkdir -p "$DEST"
+mkdir -p "$DEST_ARM64" "$DEST_X86_64"
 
 fetch_with_curl() {
     local url="$1" out="$2"
@@ -103,11 +104,44 @@ fetch_asset() {
 }
 
 echo "==> 下载 EasyTier Android 产物：$REPO@$TAG"
-fetch_asset "easytier-cli" "$DEST/libeasytier-cli.so"
-fetch_asset "libeasytier_ffi.so" "$DEST/libeasytier_ffi.so"
-chmod 755 "$DEST/libeasytier-cli.so" "$DEST/libeasytier_ffi.so"
-rm -f "$DEST/libeasytier-core.so"
+
+fetch_zip() {
+    local name="$1" out="$2"
+    local -a candidates=("$GITHUB_BASE/$name")
+    for mirror in "${MIRRORS[@]}"; do
+        candidates+=("$mirror/$GITHUB_BASE/$name")
+    done
+    local url
+    for url in "${candidates[@]}"; do
+        echo "==> 尝试下载：$url"
+        if command -v curl >/dev/null 2>&1; then
+            if fetch_with_curl "$url" "$out"; then echo "    OK：$url"; return 0; fi
+        else
+            if fetch_with_python "$url" "$out"; then echo "    OK：$url"; return 0; fi
+        fi
+        echo "    失败或速度低于 100 KB/s，换下一个源"
+        rm -f "$out"
+    done
+    echo "所有下载源均失败：$name" >&2
+    return 1
+}
+
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+fetch_zip "easytier-android-arm64-v2.6.4.zip" "$TMP/arm64.zip"
+fetch_zip "easytier-android-x86_64-v2.6.4.zip" "$TMP/x86_64.zip"
+
+unzip -q "$TMP/arm64.zip" -d "$TMP/arm64"
+unzip -q "$TMP/x86_64.zip" -d "$TMP/x86_64"
+
+cp -f "$TMP/arm64/easytier-android-arm64/easytier-cli" "$DEST_ARM64/libeasytier-cli.so"
+cp -f "$TMP/arm64/easytier-android-arm64/libeasytier_ffi.so" "$DEST_ARM64/libeasytier_ffi.so"
+cp -f "$TMP/x86_64/easytier-android-x86_64/easytier-cli" "$DEST_X86_64/libeasytier-cli.so"
+cp -f "$TMP/x86_64/easytier-android-x86_64/libeasytier_ffi.so" "$DEST_X86_64/libeasytier_ffi.so"
+
+chmod 755 "$DEST_ARM64"/*.so "$DEST_X86_64"/*.so
 
 echo "==> 已就绪："
-ls -la "$DEST"
-md5sum "$DEST/libeasytier-cli.so" "$DEST/libeasytier_ffi.so"
+ls -la "$DEST_ARM64" "$DEST_X86_64"
+md5sum "$DEST_ARM64"/*.so "$DEST_X86_64"/*.so

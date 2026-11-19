@@ -30,6 +30,9 @@ public class LogService : ILifecycleLogService
 
     private static bool _wrapperRegistered;
 
+    /// <summary>独立模式（Android）下 LogWrapper 只负责落盘，不触发提示/弹窗等界面动作。</summary>
+    private static bool _standalone;
+
     private static LogLevel? _explicitMinLevel;
 
     private LogService()
@@ -75,6 +78,54 @@ public class LogService : ILifecycleLogService
         LogWrapper.OnLog += _OnWrapperLog;
         _wrapperRegistered = true;
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     非桌面生命周期环境（如 Android）手动初始化日志：
+    ///     不依赖 <see cref="LifecycleContext" />，只创建 Logger 并桥接 <see cref="LogWrapper" />。
+    /// </summary>
+    public static void InitializeStandalone()
+    {
+        if (_logger is not null)
+            return;
+
+        var baseConfig = new LoggerConfiguration(Path.Combine(Paths.Data, "Log"));
+        var initialLevel = _GetInitialMinLevel(baseConfig.MinLogLevel);
+        if (_explicitMinLevel is null && ConfigService.IsInitialized && Config.Debug.Enabled)
+            initialLevel = LogLevel.Trace;
+
+        _logger = new Logger(baseConfig with
+        {
+            MinLogLevel = initialLevel,
+            ConsoleOutput = false
+        });
+
+        _standalone = true;
+        if (_wrapperRegistered)
+            return;
+        LogWrapper.OnLog += _OnWrapperLog;
+        _wrapperRegistered = true;
+    }
+
+    /// <summary>非桌面生命周期环境的日志收尾：解绑并落盘。</summary>
+    public static void ShutdownStandalone()
+    {
+        if (_wrapperRegistered)
+        {
+            LogWrapper.OnLog -= _OnWrapperLog;
+            _wrapperRegistered = false;
+        }
+
+        try
+        {
+            _logger?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        }
+        catch (Exception)
+        {
+            // 收尾阶段日志失败不应阻止退出
+        }
+
+        _logger = null;
     }
 
     /// <summary>
@@ -246,18 +297,25 @@ public class LogService : ILifecycleLogService
         string? module,
         Exception? ex)
     {
-        _LogAction(
-            new LogEntry
-            {
-                Level = level,
-                Message = msg,
-                Time = DateTime.Now,
-                SourceName = module,
-                ThreadName = Thread.CurrentThread.Name,
-                ThreadId = Environment.CurrentManagedThreadId,
-                TaskId = Task.CurrentId ?? 0,
-                Exception = ex
-            },
-            level.DefaultActionLevel());
+        var entry = new LogEntry
+        {
+            Level = level,
+            Message = msg,
+            Time = DateTime.Now,
+            SourceName = module,
+            ThreadName = Thread.CurrentThread.Name,
+            ThreadId = Environment.CurrentManagedThreadId,
+            TaskId = Task.CurrentId ?? 0,
+            Exception = ex
+        };
+
+        // Android 没有桌面端的提示/弹窗编排，只记录到文件，避免网络等库的警告刷屏红色提示。
+        if (_standalone)
+        {
+            _logger?.Enqueue(entry);
+            return;
+        }
+
+        _LogAction(entry, level.DefaultActionLevel());
     }
 }

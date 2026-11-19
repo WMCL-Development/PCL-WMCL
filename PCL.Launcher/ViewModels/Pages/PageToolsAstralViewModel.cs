@@ -9,6 +9,8 @@ using CommunityToolkit.Mvvm.Input;
 using PCL.Core.Link.Astral;
 using PCL.Core.Link.EasyTier;
 using PCL.Core.Link.Lobby;
+using PCL.Core.UI.Hints;
+using PCL.Core.App.Localization;
 using PCL.Core.Logging;
 using PCL.Core.ViewModel;
 
@@ -33,6 +35,62 @@ public partial class PageToolsAstralViewModel : ViewModelBase
         Status = Rooms.Count == 0
             ? "还没有加入过房间，可以粘贴邀请或直接开房。"
             : "选择一个房间加入，或粘贴新的邀请。";
+    }
+
+    /// <summary>Astral 用户名（留空用系统用户名）。</summary>
+    [ObservableProperty] private string _astralUsername = PCL.Core.App.Config.Link.AstralUsername;
+
+    /// <summary>Astral 虚拟 IP（留空自动分配）。</summary>
+    [ObservableProperty] private string _astralVirtualIp = PCL.Core.App.Config.Link.AstralVirtualIp;
+
+    /// <summary>Astral 自定义中继节点。</summary>
+    public ObservableCollection<PCL.Core.Link.Astral.AstralRelay> AstralRelays { get; } = [];
+
+    [ObservableProperty] private PCL.Core.Link.Astral.AstralRelay? _selectedAstralRelay;
+
+    [ObservableProperty] private string _newAstralRelayUri = "";
+
+    [ObservableProperty] private string _newAstralRelayName = "";
+
+    public bool CanRemoveRelay => SelectedAstralRelay is not null;
+
+    public bool HasAstralRelays => AstralRelays.Count > 0;
+
+    partial void OnAstralUsernameChanged(string value) => PCL.Core.App.Config.Link.AstralUsername = value ?? "";
+
+    partial void OnAstralVirtualIpChanged(string value) => PCL.Core.App.Config.Link.AstralVirtualIp = value ?? "";
+
+    [RelayCommand]
+    private void AddAstralRelay()
+    {
+        var uri = NewAstralRelayUri.Trim();
+        if (!PCL.Core.Link.Astral.AstralRelay.IsValidUri(uri))
+        {
+            HintService.Show(Hints.Warning(Lang.Text("Setup.GameLink.Astral.Relay.Invalid")));
+            return;
+        }
+
+        if (AstralRelays.Any(item => string.Equals(item.Uri, uri, StringComparison.OrdinalIgnoreCase)))
+        {
+            HintService.Show(Hints.Warning(Lang.Text("Setup.GameLink.Astral.Relay.Exists")));
+            return;
+        }
+
+        AstralRelays.Add(new PCL.Core.Link.Astral.AstralRelay(uri, NewAstralRelayName.Trim()));
+        PCL.Core.Link.Astral.AstralProfileStore.SaveRelays([.. AstralRelays]);
+        NewAstralRelayUri = "";
+        NewAstralRelayName = "";
+        OnPropertyChanged(nameof(HasAstralRelays));
+    }
+
+    [RelayCommand]
+    private void RemoveAstralRelay()
+    {
+        if (SelectedAstralRelay is not { } relay) return;
+        AstralRelays.Remove(relay);
+        PCL.Core.Link.Astral.AstralProfileStore.SaveRelays([.. AstralRelays]);
+        SelectedAstralRelay = null;
+        OnPropertyChanged(nameof(HasAstralRelays));
     }
 
     /// <summary>房间列表（持久化，最多 20 条）。</summary>
@@ -381,6 +439,11 @@ public partial class PageToolsAstralViewModel : ViewModelBase
     }
 
     /// <summary>6 位短码；短链不可用但短码存在时也展示。</summary>
+    /// <summary>Astral 联机的 EasyTier 实际配置（实例名、虚拟 IP、网络标识、节点等）。</summary>
+    public string Diagnostics => PCL.Core.Link.EasyTier.EasyTierDiagnostics.Text;
+
+    public bool HasDiagnostics => !string.IsNullOrWhiteSpace(Diagnostics);
+
     [ObservableProperty] private string _shareShortCode = "";
 
     private void ApplyJoined(string name, string network, string? shortCode, int port)

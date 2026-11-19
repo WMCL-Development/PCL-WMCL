@@ -243,7 +243,7 @@ public partial class PageInstanceSavesInfo : MyPageRight, IRefreshable
             return;
         try
         {
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            var clipboard = PCL.UI.ClipboardHelper.Service;
             if (clipboard is null)
                 return;
             await clipboard.SetTextAsync(text);

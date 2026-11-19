@@ -24,16 +24,19 @@ public static class EasyTierInstaller
     /// <summary>
     ///     按优先级返回依赖包下载地址。
     /// </summary>
+    /// <summary>WMCL 的 EasyTier 发布标签前缀，与 wmcl 分支的构建工作流保持一致。</summary>
+    private const string ReleaseTagPrefix = "wmcl-easytier-v";
+
     public static IReadOnlyList<string> GetDownloadUrls(string version, EasyTierPackage package)
     {
         var archiveName = package.GetArchiveName(version);
-        var githubUrl = $"https://github.com/EasyTier/EasyTier/releases/download/v{version}/{archiveName}";
+        // 只从 WMCL 自己的 EasyTier fork release 下载，不再回退官方/PCL CE 的静态源。
+        var githubUrl =
+            $"https://github.com/wenxiangL521/EasyTier/releases/download/{ReleaseTagPrefix}{version}/{archiveName}";
         return
         [
-            $"https://staticassets.naids.com/resources/pclce/static/easytier/{archiveName}",
-            $"https://s3.pysio.online/pcl2-ce/static/easytier/{archiveName}",
             githubUrl,
-            // GitHub 直连不通或速度过低时，依次换这些镜像（前缀代理）。
+            // GitHub 直连不通或速度低于阈值时，依次换这些前缀代理镜像。
             $"https://ghfast.top/{githubUrl}",
             $"https://gh-proxy.com/{githubUrl}",
             $"https://ghproxy.net/{githubUrl}"
