@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.IO;
+using System.Net;
 using PCL.Core.App.Localization;
 using PCL.Core.IO.Net.Http;
 
@@ -27,7 +28,7 @@ public static partial class WebServer
             Register(HttpMethod.Get, "/complete", HandleComplete);
         }
 
-        private Task<HttpRouteResponse> HandleCallback(HttpListenerRequest request)
+        private Task<HttpRouteResponse> HandleCallback(HttpServerRequest request)
         {
             if (!request.IsLocal)
                 return HttpRouteResponse.Forbidden.AsTask();
@@ -80,7 +81,7 @@ public static partial class WebServer
             return redirect;
         }
 
-        private Task<HttpRouteResponse> HandleStatus(HttpListenerRequest request)
+        private Task<HttpRouteResponse> HandleStatus(HttpServerRequest request)
         {
             if (_callbackParameters is null)
                 return HttpRouteResponse.NotFound.AsTask();
@@ -113,15 +114,23 @@ public static partial class WebServer
                     ex);
             }
 
+            // 页面脚本读取的是 status.success / username / message / stacktrace，
+            // 这里显式用 camelCase 输出，避免默认 PascalCase 导致页面显示 undefined。
+            var status = _status
+                         ?? OAuthCompleteStatus.Failed(
+                             Lang.Text("Launch.Account.Auth.OAuth.CallbackHandleFailed"));
             return HttpRouteResponse
-                .Json(
-                    _status
-                    ?? OAuthCompleteStatus.Failed(
-                        Lang.Text("Launch.Account.Auth.OAuth.CallbackHandleFailed")))
+                .Json(new
+                {
+                    success = status.Success,
+                    username = status.Username,
+                    message = status.Message,
+                    stacktrace = status.Stacktrace
+                })
                 .AsTask();
         }
 
-        private Task<HttpRouteResponse> HandleBackground(HttpListenerRequest request)
+        private Task<HttpRouteResponse> HandleBackground(HttpServerRequest request)
         {
             if (string.IsNullOrWhiteSpace(picAddress))
                 return Task.FromResult(HttpRouteResponse.NotFound);
@@ -137,23 +146,20 @@ public static partial class WebServer
                 .AsTask();
         }
 
-        private static Task<HttpRouteResponse> HandleIcon(HttpListenerRequest request)
+        private static Task<HttpRouteResponse> HandleIcon(HttpServerRequest request)
         {
-            return HttpRouteResponse
-                .Input(
-                    LauncherCommon.GetResourceStream("Images/icon.ico")
-                    ?? throw new FileNotFoundException("无法找到内置图标资源"))
-                .AsTask();
+            var stream = LauncherCommon.GetResourceStream("Images/icon.ico");
+            return stream is null
+                ? HttpRouteResponse.NotFound.AsTask()
+                : HttpRouteResponse.Input(stream, "image/x-icon").AsTask();
         }
 
-        private static Task<HttpRouteResponse> HandleComplete(HttpListenerRequest request)
+        private static Task<HttpRouteResponse> HandleComplete(HttpServerRequest request)
         {
-            return HttpRouteResponse
-                .Input(
-                    LauncherCommon.GetResourceStream("Resources/oauth-complete.html")
-                    ?? throw new FileNotFoundException("无法找到内置回调页面资源"),
-                    "text/html")
-                .AsTask();
+            // 优先用程序集资源，取不到时回退到内联页面（Android 上资源读取可能失败）
+            var stream = LauncherCommon.GetResourceStream("Resources/oauth-complete.html")
+                         ?? new MemoryStream(System.Text.Encoding.UTF8.GetBytes(OAuthCompletePage.Html));
+            return HttpRouteResponse.Input(stream, "text/html").AsTask();
         }
     }
 }

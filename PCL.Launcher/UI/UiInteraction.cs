@@ -125,11 +125,10 @@ internal static class UiInteraction
     {
         try
         {
-            Process.Start(
-                new ProcessStartInfo(url)
-                {
-                    UseShellExecute = true
-                });
+            // 走平台层：桌面端用默认浏览器，Android 用 Intent 交给系统浏览器。
+            // 直接 Process.Start 在 Android 上会抛 PlatformNotSupportedException，
+            // 导致微软登录与联机大厅登录都打不开浏览器。
+            Basics.OpenUrl(url);
         }
         catch (Exception ex)
         {

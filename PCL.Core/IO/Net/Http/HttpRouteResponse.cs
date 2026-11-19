@@ -81,21 +81,6 @@ public class HttpRouteResponse
     /// </summary>
     public HttpStatusCode? StatusCode;
 
-    /// <summary>
-    ///     向标准 <see cref="HttpListener" /> 的响应对象写入数据。
-    /// </summary>
-    /// <param name="target">目标对象</param>
-    public void Pour(HttpListenerResponse target)
-    {
-        target.StatusCode = (int)(StatusCode ?? HttpStatusCode.OK);
-        if (ContentType is { } contentType) target.ContentType = contentType;
-        if (ContentEncoding is { } contentEncoding) target.ContentEncoding = contentEncoding;
-        if (RedirectLocation is { } redirectLocation) target.RedirectLocation = redirectLocation;
-        if (SendChunked is { } sendChunked) target.SendChunked = sendChunked;
-        if (Cookies is { } cookies) target.Cookies = cookies;
-        if (InputStream is { } inputStream) inputStream.CopyTo(target.OutputStream);
-    }
-
     public Task<HttpRouteResponse> AsTask()
     {
         return Task.FromResult(this);
