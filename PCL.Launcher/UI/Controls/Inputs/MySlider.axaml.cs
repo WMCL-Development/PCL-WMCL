@@ -26,6 +26,16 @@ public partial class MySlider : UserControl
     private const int PopupFadeInTime = 100;
     private const int PopupFadeOutTime = 80;
 
+    public static readonly StyledProperty<bool> AllowInDialogProperty =
+        AvaloniaProperty.Register<MySlider, bool>(nameof(AllowInDialog));
+
+    /// <summary>弹窗打开期间是否仍允许拖动（弹窗内的滑块需要）。</summary>
+    public bool AllowInDialog
+    {
+        get => GetValue(AllowInDialogProperty);
+        set => SetValue(AllowInDialogProperty, value);
+    }
+
     public static readonly StyledProperty<int> ValueProperty =
         AvaloniaProperty.Register<MySlider, int>(
             nameof(Value),
@@ -357,7 +367,7 @@ public partial class MySlider : UserControl
 
         Focus(); // 确保按键能改变值
         RefreshColor();
-        if (DialogService.Instance.HasPending)
+        if (DialogService.Instance.HasPending && !AllowInDialog)
             return;
         InputAnimation.Scale(
             ShapeDotElement,
@@ -378,7 +388,7 @@ public partial class MySlider : UserControl
             return;
 
         _lastPointerPosition = e.GetPosition(PanMainElement);
-        if (DialogService.Instance.HasPending)
+        if (DialogService.Instance.HasPending && !AllowInDialog)
         {
             DragStop();
             return;
@@ -411,7 +421,7 @@ public partial class MySlider : UserControl
     /// </summary>
     public void DragDoing()
     {
-        if (DialogService.Instance.HasPending)
+        if (DialogService.Instance.HasPending && !AllowInDialog)
         {
             DragStop();
             return;

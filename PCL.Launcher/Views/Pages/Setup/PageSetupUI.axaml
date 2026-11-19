@@ -68,9 +68,11 @@
                             <ColumnDefinition Width="*"
                                               SharedSizeGroup="SubName" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    VerticalAlignment="Center"
+                                   Margin="0,0,16,0"
                                    Text="{loc:Loc Setup.Ui.Theme.Title}" />
                         <ui:MyComboBox x:Name="ComboDarkMode"
                                        Grid.Column="1"
@@ -83,6 +85,7 @@
                         <TextBlock Grid.Column="2"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
+                                   Margin="12,0"
                                    Text="{loc:Loc Setup.Ui.Theme.LightColor}" />
                         <ui:MyComboBox x:Name="ComboLightColor"
                                        Grid.Column="3"
@@ -90,20 +93,22 @@
                         <TextBlock Grid.Column="4"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
+                                   Margin="12,0"
                                    Text="{loc:Loc Setup.Ui.Theme.DarkColor}" />
                         <ui:MyComboBox x:Name="ComboDarkColor"
                                        Grid.Column="5"
                                        HorizontalAlignment="Stretch" />
+                        <ui:MyButton x:Name="BtnThemeAdd"
+                                     Grid.Column="6"
+                                     MinWidth="92"
+                                     Margin="12,0,0,0"
+                                     Padding="10,0"
+                                     HorizontalAlignment="Left"
+                                     Text="{loc:Loc Setup.Ui.Theme.Add}" />
                     </Grid>
 
-                    <ui:MyButton x:Name="BtnThemeAdd"
-                                 MinWidth="120"
-                                 Margin="0,0,0,7"
-                                 Padding="13,0"
-                                 HorizontalAlignment="Left"
-                                 Text="{loc:Loc Setup.Ui.Theme.Add}" />
-
-                    <Grid Margin="0,0,0,6">
+                    <Grid x:Name="PanThemeTweakHue"
+                          Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="Name1" />
@@ -118,7 +123,8 @@
                                      ValueByKey="10"
                                      Value="{Binding ThemeHueOffset, Mode=TwoWay}" />
                     </Grid>
-                    <Grid Margin="0,0,0,6">
+                    <Grid x:Name="PanThemeTweakLight"
+                          Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="Name1" />
@@ -133,7 +139,8 @@
                                      ValueByKey="10"
                                      Value="{Binding ThemeLightOffset, Mode=TwoWay}" />
                     </Grid>
-                    <Grid Margin="0,0,0,10">
+                    <Grid x:Name="PanThemeTweakChroma"
+                          Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="Name1" />

@@ -3334,6 +3334,14 @@
     <sys:String x:Key="Setup.Ui.Theme.Editor.Save">Save</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Editor.NameEmpty">Please enter a theme name</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Editor.Saved">Theme saved</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Custom.Edit">Edit</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Custom.Delete">Delete</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Delete.Title">Delete theme</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Delete.Message">Delete the theme "{0}"?</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Delete.Button">Delete</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.EditTitle">Edit theme</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.NameExists">A theme with this name already exists</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Deleted">Theme deleted</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Tweak.Chroma">Chroma</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Title">Theme</sys:String>
 

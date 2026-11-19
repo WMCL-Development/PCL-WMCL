@@ -3334,6 +3334,14 @@
     <sys:String x:Key="Setup.Ui.Theme.Editor.Save">保存</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Editor.NameEmpty">请输入主题名称</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Editor.Saved">主题已保存</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Custom.Edit">更改</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Custom.Delete">删除</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Delete.Title">删除主题</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Delete.Message">确定要删除主题「{0}」吗？</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Delete.Button">删除</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.EditTitle">更改主题</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Editor.NameExists">已存在同名主题</sys:String>
+    <sys:String x:Key="Setup.Ui.Theme.Deleted">主题已删除</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Tweak.Chroma">色度</sys:String>
     <sys:String x:Key="Setup.Ui.Theme.Title">主题</sys:String>
 

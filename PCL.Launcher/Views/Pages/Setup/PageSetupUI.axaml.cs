@@ -163,7 +163,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         BuildThemeColorItems();
         ComboLightColor.SelectionChanged += (_, _) => OnThemeSelectionChanged(true);
         ComboDarkColor.SelectionChanged += (_, _) => OnThemeSelectionChanged(false);
-        BtnThemeAdd.Click += async (_, _) => await AddCustomThemeAsync();
+        BtnThemeAdd.Click += async (_, _) => await ShowThemeEditorAsync(null);
 
         HiddenFeatureState.Changed += OnHiddenFeatureStateChanged;
 
@@ -220,6 +220,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 Config.Preference.Theme.LightCustomTheme);
             SelectThemeCombo(ComboDarkColor, Config.Preference.Theme.DarkColor,
                 Config.Preference.Theme.DarkCustomTheme);
+            UpdateTweakVisibility();
             CheckLockWindowSize.Checked = Config.Preference.LockWindowSize;
             CheckShowLaunchingHint.Checked = Config.Preference.ShowLaunchingHint;
 
@@ -303,9 +304,43 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                     Tag = custom,
                     Content = $"{customPrefix} · {custom.Name}"
                 };
+                item.ContextMenu = BuildCustomThemeMenu(custom);
+                ContextMenuHelper.Attach(item, () => item.ContextMenu);
                 combo.Items.Add(item);
             }
+
+            ContextMenuHelper.Attach(combo, () => BuildSelectedCustomThemeMenu(combo));
         }
+    }
+
+    private ContextMenu? BuildSelectedCustomThemeMenu(MyComboBox combo)
+    {
+        var index = combo.SelectedIndex - _builtinThemes.Count;
+        return index >= 0 && index < _customThemes.Count
+            ? BuildCustomThemeMenu(_customThemes[index])
+            : null;
+    }
+
+    private ContextMenu BuildCustomThemeMenu(CustomThemeInfo custom)
+    {
+        var edit = new MyMenuItem
+        {
+            Header = Lang.Text("Setup.Ui.Theme.Custom.Edit"),
+            SvgIcon = "lucide/pencil"
+        };
+        edit.Click += async (_, _) => await ShowThemeEditorAsync(custom);
+
+        var delete = new MyMenuItem
+        {
+            Header = Lang.Text("Setup.Ui.Theme.Custom.Delete"),
+            SvgIcon = "lucide/trash-2"
+        };
+        delete.Click += async (_, _) => await DeleteCustomThemeAsync(custom);
+
+        return new ContextMenu
+        {
+            ItemsSource = new List<MyMenuItem> { edit, delete }
+        };
     }
 
     private void SelectThemeCombo(MyComboBox combo, ColorTheme theme, string customName)
@@ -342,6 +377,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 theme.DarkCustomTheme = "";
             }
 
+            UpdateTweakVisibility();
             return;
         }
 
@@ -362,19 +398,35 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         ViewModel.ThemeHueOffset = theme.ThemeHueOffset;
         ViewModel.ThemeLightOffset = theme.ThemeLightOffset;
         ViewModel.ThemeChromaOffset = theme.ThemeChromaOffset;
+        UpdateTweakVisibility();
         ThemeService.RefreshTheme();
     }
 
-    private async Task AddCustomThemeAsync()
+    /// <summary>选中自定义主题时隐藏内置主题的微调滑块，避免两套参数互相干扰。</summary>
+    private void UpdateTweakVisibility()
+    {
+        var combo = ThemeService.IsDarkMode ? ComboDarkColor : ComboLightColor;
+        SetTweakRowsVisible(combo.SelectedIndex < _builtinThemes.Count);
+    }
+
+    private void SetTweakRowsVisible(bool visible)
+    {
+        PanThemeTweakHue.IsVisible = visible;
+        PanThemeTweakLight.IsVisible = visible;
+        PanThemeTweakChroma.IsVisible = visible;
+    }
+
+    private async Task ShowThemeEditorAsync(CustomThemeInfo? existing)
     {
         var nameBox = new MyTextBox
         {
+            Text = existing?.Name ?? "",
             HintText = Lang.Text("Setup.Ui.Theme.Editor.NameHint"),
             MaxLength = 32
         };
-        var hueSlider = CreateThemeValueSlider(ViewModel.ThemeHueOffset);
-        var lightSlider = CreateThemeValueSlider(ViewModel.ThemeLightOffset);
-        var chromaSlider = CreateThemeValueSlider(ViewModel.ThemeChromaOffset);
+        var hueSlider = CreateThemeValueSlider(existing?.Hue ?? ViewModel.ThemeHueOffset);
+        var lightSlider = CreateThemeValueSlider(existing?.Light ?? ViewModel.ThemeLightOffset);
+        var chromaSlider = CreateThemeValueSlider(existing?.Chroma ?? ViewModel.ThemeChromaOffset);
 
         var panel = new StackPanel
         {
@@ -389,16 +441,28 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         panel.Children.Add(CreateThemeSliderRow("Setup.Ui.Theme.Tweak.Light", lightSlider));
         panel.Children.Add(CreateThemeSliderRow("Setup.Ui.Theme.Tweak.Chroma", chromaSlider));
 
-        var result = await DialogService.Instance.ShowAsync(
-            new PCL.UI.Dialogs.ContentDialogRequest
-            {
-                Title = Lang.Text("Setup.Ui.Theme.Editor.Title"),
-                ContentFactory = () => panel,
-                Buttons = DialogButtons.From(
-                    DialogButton.Create(Lang.Text("Setup.Ui.Theme.Editor.Save")),
-                    DialogButton.Create(Lang.Text("Common.Action.Cancel"))),
-                HighLight = false
-            });
+        SetTweakRowsVisible(false);
+        DialogResult result;
+        try
+        {
+            result = await DialogService.Instance.ShowAsync(
+                new PCL.UI.Dialogs.ContentDialogRequest
+                {
+                    Title = Lang.Text(
+                        existing is null
+                            ? "Setup.Ui.Theme.Editor.Title"
+                            : "Setup.Ui.Theme.Editor.EditTitle"),
+                    ContentFactory = () => panel,
+                    Buttons = DialogButtons.From(
+                        DialogButton.Create(Lang.Text("Setup.Ui.Theme.Editor.Save")),
+                        DialogButton.Create(Lang.Text("Common.Action.Cancel"))),
+                    HighLight = false
+                });
+        }
+        finally
+        {
+            UpdateTweakVisibility();
+        }
         if (result.Button != 1) return;
 
         var name = nameBox.Text?.Trim() ?? "";
@@ -408,11 +472,28 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
             return;
         }
 
-        var theme = Config.Preference.Theme;
-        var existing = _customThemes.FindIndex(custom => custom.Name == name);
+        if (_customThemes.Any(custom => custom.Name == name && custom.Name != existing?.Name))
+        {
+            HintService.Show(Hints.Error(Lang.Text("Setup.Ui.Theme.Editor.NameExists")));
+            return;
+        }
+
         var info = new CustomThemeInfo(name, hueSlider.Value, lightSlider.Value, chromaSlider.Value);
-        if (existing >= 0) _customThemes[existing] = info;
-        else _customThemes.Add(info);
+        var theme = Config.Preference.Theme;
+        if (existing is not null)
+        {
+            var index = _customThemes.FindIndex(custom => custom.Name == existing.Name);
+            if (index >= 0) _customThemes[index] = info;
+            else _customThemes.Add(info);
+            if (theme.LightCustomTheme == existing.Name) theme.LightCustomTheme = name;
+            if (theme.DarkCustomTheme == existing.Name) theme.DarkCustomTheme = name;
+        }
+        else
+        {
+            var index = _customThemes.FindIndex(custom => custom.Name == name);
+            if (index >= 0) _customThemes[index] = info;
+            else _customThemes.Add(info);
+        }
 
         theme.CustomThemes = CustomThemeStore.Save(_customThemes);
         if (ThemeService.IsDarkMode) theme.DarkCustomTheme = name;
@@ -424,13 +505,40 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         HintService.Show(Hints.Success(Lang.Text("Setup.Ui.Theme.Editor.Saved")));
     }
 
+    private async Task DeleteCustomThemeAsync(CustomThemeInfo custom)
+    {
+        var result = await DialogService.Instance.ShowAsync(
+            new TextDialogRequest
+            {
+                Title = Lang.Text("Setup.Ui.Theme.Delete.Title"),
+                Content = Lang.Text("Setup.Ui.Theme.Delete.Message", custom.Name),
+                Buttons = DialogButtons.From(
+                    DialogButton.Create(Lang.Text("Setup.Ui.Theme.Delete.Button")),
+                    DialogButton.Create(Lang.Text("Common.Action.Cancel"))),
+                IsWarn = true
+            });
+        if (result.Button != 1) return;
+
+        _customThemes.RemoveAll(item => item.Name == custom.Name);
+        var theme = Config.Preference.Theme;
+        theme.CustomThemes = CustomThemeStore.Save(_customThemes);
+        if (theme.LightCustomTheme == custom.Name) theme.LightCustomTheme = "";
+        if (theme.DarkCustomTheme == custom.Name) theme.DarkCustomTheme = "";
+
+        BuildThemeColorItems();
+        Reload();
+        ThemeService.RefreshTheme();
+        HintService.Show(Hints.Success(Lang.Text("Setup.Ui.Theme.Deleted")));
+    }
+
     private static MySlider CreateThemeValueSlider(int value)
     {
         return new MySlider
         {
             MaxValue = 100,
             ValueByKey = 10,
-            Value = Math.Clamp(value, 0, 100)
+            Value = Math.Clamp(value, 0, 100),
+            AllowInDialog = true
         };
     }
 
