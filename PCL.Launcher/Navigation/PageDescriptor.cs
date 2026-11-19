@@ -98,4 +98,5 @@ public sealed record MainTabDescriptor(
     string TitleKey,
     string IconKey,
     int Order,
-    double LogoScale = 1d);
+    double LogoScale = 1d,
+    Func<bool>? IsVisible = null);

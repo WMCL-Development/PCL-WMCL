@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using Avalonia.Controls;
+using PCL.Core.Minecraft.Profile;
+using PCL.Core.Minecraft.Profile.Models;
 using PCL.UI;
 using PCL.UI.Controls;
 
@@ -111,7 +113,7 @@ public partial class PageLoginProfileSkin : LoginPageBase
     {
         var items = new List<MyMenuItem>();
 
-        // 菜单只保留两项：进入皮肤子页、刷新头像；其余操作都收进皮肤子页。
+        // 菜单只保留两项：皮肤管理、刷新头像；正版账号使用官方皮肤切换，离线账号进入皮肤子页。
         AddItem(
             "Launch.Skin.Title",
             "lucide/shirt",
@@ -150,9 +152,21 @@ public partial class PageLoginProfileSkin : LoginPageBase
         }
     }
 
-    /// <summary>打开皮肤管理：Android 用独立子页，桌面保持原有的更换皮肤弹窗。</summary>
+    /// <summary>
+    ///     打开皮肤管理：正版 / 外置登录账号走官方皮肤切换（Microsoft 上传、外置登录跳个人中心），
+    ///     离线账号在 Android 上进入本地皮肤子页，桌面保持原有的更换皮肤弹窗。
+    /// </summary>
     private void OpenSkinPage()
     {
+        var profile = ProfileService.Current;
+        if (profile?.ProfileType is ProfileType.Microsoft
+            or ProfileType.Authlib
+            or ProfileType.YggdrasilConnect)
+        {
+            ViewModel.ChangeSkinCommand.Execute(null);
+            return;
+        }
+
         if (OperatingSystem.IsAndroid())
         {
             PCL.Navigation.PageRouter.Navigate(PCL.Navigation.PageIds.LaunchSkin);

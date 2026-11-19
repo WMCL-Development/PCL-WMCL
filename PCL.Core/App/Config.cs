@@ -475,6 +475,8 @@ public static partial class Config
             [ConfigItem<bool>("UiHiddenPageDownload", false, ConfigSource.Local)] public partial bool PageDownload { get; set; }
             [ConfigItem<bool>("UiHiddenPageSetup", false, ConfigSource.Local)] public partial bool PageSetup { get; set; }
             [ConfigItem<bool>("UiHiddenPageTools", false, ConfigSource.Local)] public partial bool PageTools { get; set; }
+            [ConfigItem<bool>("UiHiddenPageLink", false, ConfigSource.Local)] public partial bool PageLink { get; set; }
+            [ConfigItem<bool>("UiHiddenPageMore", false, ConfigSource.Local)] public partial bool PageMore { get; set; }
 
             // 子页面 设置
             [ConfigItem<bool>("UiHiddenSetupLaunch", false, ConfigSource.Local)] public partial bool SetupLaunch { get; set; }
@@ -492,6 +494,14 @@ public static partial class Config
             // 子页面 工具
             [ConfigItem<bool>("UiHiddenToolsGameLink", false, ConfigSource.Local)] public partial bool ToolsGameLink { get; set; } // 新增
             [ConfigItem<bool>("UiHiddenToolsTest", false, ConfigSource.Local)] public partial bool ToolsTest { get; set; } // 新增
+
+            // 子页面 联机
+            [ConfigItem<bool>("UiHiddenLinkAstral", false, ConfigSource.Local)] public partial bool LinkAstral { get; set; }
+            [ConfigItem<bool>("UiHiddenLinkTerracotta", false, ConfigSource.Local)] public partial bool LinkTerracotta { get; set; }
+            [ConfigItem<bool>("UiHiddenLinkDirect", false, ConfigSource.Local)] public partial bool LinkDirect { get; set; }
+
+            // 子页面 更多
+            [ConfigItem<bool>("UiHiddenMoreHelp", false, ConfigSource.Local)] public partial bool MoreHelp { get; set; }
 
             // 子页面 实例设置
             [ConfigItem<bool>("UiHiddenVersionEdit", false, ConfigSource.Local)] public partial bool InstanceEdit { get; set; }

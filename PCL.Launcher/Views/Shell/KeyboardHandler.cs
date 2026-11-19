@@ -34,6 +34,9 @@ public static class HiddenFeatureState
         ForceShow = !ForceShow;
         Changed?.Invoke();
     }
+
+    /// <summary>隐藏项配置变化后主动通知界面重建（标题栏主入口、左侧子页菜单）。</summary>
+    public static void NotifyChanged() => Changed?.Invoke();
 }
 
 /// <summary>主窗口级键盘与鼠标快捷键： Esc 返回、F11 切换隐藏实例、F12 切换功能隐藏、F5 刷新当前页、Enter 启动游戏、Alt 抑制系统菜单、鼠标侧键返回。</summary>
@@ -143,7 +146,7 @@ public sealed class KeyboardHandler
         LogWrapper.Info("UI", "当前页面未提供隐藏实例显隐开关，F11 已忽略");
     }
 
-    private static void ToggleHiddenFeatures()
+    internal static void ToggleHiddenFeatures()
     {
         HiddenFeatureState.Toggle();
         UiInteraction.Hint(

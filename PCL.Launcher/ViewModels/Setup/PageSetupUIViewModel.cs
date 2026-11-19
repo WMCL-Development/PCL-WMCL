@@ -119,7 +119,9 @@ public partial class PageSetupUIViewModel : ViewModelBase
 
     public string FeatureHideTitle =>
         _forceShowFeatureHide
-            ? Lang.Text("Setup.Ui.FeatureHide.TitleTemporarilyDisabled")
+            ? Lang.Text(OperatingSystem.IsAndroid()
+                ? "Setup.Ui.FeatureHide.TitleTemporarilyDisabled.Mobile"
+                : "Setup.Ui.FeatureHide.TitleTemporarilyDisabled")
             : Lang.Text("Setup.Ui.FeatureHide.Title");
 
     public string MusicTitle =>

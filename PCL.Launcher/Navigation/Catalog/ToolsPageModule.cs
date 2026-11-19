@@ -27,7 +27,8 @@ public sealed class ToolsPageModule : IPageModule
             "lucide/send",
             "multiplayer",
             1,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsAstral>(sp)),
+            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsAstral>(sp),
+            visible: () => !Config.Preference.Hide.LinkAstral),
         Sub(
             PageIds.Tools,
             SubPageIds.ToolsTerracotta,
@@ -35,7 +36,8 @@ public sealed class ToolsPageModule : IPageModule
             "lucide/box",
             "multiplayer",
             2,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTerracotta>(sp)),
+            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTerracotta>(sp),
+            visible: () => !Config.Preference.Hide.LinkTerracotta),
         Sub(
             PageIds.Tools,
             SubPageIds.ToolsDirect,
@@ -43,7 +45,8 @@ public sealed class ToolsPageModule : IPageModule
             "lucide/network",
             "multiplayer",
             3,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsDirect>(sp))
+            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsDirect>(sp),
+            visible: () => !Config.Preference.Hide.LinkDirect)
     ];
 
     public IReadOnlyList<PageDescriptor> Pages { get; } =
@@ -69,6 +72,8 @@ public sealed class ToolsPageModule : IPageModule
             PageIds.Tools,
             "Main.Tab.Link",
             "lucide/link-2",
-            2)
+            2,
+            1d,
+            IsVisible: () => !Config.Preference.Hide.PageLink)
     ];
 }

@@ -20,7 +20,8 @@ public sealed class WmclPageModule : IPageModule
             "lucide/box",
             "tools",
             0,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTest>(sp)),
+            (sp, _) => ActivatorUtilities.CreateInstance<PageToolsTest>(sp),
+            () => !Config.Preference.Hide.ToolsTest),
         Sub(
             PageIds.More,
             SubPageIds.MoreHelp,
@@ -28,7 +29,8 @@ public sealed class WmclPageModule : IPageModule
             "lucide/circle-help",
             "info",
             1,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageMoreHelp>(sp)),
+            (sp, _) => ActivatorUtilities.CreateInstance<PageMoreHelp>(sp),
+            () => !Config.Preference.Hide.MoreHelp),
         Sub(
             PageIds.More,
             SubPageIds.MoreAbout,
@@ -132,6 +134,8 @@ public sealed class WmclPageModule : IPageModule
             PageIds.More,
             "Main.Tab.More",
             "lucide/grid-2x2",
-            4)
+            4,
+            1d,
+            IsVisible: () => !Config.Preference.Hide.PageMore)
     ];
 }

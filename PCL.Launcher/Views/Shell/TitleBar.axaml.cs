@@ -26,10 +26,15 @@ public partial class TitleBar : UserControl
 
     private bool _updating;
 
+    private int _launchTapCount;
+
+    private long _lastLaunchTapTick;
+
     public TitleBar()
     {
         InitializeComponent();
         BuildMainTabs();
+        HiddenFeatureState.Changed += OnHiddenFeatureStateChanged;
         AddHandler(
             PointerPressedEvent,
             Root_OnPointerPressed,
@@ -46,6 +51,7 @@ public partial class TitleBar : UserControl
         {
             ThemeService.ColorThemeChanged -= _OnColorThemeChanged;
             ThemeService.ColorModeChanged -= _OnColorModeChanged;
+            HiddenFeatureState.Changed -= OnHiddenFeatureStateChanged;
         };
     }
 
@@ -255,7 +261,10 @@ public partial class TitleBar : UserControl
         PanTitleSelect.Children.Clear();
         _tabButtons.Clear();
 
-        foreach (var descriptor in PageCatalog.MainTabs.OrderBy(tab => tab.Order))
+        foreach (var descriptor in PageCatalog.MainTabs
+                     .Where(tab => HiddenFeatureState.ForceShow
+                                   || (tab.IsVisible?.Invoke() ?? true))
+                     .OrderBy(tab => tab.Order))
         {
             var button = new MyRadioButton
             {
@@ -268,11 +277,55 @@ public partial class TitleBar : UserControl
             };
             button.SetLocalizedValue(MyRadioButton.TextProperty, descriptor.TitleKey);
             button.Check += Tab_OnCheck;
+            button.AddHandler(
+                PointerReleasedEvent,
+                (_, _) => OnTabPointerReleased(descriptor.Id),
+                RoutingStrategies.Tunnel);
             _tabButtons[descriptor.Id] = button;
             PanTitleSelect.Children.Add(button);
         }
 
+        RestoreCheckedTab();
+    }
+
+    private void OnHiddenFeatureStateChanged()
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+            RebuildMainTabs();
+        else
+            Dispatcher.UIThread.Post(RebuildMainTabs);
+    }
+
+    private void RebuildMainTabs()
+    {
+        BuildMainTabs();
+        // 当前入口被隐藏时回到启动页，避免停留在无法从标题栏切回的子页。
+        var currentTab = PageRegistry.TabOfPage(PageRouter.Current.Page) ?? MainTab.Launch;
+        if (_tabButtons.ContainsKey(currentTab)) return;
+        PageRouter.Navigate(MainTab.Launch);
         SetTabChecked(MainTab.Launch);
+    }
+
+    private void RestoreCheckedTab()
+    {
+        var tab = PageRegistry.TabOfPage(PageRouter.Current.Page) ?? MainTab.Launch;
+        SetTabChecked(_tabButtons.ContainsKey(tab) ? tab : MainTab.Launch);
+    }
+
+    /// <summary>
+    ///     Android 没有键盘，用连续点击顶部「启动」标签三次代替 F12 临时显示被隐藏的功能。
+    /// </summary>
+    private void OnTabPointerReleased(MainTab tab)
+    {
+        if (!OperatingSystem.IsAndroid() || tab != MainTab.Launch) return;
+
+        var now = Environment.TickCount64;
+        _launchTapCount = now - _lastLaunchTapTick <= 900 ? _launchTapCount + 1 : 1;
+        _lastLaunchTapTick = now;
+        if (_launchTapCount < 3) return;
+
+        _launchTapCount = 0;
+        KeyboardHandler.ToggleHiddenFeatures();
     }
 
     private void SetTabChecked(MainTab tab)

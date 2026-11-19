@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PCL.Core.App;
 using PCL.Views.Pages.Download;
 using static PCL.Navigation.PageDescriptorFactory;
 
@@ -210,6 +211,7 @@ public sealed class DownloadPageModule : IPageModule
             "Main.Tab.Download",
             "lucide/download",
             1,
-            0.9d)
+            0.9d,
+            IsVisible: () => !Config.Preference.Hide.PageDownload)
     ];
 }

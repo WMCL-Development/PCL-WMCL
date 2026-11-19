@@ -3111,6 +3111,15 @@
     <!-- Setup.Ui.FeatureHide -->
 
     <sys:String x:Key="Setup.Ui.FeatureHide.Description">你可以隱藏不需要的畫面或關閉特定功能。在任意畫面按 F12 可以暫時顯示被隱藏的功能。</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Description.Mobile">你可以隱藏不需要的畫面或關閉特定功能。連續點擊頂部「啟動」標籤三次可以暫時顯示被隱藏的功能。</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.TitleTemporarilyDisabled.Mobile">功能隱藏（已暫時關閉，連續點擊頂部「啟動」標籤三次以重新啟用）</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.SubLink">子頁面 聯機</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.SubMore">子頁面 更多</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.More">更多</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.Astral">Astral 聯機</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.Terracotta">陶瓦聯機</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.Direct">直連</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.Help">幫助</sys:String>
     <sys:String x:Key="Setup.Ui.FeatureHide.MainPage">主畫面</sys:String>
     <sys:String x:Key="Setup.Ui.FeatureHide.SpecificFeature">特定功能</sys:String>
     <sys:String x:Key="Setup.Ui.FeatureHide.SubInstance">子畫面 實例設定</sys:String>

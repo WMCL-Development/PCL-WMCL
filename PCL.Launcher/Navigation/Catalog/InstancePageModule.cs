@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PCL.Core.App;
 using PCL.Views.Pages.Instance;
 using PCL.Views.Pages.Select;
 using static PCL.Navigation.PageDescriptorFactory;
@@ -26,6 +27,7 @@ public sealed class InstancePageModule : IPageModule
             "game",
             1,
             (sp, _) => ActivatorUtilities.CreateInstance<PageInstanceSetup>(sp),
+            visible: () => !Config.Preference.Hide.InstanceEdit,
             reset: "Instance.Left.InitializeSettings.ConfirmTitle"),
         Sub(
             PageIds.InstanceSetup,
@@ -45,6 +47,7 @@ public sealed class InstancePageModule : IPageModule
             "game",
             3,
             (sp, _) => ActivatorUtilities.CreateInstance<PageInstanceExport>(sp),
+            visible: () => !Config.Preference.Hide.InstanceExport,
             refresh: true),
         Sub(
             PageIds.InstanceSetup,
@@ -54,6 +57,7 @@ public sealed class InstancePageModule : IPageModule
             "resources",
             4,
             (sp, _) => ActivatorUtilities.CreateInstance<PageInstanceSaves>(sp),
+            visible: () => !Config.Preference.Hide.InstanceSave,
             refresh: true,
             logoScale: 0.95d),
         Sub(
@@ -64,6 +68,7 @@ public sealed class InstancePageModule : IPageModule
             "resources",
             5,
             (sp, _) => ActivatorUtilities.CreateInstance<PageInstanceScreenshot>(sp),
+            visible: () => !Config.Preference.Hide.InstanceScreenshot,
             refresh: true,
             logoScale: 0.95d),
         Sub(
@@ -75,6 +80,7 @@ public sealed class InstancePageModule : IPageModule
             6,
             (sp, _) =>
                 ActivatorUtilities.CreateInstance<PageInstanceCompResource>(sp, Comp.CompType.Mod),
+            visible: () => !Config.Preference.Hide.InstanceMod,
             refresh: true),
         Sub(
             PageIds.InstanceSetup,
@@ -83,7 +89,8 @@ public sealed class InstancePageModule : IPageModule
             "lucide/puzzle",
             "resources",
             7,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageInstanceModDisabled>(sp)),
+            (sp, _) => ActivatorUtilities.CreateInstance<PageInstanceModDisabled>(sp),
+            visible: () => !Config.Preference.Hide.InstanceMod),
         Sub(
             PageIds.InstanceSetup,
             SubPageIds.VersionResourcePack,
@@ -95,6 +102,7 @@ public sealed class InstancePageModule : IPageModule
                 ActivatorUtilities.CreateInstance<PageInstanceCompResource>(
                     sp,
                     Comp.CompType.ResourcePack),
+            visible: () => !Config.Preference.Hide.InstanceResourcePack,
             refresh: true,
             logoScale: 0.85d),
         Sub(
@@ -108,6 +116,7 @@ public sealed class InstancePageModule : IPageModule
                 ActivatorUtilities.CreateInstance<PageInstanceCompResource>(
                     sp,
                     Comp.CompType.Shader),
+            visible: () => !Config.Preference.Hide.InstanceShader,
             refresh: true,
             logoScale: 1.15d),
         Sub(
@@ -121,6 +130,7 @@ public sealed class InstancePageModule : IPageModule
                 ActivatorUtilities.CreateInstance<PageInstanceCompResource>(
                     sp,
                     Comp.CompType.Schematic),
+            visible: () => !Config.Preference.Hide.InstanceSchematic,
             refresh: true,
             logoScale: 0.85d),
         Sub(
@@ -131,6 +141,7 @@ public sealed class InstancePageModule : IPageModule
             "resources",
             11,
             (sp, _) => ActivatorUtilities.CreateInstance<PageInstanceServer>(sp),
+            visible: () => !Config.Preference.Hide.InstanceServer,
             refresh: true,
             logoScale: 0.85d)
     ];

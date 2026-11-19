@@ -107,6 +107,7 @@ public sealed class SetupPageModule : IPageModule
             "Main.Tab.Settings",
             "lucide/settings",
             3,
-            1.1d)
+            1.1d,
+            IsVisible: () => !Config.Preference.Hide.PageSetup)
     ];
 }

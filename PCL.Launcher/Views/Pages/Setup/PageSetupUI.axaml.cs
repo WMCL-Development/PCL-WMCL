@@ -43,6 +43,8 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
         InitializeComponent();
         PanScroll = PanBack;
         DataContext = ViewModel;
+        if (OperatingSystem.IsAndroid())
+            TextFeatureHideDescription.Text = Lang.Text("Setup.Ui.FeatureHide.Description.Mobile");
 
         _logoTypeRadios = [RadioLogoType0, RadioLogoType1, RadioLogoType2, RadioLogoType3];
         _homepageRadios = [RadioCustomType0, RadioCustomType3, RadioCustomType1, RadioCustomType2];
@@ -614,8 +616,9 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 new HideCheckDefinition(
                     "UiHiddenPageDownload",
                     "Setup.Ui.FeatureHide.Item.Download"),
+                new HideCheckDefinition("UiHiddenPageLink", "Setup.Ui.FeatureHide.Item.Lobby"),
                 new HideCheckDefinition("UiHiddenPageSetup", "Setup.Ui.FeatureHide.Item.Settings"),
-                new HideCheckDefinition("UiHiddenPageTools", "Setup.Ui.FeatureHide.Item.Tools")
+                new HideCheckDefinition("UiHiddenPageMore", "Setup.Ui.FeatureHide.Item.More")
             ]);
 
         AddHideGroup(
@@ -634,21 +637,33 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
                 new HideCheckDefinition(
                     "UiHiddenSetupLauncherLanguage",
                     "Setup.Ui.FeatureHide.Item.Language"),
-                new HideCheckDefinition("UiHiddenLauncherMisc", "Setup.Ui.FeatureHide.Item.Misc"),
-                new HideCheckDefinition("UiHiddenSetupUpdate", "Setup.Ui.FeatureHide.Item.Update"),
+                new HideCheckDefinition("UiHiddenSetupLauncherMisc", "Setup.Ui.FeatureHide.Item.Misc")
+            ]);
+
+        AddHideGroup(
+            "Setup.Ui.FeatureHide.SubLink",
+            false,
+            [
+                new HideCheckDefinition("UiHiddenToolsGameLink", "Setup.Ui.FeatureHide.Item.Lobby"),
+                new HideCheckDefinition("UiHiddenLinkAstral", "Setup.Ui.FeatureHide.Item.Astral"),
+                new HideCheckDefinition(
+                    "UiHiddenLinkTerracotta",
+                    "Setup.Ui.FeatureHide.Item.Terracotta"),
+                new HideCheckDefinition("UiHiddenLinkDirect", "Setup.Ui.FeatureHide.Item.Direct")
+            ]);
+
+        AddHideGroup(
+            "Setup.Ui.FeatureHide.SubMore",
+            false,
+            [
+                new HideCheckDefinition("UiHiddenToolsTest", "Setup.Ui.FeatureHide.Item.Toolbox"),
+                new HideCheckDefinition("UiHiddenMoreHelp", "Setup.Ui.FeatureHide.Item.Help"),
                 new HideCheckDefinition("UiHiddenSetupAbout", "Setup.Ui.FeatureHide.Item.About"),
+                new HideCheckDefinition("UiHiddenSetupUpdate", "Setup.Ui.FeatureHide.Item.Update"),
                 new HideCheckDefinition(
                     "UiHiddenSetupFeedback",
                     "Setup.Ui.FeatureHide.Item.Feedback"),
                 new HideCheckDefinition("UiHiddenSetupLog", "Setup.Ui.FeatureHide.Item.Log")
-            ]);
-
-        AddHideGroup(
-            "Setup.Ui.FeatureHide.SubTools",
-            false,
-            [
-                new HideCheckDefinition("UiHiddenToolsGameLink", "Setup.Ui.FeatureHide.Item.Lobby"),
-                new HideCheckDefinition("UiHiddenToolsTest", "Setup.Ui.FeatureHide.Item.Toolbox")
             ]);
 
         AddHideGroup(
@@ -746,6 +761,7 @@ public partial class PageSetupUI : MyPageRight, ISetupResetPage
             if (_reloading || check.Tag is not string tag) return;
             ConfigService.TrySetValue(tag, check.Checked == true);
             PageSetupLeft.NotifyHiddenSettingChanged();
+            HiddenFeatureState.NotifyChanged();
             if (tag == "UiHiddenFunctionHidden")
                 RefreshFeatureHideState();
         };

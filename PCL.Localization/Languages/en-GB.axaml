@@ -3111,6 +3111,15 @@
     <!-- Setup.Ui.FeatureHide -->
 
     <sys:String x:Key="Setup.Ui.FeatureHide.Description">You can hide unnecessary pages or disable specific features. Press F12 in any interface to show the hidden features temporarily.</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Description.Mobile">You can hide unnecessary pages or disable specific features. Tap the Launch tab three times in a row to show hidden features temporarily.</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.TitleTemporarilyDisabled.Mobile">Feature hiding (disabled temporarily, tap the Launch tab three times to re-enable)</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.SubLink">"Link" subpages</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.SubMore">"More" subpages</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.More">More</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.Astral">Astral</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.Terracotta">Terracotta</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.Direct">Direct</sys:String>
+    <sys:String x:Key="Setup.Ui.FeatureHide.Item.Help">Help</sys:String>
     <sys:String x:Key="Setup.Ui.FeatureHide.MainPage">Main interface</sys:String>
     <sys:String x:Key="Setup.Ui.FeatureHide.SpecificFeature">Specific features</sys:String>
     <sys:String x:Key="Setup.Ui.FeatureHide.SubInstance">'Properties' subpages</sys:String>

@@ -566,7 +566,8 @@
                        IsVisible="{Binding FeatureHideVisible}"
                        Title="{Binding FeatureHideTitle}">
                 <StackPanel Margin="25,38,15,15">
-                    <TextBlock Margin="0,1,0,1"
+                    <TextBlock x:Name="TextFeatureHideDescription"
+                               Margin="0,1,0,1"
                                TextWrapping="Wrap"
                                Text="{loc:Loc Setup.Ui.FeatureHide.Description}" />
                     <StackPanel x:Name="PanHidePanel"
