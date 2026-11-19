@@ -53,6 +53,14 @@ jobs:
           dotnet build PCL.Launcher/PCL.Launcher.csproj \
             -c Debug -p:UseSharedCompilation=false
 
+      - name: Resolve version
+        run: |
+          VERSION_NAME=$(python3 -c "import json;print(json.load(open('PCL.Launcher/Resources/metadata.json'))['version']['base'])")
+          VERSION_CODE=$((1000000 + GITHUB_RUN_NUMBER))
+          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+          echo "versionName=$VERSION_NAME versionCode=$VERSION_CODE"
+
       - name: Build APK
         env:
           PCL_WRITE_SECRET: 1
@@ -63,7 +71,9 @@ jobs:
           PCL_TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
         run: |
           dotnet build PCL.Launcher.Android/PCL.Launcher.Android.csproj \
-            -c Debug -p:AndroidPackageFormat=apk -p:UseSharedCompilation=false
+            -c Debug -p:AndroidPackageFormat=apk -p:UseSharedCompilation=false \
+            -p:ApplicationVersion="$VERSION_CODE" \
+            -p:ApplicationDisplayVersion="$VERSION_NAME"
 
       - name: Collect APK
         run: |

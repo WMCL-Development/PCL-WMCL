@@ -14,8 +14,18 @@
         <Configurations>Debug;Release</Configurations>
         <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
         <ApplicationId>com.pclcommunity.pclce</ApplicationId>
-        <ApplicationVersion>3</ApplicationVersion>
-        <ApplicationDisplayVersion>0.3.0</ApplicationDisplayVersion>
+    </PropertyGroup>
+    <!-- 版本号唯一来源：PCL.Launcher/Resources/metadata.json。
+         versionName 取 metadata.base；versionCode 默认 1000000（本地构建），
+         CI/Release 会通过 -p:ApplicationVersion=1000000+run_number 覆盖，保证单调递增。 -->
+    <PropertyGroup>
+        <_MetadataJsonFile>$(MSBuildProjectDirectory)/../PCL.Launcher/Resources/metadata.json</_MetadataJsonFile>
+        <_MetadataJsonText>$([System.IO.File]::ReadAllText($(_MetadataJsonFile)))</_MetadataJsonText>
+        <_MetadataBaseVersion>$([System.Text.RegularExpressions.Regex]::Match($(_MetadataJsonText), '&quot;base&quot;\s*:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</_MetadataBaseVersion>
+        <ApplicationDisplayVersion Condition="'$(ApplicationDisplayVersion)' == ''">$(_MetadataBaseVersion)</ApplicationDisplayVersion>
+        <ApplicationVersion Condition="'$(ApplicationVersion)' == ''">1000000</ApplicationVersion>
+    </PropertyGroup>
+    <PropertyGroup>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <PublishReadyToRun>false</PublishReadyToRun>
         <NoWarn>$(NoWarn);CA1416</NoWarn>
