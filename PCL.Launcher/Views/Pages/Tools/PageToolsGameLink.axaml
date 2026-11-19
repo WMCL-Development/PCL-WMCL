@@ -6,7 +6,7 @@
                 xmlns:tools="using:PCL.Views.Pages.Tools"
                 x:CompileBindings="False"
                 x:Class="PCL.Views.Pages.Tools.PageToolsGameLink">
-    <Grid x:Name="PanMain" RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*">
         <StackPanel Grid.Row="0"
                     Margin="20,6,20,0"
                     HorizontalAlignment="Right"
