@@ -47,7 +47,6 @@ public sealed class MySkin : Grid
 
     private bool _isMouseDown;
 
-    private MyMenuItem? _menuCape;
     private MyMenuItem? _menuSave;
 
     public MySkin()
@@ -75,7 +74,6 @@ public sealed class MySkin : Grid
         Children.Add(_imgFore);
 
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-        ViewModel.CapeRequested += () => CapeRequested?.Invoke(this, EventArgs.Empty);
 
         BuildContextMenu();
         ContextMenuHelper.Attach(this, () => ContextMenu);
@@ -135,12 +133,6 @@ public sealed class MySkin : Grid
 
     public MySkinViewModel ViewModel { get; } = new();
 
-    public bool HasCape
-    {
-        get => ViewModel.HasCape;
-        set => ViewModel.HasCape = value;
-    }
-
     public bool CanSave => ViewModel.CanSave;
 
     public string Address
@@ -150,8 +142,6 @@ public sealed class MySkin : Grid
     }
 
     public event EventHandler? Click;
-
-    public event EventHandler? CapeRequested;
 
     public void Clear()
     {
@@ -178,9 +168,6 @@ public sealed class MySkin : Grid
             case nameof(MySkinViewModel.HatImage):
                 _imgFore.Source = ViewModel.HatImage;
                 break;
-            case nameof(MySkinViewModel.HasCape):
-                _menuCape?.IsVisible = ViewModel.HasCape;
-                break;
             case nameof(MySkinViewModel.CanSave):
                 _menuSave?.IsEnabled = ViewModel.CanSave;
                 break;
@@ -204,21 +191,12 @@ public sealed class MySkin : Grid
         refreshItem.SetLocalizedValue(MenuItem.HeaderProperty, "Common.Action.Refresh");
         refreshItem.Click += (_, _) => RefreshSource();
 
-        _menuCape = new MyMenuItem
-        {
-            SvgIcon = "lucide/shirt",
-            IsVisible = ViewModel.HasCape
-        };
-        _menuCape.SetLocalizedValue(MenuItem.HeaderProperty, "Launch.Skin.ChangeCape");
-        _menuCape.Click += (_, _) => ViewModel.ChangeCapeCommand.Execute(null);
-
         ContextMenu = new ContextMenu
         {
             ItemsSource = new List<MyMenuItem>
             {
                 _menuSave,
-                refreshItem,
-                _menuCape
+                refreshItem
             }
         };
     }

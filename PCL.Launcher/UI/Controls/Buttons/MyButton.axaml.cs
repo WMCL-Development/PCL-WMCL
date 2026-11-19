@@ -63,6 +63,18 @@ public partial class MyButton : Border
 
         InitializeComponent();
 
+        // 触摸悬停：触摸不会设置 IsPointerOver，按下/抬起时手动刷新配色（状态由 TouchHover 统一维护）。
+        // TouchHoverRefresh
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor(true);
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor(false);
+        };
+        PointerCaptureLost += (_, _) => RefreshColor(false);
+
         PanFore.Padding = Padding;
         LabText.Text = Text;
         LabText.Padding = TextPadding;
@@ -178,14 +190,14 @@ public partial class MyButton : Border
             return ("ColorBrushHalfWhite", "ColorBrushGray4");
 
         if (_colorType == ColorState.Red)
-            return (IsPointerOver ? "ColorBrushRedBack" : "ColorBrushHalfWhite",
-                IsPointerOver ? "ColorBrushRedLight" : "ColorBrushRedDark");
+            return (this.IsHoveredState() ? "ColorBrushRedBack" : "ColorBrushHalfWhite",
+                this.IsHoveredState() ? "ColorBrushRedLight" : "ColorBrushRedDark");
 
         if (_colorType == ColorState.Highlight)
-            return (IsPointerOver ? "ColorBrush7" : "ColorBrushHalfWhite",
-                IsPointerOver ? "ColorBrush3" : "ColorBrush2");
+            return (this.IsHoveredState() ? "ColorBrush7" : "ColorBrushHalfWhite",
+                this.IsHoveredState() ? "ColorBrush3" : "ColorBrush2");
 
-        return IsPointerOver
+        return this.IsHoveredState()
             ? ("ColorBrush7", "ColorBrush3")
             : ("ColorBrushHalfWhite", "ColorBrush1");
     }
@@ -199,7 +211,7 @@ public partial class MyButton : Border
         try
         {
             var (background, border) = GetColorKeys();
-            var time = IsPointerOver ? AnimationColorIn : AnimationColorOut;
+            var time = this.IsHoveredState() ? AnimationColorIn : AnimationColorOut;
 
             ButtonAnimation.ApplyColor(
                 PanFore,

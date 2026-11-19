@@ -48,6 +48,18 @@ public partial class MyTextButton : Label
     {
         InitializeComponent();
 
+        // 触摸悬停：触摸不会设置 IsPointerOver，按下/抬起时手动刷新配色（状态由 TouchHover 统一维护）。
+        // TouchHoverRefresh
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor(true);
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor(false);
+        };
+        PointerCaptureLost += (_, _) => RefreshColor(false);
+
         LabText.Text = Text;
 
         PointerPressed += _OnPointerPressed;
@@ -138,7 +150,7 @@ public partial class MyTextButton : Label
             ? (normalKey, 200)
             : isMouseDown
                 ? ("ColorBrush4", 30)
-                : IsPointerOver
+                : this.IsHoveredState()
                     ? ("ColorBrush3", 100)
                     : (normalKey, 200);
 

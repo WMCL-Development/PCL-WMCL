@@ -52,6 +52,18 @@ public partial class MyIconTextButton : Border
     {
         InitializeComponent();
 
+        // 触摸悬停：触摸不会设置 IsPointerOver，按下/抬起时手动刷新配色（状态由 TouchHover 统一维护）。
+        // TouchHoverRefresh
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor(true);
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor(false);
+        };
+        PointerCaptureLost += (_, _) => RefreshColor(false);
+
         LabText.Text = Text;
         _ApplyColorClasses();
         RefreshLogoHostVisibility();
@@ -201,7 +213,7 @@ public partial class MyIconTextButton : Border
 
         var foreground = !IsEnabled
             ? "ColorBrushGray5"
-            : IsPointerOver || ColorType == ColorState.Highlight
+            : this.IsHoveredState() || ColorType == ColorState.Highlight
                 ? "ColorBrush3"
                 : "ColorBrush1";
 
@@ -209,11 +221,11 @@ public partial class MyIconTextButton : Border
             ? "ColorBrushTransparent"
             : _isMouseDown
                 ? "ColorBrush6"
-                : IsPointerOver
+                : this.IsHoveredState()
                     ? "ColorBrushBg1"
                     : "ColorBrushSemiTransparent";
 
-        var time = _isMouseDown ? 70 : IsPointerOver ? 100 : 150;
+        var time = _isMouseDown ? 70 : this.IsHoveredState() ? 100 : 150;
 
         ButtonAnimation.ApplyColor(
             this,

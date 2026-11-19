@@ -22,8 +22,6 @@ public partial class MySkinViewModel : ViewModelBase
 
     [ObservableProperty] public partial bool CanSave { get; set; }
 
-    [ObservableProperty] public partial bool HasCape { get; set; } = true;
-
     [ObservableProperty] public partial bool IsLoading { get; set; }
 
     public string ToolTipText =>
@@ -34,9 +32,6 @@ public partial class MySkinViewModel : ViewModelBase
     [ObservableProperty] public partial CroppedBitmap? FaceImage { get; set; }
 
     [ObservableProperty] public partial CroppedBitmap? HatImage { get; set; }
-
-    /// <summary>请求上层打开更换披风流程。</summary>
-    public event Action? CapeRequested;
 
     partial void OnAddressChanged(string value)
     {
@@ -111,18 +106,6 @@ public partial class MySkinViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ChangeCape()
-    {
-        CapeRequested?.Invoke();
-    }
-
-    public static string GetCapeDisplayName(string capeAlias)
-    {
-        var safeName = capeAlias.Replace("-", "").Replace(" ", "").Replace("'", "");
-        var key = $"Launch.Skin.Cape.Name.{safeName}";
-        var name = Lang.Text(key);
-        return string.IsNullOrEmpty(name) || name == $"!{key}!" || name == key ? capeAlias : name;
-    }
 
     private async Task LoadAsync()
     {

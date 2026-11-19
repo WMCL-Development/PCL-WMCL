@@ -83,6 +83,18 @@ public partial class MyRadioButton : UserControl
     public MyRadioButton()
     {
         InitializeComponent();
+
+        // 触摸悬停：触摸不会设置 IsPointerOver，按下/抬起时手动刷新配色（状态由 TouchHover 统一维护）。
+        // TouchHoverRefresh
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor();
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor();
+        };
+        PointerCaptureLost += (_, _) => RefreshColor();
         PanBackElement.Padding = Padding;
         RefreshLogoHostVisibility();
 
@@ -554,7 +566,7 @@ public partial class MyRadioButton : UserControl
                     background = WithAlpha(pressTint, 0x78);
                     time = AnimationTimeOfPress;
                 }
-                else if (IsPointerOver)
+                else if (this.IsHoveredState())
                 {
                     background = WithAlpha(pressTint, 0x32);
                     time = AnimationTimeOfMouseIn;
@@ -582,7 +594,7 @@ public partial class MyRadioButton : UserControl
                         InputTheme.ColorOf(InputTheme.AccentLight(this), Colors.AliceBlue));
                     time = AnimationTimeOfMouseIn;
                 }
-                else if (IsPointerOver)
+                else if (this.IsHoveredState())
                 {
                     background = InputTheme.ColorOf(
                         InputTheme.AccentLight(this),

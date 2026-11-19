@@ -64,6 +64,17 @@ public partial class MyCheckBox : UserControl
     {
         InitializeComponent();
 
+        // TouchHoverRefresh：触摸按下/抬起时手动刷新悬停配色。
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) AnimateColors(AnimationTimeOfMouseIn);
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) AnimateColors(AnimationTimeOfMouseOut);
+        };
+        PointerCaptureLost += (_, _) => AnimateColors(AnimationTimeOfMouseOut);
+
         PointerPressed += Checkbox_MouseDown;
         PointerReleased += Checkbox_MouseUp;
         KeyboardActivation.Attach(this, PerformClick);
@@ -492,7 +503,7 @@ public partial class MyCheckBox : UserControl
 
     private void AnimateBackground(int time, bool animate)
     {
-        var key = _mouseDowned || IsPointerOver
+        var key = _mouseDowned || this.IsHoveredState()
             ? InputTheme.CheckPressedKey
             : InputTheme.CheckFillKey;
         InputAnimation.Color(
@@ -502,7 +513,7 @@ public partial class MyCheckBox : UserControl
             InputTheme.Brush(
                 this,
                 key,
-                _mouseDowned || IsPointerOver ? Brushes.LightBlue : Brushes.WhiteSmoke),
+                _mouseDowned || this.IsHoveredState() ? Brushes.LightBlue : Brushes.WhiteSmoke),
             time,
             BackgroundKey,
             animate);
@@ -515,7 +526,7 @@ public partial class MyCheckBox : UserControl
 
         var animate = time > 0 && InputAnimation.CanAnimate(this);
         var isChecked = GetFinalState(Checked, IsThreeState);
-        var hover = IsPointerOver;
+        var hover = this.IsHoveredState();
 
         string borderKey;
         if (!IsEnabled)

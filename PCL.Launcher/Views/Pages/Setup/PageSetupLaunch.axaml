@@ -13,7 +13,7 @@
             <ui:MyCard Margin="0,0,0,15"
                        Title="{loc:Loc Setup.Launch.Options.Title}">
                 <StackPanel Margin="25,40,25,15">
-                    <Grid RowDefinitions="28,9,28,9,28,9,28,9,28,9,28,9,28,9,28,Auto">
+                    <Grid RowDefinitions="Auto,9,Auto,9,Auto,9,Auto,9,Auto,9,Auto,9,Auto,9,Auto,Auto">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="Name" />
@@ -49,8 +49,10 @@
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Margin="0,0,25,0"
+                                   IsVisible="{Binding ShowGameWindowTitle}"
                                    Text="{loc:Loc Setup.Launch.Options.WindowTitle.Label}" />
                         <ui:MyComboBox x:Name="ComboArgumentTitle"
+                                       IsVisible="{Binding ShowGameWindowTitle}"
                                        Grid.Row="2"
                                        Grid.Column="1"
                                        Grid.ColumnSpan="2"
@@ -79,8 +81,10 @@
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Margin="0,0,25,0"
+                                   IsVisible="{Binding ShowLauncherVisibility}"
                                    Text="{loc:Loc Setup.Launch.Options.Visibility.Label}" />
                         <ui:MyComboBox x:Name="ComboArgumentVisibie"
+                                       IsVisible="{Binding ShowLauncherVisibility}"
                                        Grid.Row="6"
                                        Grid.Column="1"
                                        Grid.ColumnSpan="2"
@@ -101,8 +105,10 @@
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Margin="0,0,25,0"
+                                   IsVisible="{Binding ShowProcessPriority}"
                                    Text="{loc:Loc Setup.Launch.Options.Priority.Label}" />
                         <ui:MyComboBox x:Name="ComboArgumentPriority"
+                                       IsVisible="{Binding ShowProcessPriority}"
                                        Grid.Row="8"
                                        Grid.Column="1"
                                        Grid.ColumnSpan="2"
@@ -124,8 +130,10 @@
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Margin="0,0,25,0"
+                                   IsVisible="{Binding ShowGameWindowSize}"
                                    Text="{loc:Loc Setup.Launch.Options.WindowSize.Label}" />
                         <Grid x:Name="PanArgumentWindow"
+                              IsVisible="{Binding ShowGameWindowSize}"
                               Grid.Row="10"
                               Grid.Column="1"
                               Grid.ColumnSpan="2"
@@ -343,13 +351,15 @@
                        IsSwapped="True">
                 <Grid Margin="25,40,25,15"
                       ColumnDefinitions="Auto,*"
-                      RowDefinitions="28,9,Auto,9,28,9,28,Auto,Auto,Auto">
+                      RowDefinitions="Auto,9,Auto,9,28,9,28,Auto,Auto,Auto">
                     <TextBlock Grid.Row="0"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Left"
                                Margin="0,0,25,0"
+                               IsVisible="{Binding ShowRendererSelection}"
                                Text="{loc:Loc Setup.Launch.Advanced.Renderer.Label}" />
                     <ui:MyComboBox x:Name="ComboAdvanceRenderer"
+                                   IsVisible="{Binding ShowRendererSelection}"
                                    Grid.Row="0"
                                    Grid.Column="1"
                                    HorizontalAlignment="Stretch"

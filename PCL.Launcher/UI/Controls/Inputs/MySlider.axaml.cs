@@ -56,6 +56,18 @@ public partial class MySlider : UserControl
     {
         InitializeComponent();
 
+        // 触摸悬停：触摸不会设置 IsPointerOver，按下/抬起时手动刷新配色（状态由 TouchHover 统一维护）。
+        // TouchHoverRefresh
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor();
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor();
+        };
+        PointerCaptureLost += (_, _) => RefreshColor();
+
         // 取得焦点时不带着外层滚动容器滚动：拖动与悬停都会触发 Focus
         ScrollViewer.SetBringIntoViewOnFocusChange(this, false);
 
@@ -278,7 +290,7 @@ public partial class MySlider : UserControl
             fallback = InputTheme.Brush(this, key, Brushes.LightGray);
             time = 200;
         }
-        else if (_isDragging || IsPointerOver)
+        else if (_isDragging || this.IsHoveredState())
         {
             key = InputTheme.AccentKey;
             fallback = InputTheme.Accent(this);

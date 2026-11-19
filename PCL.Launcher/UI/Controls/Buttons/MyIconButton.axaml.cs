@@ -56,6 +56,17 @@ public partial class MyIconButton : Border
     {
         InitializeComponent();
 
+        // TouchHoverRefresh：触摸按下/抬起时手动刷新悬停配色。
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshAnim();
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshAnim();
+        };
+        PointerCaptureLost += (_, _) => RefreshAnim();
+
         _ApplyThemeClasses();
         RefreshAnim(false);
 
@@ -236,13 +247,13 @@ public partial class MyIconButton : Border
     {
         try
         {
-            var time = IsPointerOver ? AnimationColorIn : AnimationColorOut;
+            var time = this.IsHoveredState() ? AnimationColorIn : AnimationColorOut;
             RefreshBackground(animate, time);
 
             if (_theme == Themes.Custom)
             {
                 var baseColor = Foreground is ISolidColorBrush brush ? brush.Color : Colors.Gray;
-                var alpha = IsPointerOver ? 255d : 160d;
+                var alpha = this.IsHoveredState() ? 255d : 160d;
                 ButtonAnimation.ApplyColor(
                     Path,
                     Shape.FillProperty,
@@ -258,12 +269,12 @@ public partial class MyIconButton : Border
             {
                 Themes.White => (string.Empty, new NColor(234d, 242d, 254d)),
                 Themes.Black => (string.Empty, ThemeService.IsDarkMode
-                    ? new NColor(255d, 255d, 255d, IsPointerOver ? 230d : 160d)
-                    : new NColor(0d, 0d, 0d, IsPointerOver ? 230d : 160d)),
-                Themes.Red => IsPointerOver
+                    ? new NColor(255d, 255d, 255d, this.IsHoveredState() ? 230d : 160d)
+                    : new NColor(0d, 0d, 0d, this.IsHoveredState() ? 230d : 160d)),
+                Themes.Red => this.IsHoveredState()
                     ? ("ColorBrushRedLight", null)
                     : ("ColorBrushRedLight", AlphaThemeColor("ColorBrushRedLight", 160d)),
-                _ => IsPointerOver
+                _ => this.IsHoveredState()
                     ? ("ColorBrush2", null)
                     : ("ColorBrush4", null)
             };
@@ -295,7 +306,7 @@ public partial class MyIconButton : Border
     /// </summary>
     private void RefreshBackground(bool animate, int time)
     {
-        if (_theme == Themes.White && IsPointerOver)
+        if (_theme == Themes.White && this.IsHoveredState())
         {
             ButtonAnimation.ApplyColor(
                 PanBack,

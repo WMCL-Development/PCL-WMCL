@@ -3,6 +3,7 @@ using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Localization;
 using PCL.Core.UI.Dialogs;
+using PCL.Core.Platform;
 using PCL.Core.Utils.OS;
 using PCL.Core.ViewModel;
 
@@ -11,6 +12,32 @@ namespace PCL;
 /// <summary>设置页面中「启动」页的视图模型。</summary>
 public partial class PageSetupLaunchViewModel : ViewModelBase
 {
+    /// <summary>按平台能力决定设置项是否显示。</summary>
+    public bool ShowProcessPriority { get; } = _Capability(c => c.SupportsProcessPriority);
+
+    public bool ShowGameWindowTitle { get; } = _Capability(c => c.SupportsGameWindowTitle);
+
+    public bool ShowGameWindowSize { get; } = _Capability(c => c.SupportsGameWindowSize);
+
+    public bool ShowLauncherVisibility { get; } = _Capability(c => c.SupportsLauncherVisibility);
+
+    public bool ShowRendererSelection { get; } = _Capability(c => c.SupportsRendererSelection);
+
+    public bool ShowGpuPreference { get; } = _Capability(c => c.SupportsGpuPreferenceSelection);
+
+    private static bool _Capability(Func<IPlatformCapabilities, bool> selector)
+    {
+        try
+        {
+            return ApplicationRuntime.IsInitialized
+                && selector(ApplicationRuntime.Current.Platform.Capabilities);
+        }
+        catch (Exception)
+        {
+            return true;
+        }
+    }
+
     [ObservableProperty] private bool _checkAdvanceRunWaitVisible;
 
     [ObservableProperty]

@@ -48,6 +48,18 @@ public partial class MyListItem : Grid, IMyRadio
     {
         InitializeComponent();
 
+        // 触摸悬停：触摸不会设置 IsPointerOver，按下/抬起时手动刷新配色（状态由 TouchHover 统一维护）。
+        // TouchHoverRefresh
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor(this, EventArgs.Empty);
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor(this, EventArgs.Empty);
+        };
+        PointerCaptureLost += (_, _) => RefreshColor(this, EventArgs.Empty);
+
         _columnCheck = PanBackElement.ColumnDefinitions[0];
         _columnPaddingLeft = PanBackElement.ColumnDefinitions[1];
         _columnLogo = PanBackElement.ColumnDefinitions[2];
@@ -496,7 +508,7 @@ public partial class MyListItem : Grid, IMyRadio
             stateNew = "MouseDown";
             time = AnimationTimeIn;
         }
-        else if (IsPointerOver && _isHoverAnimationEnabled)
+        else if (this.IsHoveredState() && _isHoverAnimationEnabled)
         {
             stateNew = "MouseOver";
             time = AnimationTimeIn;

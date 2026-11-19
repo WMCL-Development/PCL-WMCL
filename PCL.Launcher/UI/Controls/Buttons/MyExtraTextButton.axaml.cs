@@ -40,6 +40,18 @@ public partial class MyExtraTextButton : Grid
     {
         InitializeComponent();
 
+        // 触摸悬停：触摸不会设置 IsPointerOver，按下/抬起时手动刷新配色（状态由 TouchHover 统一维护）。
+        // TouchHoverRefresh
+        PointerPressed += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor();
+        };
+        PointerReleased += (_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Touch) RefreshColor();
+        };
+        PointerCaptureLost += (_, _) => RefreshColor();
+
         LabText.Text = Text;
         SizeChanged += (_, _) => _SyncCornerRadius();
         PanClick.PointerPressed += _OnPointerPressed;
@@ -311,7 +323,7 @@ public partial class MyExtraTextButton : Grid
 
         var key = !IsEnabled
             ? "ColorBrushGray4"
-            : IsPointerOver
+            : this.IsHoveredState()
                 ? "ColorBrush4"
                 : "ColorBrush3";
 
@@ -320,7 +332,7 @@ public partial class MyExtraTextButton : Grid
             Border.BackgroundProperty,
             key,
             null,
-            !IsEnabled || IsPointerOver ? AnimationColorIn : AnimationColorOut,
+            !IsEnabled || this.IsHoveredState() ? AnimationColorIn : AnimationColorOut,
             animate,
             ColorKey);
     }
