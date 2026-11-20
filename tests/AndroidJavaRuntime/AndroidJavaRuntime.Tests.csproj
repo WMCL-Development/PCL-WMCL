@@ -22,8 +22,6 @@
         <Compile Include="..\..\PCL.Platform.Android\AndroidMinecraftPlatformRules.cs" Link="AndroidPlatform\AndroidMinecraftPlatformRules.cs" />
         <Compile Include="..\..\PCL.Launcher.Core\Launch\JavaLaunchPlan.cs" Link="JavaRuntime\JavaLaunchPlan.cs" />
         <Compile Include="..\..\PCL.Launcher.Core\Launch\JavaArgumentTokens.cs" Link="JavaRuntime\JavaArgumentTokens.cs" />
-        <Compile Include="..\..\PCL.Launcher.Core\Launch\Android\AndroidVanilla1211.cs" Link="Vanilla\AndroidVanilla1211.cs" />
-        <Compile Include="..\..\PCL.Launcher.Core\Launch\Android\AndroidVanillaDownloader.cs" Link="Vanilla\AndroidVanillaDownloader.cs" />
         <Compile Include="..\..\PCL.Launcher.Android\JavaRuntime\AndroidJavaArguments.cs" Link="JavaRuntime\AndroidJavaArguments.cs" />
         <Compile Include="..\..\PCL.Launcher.Android\JavaRuntime\JavaRuntimePackage.cs" Link="JavaRuntime\JavaRuntimePackage.cs" />
         <Compile Include="..\..\PCL.Launcher.Android\JavaRuntime\JavaRuntimeInstaller.cs" Link="JavaRuntime\JavaRuntimeInstaller.cs" />

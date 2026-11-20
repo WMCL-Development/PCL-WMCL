@@ -13,8 +13,6 @@ internal static class Program
     private static int _failed;
     private static string? _assets;
     private static int? _realMajor;
-    private static string? _vanillaMetadata;
-    private static bool _vanillaNetworkSmoke;
 
     private static int Main(string[] args)
     {
@@ -25,12 +23,6 @@ internal static class Program
             {
                 case "--assets" when index + 1 < args.Length:
                     _assets = Path.GetFullPath(args[++index]);
-                    break;
-                case "--vanilla-metadata" when index + 1 < args.Length:
-                    _vanillaMetadata = Path.GetFullPath(args[++index]);
-                    break;
-                case "--vanilla-network-smoke":
-                    _vanillaNetworkSmoke = true;
                     break;
                 case "--skip-real":
                     runReal = false;
@@ -60,15 +52,6 @@ internal static class Program
         Run("catalog_contract", CatalogContract);
         Run("android_vm_argument_mapping", AndroidVmArgumentMapping);
         Run("android_native_selection_excludes_desktop", AndroidNativeSelectionExcludesDesktop);
-        Run("vanilla_rejects_untrusted_manifest", VanillaRejectsUntrustedManifest);
-        if (_vanillaNetworkSmoke)
-            Run("vanilla_network_smoke", () => VanillaNetworkSmokeAsync().GetAwaiter().GetResult());
-        Run("vanilla_file_cache_and_corruption", () => VanillaFileCacheAndCorruptionAsync().GetAwaiter().GetResult());
-        if (_vanillaMetadata is { } metadata)
-        {
-            Run("vanilla_official_manifest_and_index", () => VanillaOfficialManifestAndIndex(metadata));
-            Run("vanilla_manifest_cache", () => VanillaManifestCacheAsync(metadata).GetAwaiter().GetResult());
-        }
         Run("fixture_install_and_cache", FixtureInstallAndCache);
         Run("fixture_static_find_installed", FixtureStaticFindInstalled);
         Run("fixture_tamper_and_repair", FixtureTamperAndRepair);
@@ -110,100 +93,6 @@ internal static class Program
         Console.WriteLine();
         Console.WriteLine($"passed={_passed} failed={_failed}");
         return _failed == 0 ? 0 : 1;
-    }
-
-    private static void VanillaRejectsUntrustedManifest()
-    {
-        using var root = new TempRoot();
-        Require(CaptureException(() => AndroidVanilla1211.Read("{}"u8.ToArray(), root.Path)) is InvalidDataException,
-            "unverified manifest was accepted");
-    }
-
-    private static async Task VanillaFileCacheAndCorruptionAsync()
-    {
-        using var root = new TempRoot();
-        byte[] bytes = [21, 33, 39, 44];
-        var url = new Uri("https://piston-data.mojang.com/test.bin");
-        var path = Path.Combine(root.Path, "client", "test.jar");
-        var file = new AndroidVanillaFile(url, path, bytes.Length, Convert.ToHexStringLower(SHA1.HashData(bytes)));
-        using var good = new ScriptedHandler(_ => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            { Content = new ByteArrayContent(bytes) });
-        using var client = new HttpClient(good);
-        var downloader = new AndroidVanillaDownloader(client);
-        await downloader.EnsureFileAsync(file, CancellationToken.None);
-        Require(File.ReadAllBytes(path).SequenceEqual(bytes) && good.Requests == 1, "verified download not published");
-        await downloader.EnsureFileAsync(file, CancellationToken.None);
-        Require(good.Requests == 1, "verified vanilla cache was downloaded again");
-        File.WriteAllBytes(path, [0, 0, 0, 0]);
-        using var corrupt = new ScriptedHandler(_ => new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            { Content = new ByteArrayContent([1, 2, 3, 4]) });
-        using var corruptClient = new HttpClient(corrupt);
-        var failure = await CaptureExceptionAsync(() =>
-            new AndroidVanillaDownloader(corruptClient).EnsureFileAsync(file, CancellationToken.None));
-        Require(failure is InvalidDataException && !Directory.EnumerateFiles(root.Path, "*.part-*", SearchOption.AllDirectories).Any(),
-            "corrupt download was accepted or left a staging file");
-        await downloader.EnsureFileAsync(file, CancellationToken.None);
-        Require(File.ReadAllBytes(path).SequenceEqual(bytes) && good.Requests == 2, "corrupt vanilla cache was not repaired");
-    }
-
-    private static async Task VanillaNetworkSmokeAsync()
-    {
-        using var root = new TempRoot();
-        using var client = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false })
-        {
-            Timeout = TimeSpan.FromSeconds(20)
-        };
-        using var budget = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var downloader = new AndroidVanillaDownloader(client);
-        var metadata = await downloader.GetManifestAsync(root.Path, budget.Token);
-        await downloader.EnsureFileAsync(metadata.AssetIndex, budget.Token);
-        await downloader.EnsureFileAsync(metadata.LoggingConfig, budget.Token);
-        var assets = metadata.ReadAssets(await File.ReadAllBytesAsync(metadata.AssetIndex.Destination, budget.Token));
-        var smallest = assets.MinBy(asset => asset.Size)!;
-        await downloader.EnsureFileAsync(smallest, budget.Token);
-        Require(File.Exists(smallest.Destination), "official Mojang asset did not enter the cache");
-    }
-
-    private static async Task VanillaManifestCacheAsync(string fixtures)
-    {
-        using var root = new TempRoot();
-        using var handler = ScriptedHandler.ForBytes(File.ReadAllBytes(Path.Combine(fixtures, "1.21.1.json")));
-        using var http = new HttpClient(handler);
-        var downloader = new AndroidVanillaDownloader(http);
-        await downloader.GetManifestAsync(root.Path, CancellationToken.None);
-        await downloader.GetManifestAsync(root.Path, CancellationToken.None);
-        Require(handler.Requests == 1, "cached official metadata was fetched again");
-        var path = Path.Combine(root.Path, "versions", "1.21.1", "1.21.1.json");
-        File.WriteAllBytes(path, "bad"u8.ToArray());
-        await downloader.GetManifestAsync(root.Path, CancellationToken.None);
-        Require(handler.Requests == 2 && File.ReadAllBytes(path).SequenceEqual(File.ReadAllBytes(Path.Combine(fixtures, "1.21.1.json"))),
-            "pinned metadata was not repaired");
-    }
-
-    private static void VanillaOfficialManifestAndIndex(string fixtures)
-    {
-        using var root = new TempRoot();
-        var metadata = AndroidVanilla1211.Read(File.ReadAllBytes(Path.Combine(fixtures, "1.21.1.json")), root.Path);
-        Require(metadata.BootstrapFiles.Length == 49 && metadata.ClassPath.Length == 47, "unexpected bootstrap/classpath size");
-        Require(metadata.ClassPath[^1] == Path.Combine(root.Path, "versions", "1.21.1", "1.21.1.jar"), "client must be last");
-        Require(metadata.ClassPath.All(path => !path.Contains("natives-") && !path.Contains("native-epoll") && !path.Contains("java-objc-bridge")),
-            "desktop library leaked into Android classpath");
-        var assets = metadata.ReadAssets(File.ReadAllBytes(Path.Combine(fixtures, "17.json")));
-        Require(assets.Length == 3890 && assets.Sum(file => file.Size) == 828799274, "asset deduplication or size mismatch");
-        Require(CaptureException(() => metadata.ReadAssets("{}"u8.ToArray())) is InvalidDataException,
-            "unverified asset index was accepted");
-        var plan = metadata.MakeLaunchPlan("Test Player", Guid.Parse("4917675b-1548-4187-8e37-4f371d88870e"),
-            "opaque ${auth_uuid}", "Client Id", "42", Path.Combine(root.Path, "native test"), 1280, 720, 1024, "test");
-        Require(plan.MainClass == "net.minecraft.client.main.Main" && plan.GameArguments.Contains("Test Player") &&
-            plan.GameArguments.Contains("opaque ${auth_uuid}") && plan.GameArguments.Contains("Client Id"),
-            "launch arguments were re-tokenized or recursively expanded");
-        Require(plan.GameArguments.Contains("--width") && plan.GameArguments.Contains("1280") && !plan.GameArguments.Contains("--demo"),
-            "feature rule mismatch");
-        var vmOptions = AndroidJavaArguments.BuildVmOptions(plan);
-        Require(vmOptions.Contains("-Djava.class.path=" + string.Join(Path.PathSeparator, metadata.ClassPath)) &&
-            vmOptions.Contains("-Djava.library.path=" + Path.Combine(root.Path, "native test")) &&
-            vmOptions.All(value => value != "-XstartOnFirstThread" && !value.Contains("javaw.exe")),
-            "JNI argument mapping or platform filtering mismatch");
     }
 
     private static void AndroidNativeSelectionExcludesDesktop()

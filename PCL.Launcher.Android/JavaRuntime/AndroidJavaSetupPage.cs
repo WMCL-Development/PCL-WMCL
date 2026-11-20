@@ -52,23 +52,6 @@ internal sealed class AndroidJavaSetupPage : MyPageRight, IRefreshable
             Spacing = 10,
             Children = { description, _versions, _state, _progress, actions }
         };
-        if (AndroidJavaPaths.IsSupported && AndroidLwjglProbe.IsAvailable)
-        {
-            var lwjgl = new Button { Content = "LWJGL 3.3.3 / Java 21" };
-            lwjgl.Click += (_, _) =>
-            {
-                if (_operation is null)
-                    AndroidLwjglProbeActivity.Open(MainActivity.Current is { } activity ? activity : Context);
-            };
-            content.Children.Add(lwjgl);
-            var vanilla = new Button { Content = "原版 1.21.1（探针账号）" };
-            vanilla.Click += (_, _) =>
-            {
-                if (_operation is null)
-                    AndroidLwjglProbeActivity.Open(MainActivity.Current is { } activity ? activity : Context, vanilla: true);
-            };
-            content.Children.Add(vanilla);
-        }
         var card = new MyCard { Children = { content } };
         PanScroll = new MyScrollViewer { Content = new Border { Padding = new Thickness(20), Child = card } };
         Child = PanScroll;
