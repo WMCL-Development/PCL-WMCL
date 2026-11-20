@@ -38,9 +38,13 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            11.0.x
-            10.0.x
+          dotnet-version: 11.0.x
+
+      - name: Set up Android build JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: '21'
 
       - name: Install Android workload
         run: dotnet workload install android
@@ -136,7 +140,7 @@ jobs:
             esac
           fi
 
-          dotnet build PCL.Launcher.Android/PCL.Launcher.Android.csproj             -c "$ANDROID_CONFIG" -p:AndroidPackageFormat=apk -p:UseSharedCompilation=false             -p:ApplicationVersion="$VERSION_CODE"             -p:ApplicationDisplayVersion="$VERSION_NAME"             -p:AndroidKeyStore=true             -p:AndroidSigningKeyStore="$RUNNER_TEMP/android-signing/release.jks"             -p:AndroidSigningStorePass="$ANDROID_KEYSTORE_PASSWORD"             -p:AndroidSigningKeyAlias="$ANDROID_KEY_ALIAS"             -p:AndroidSigningKeyPass="$ANDROID_KEY_PASSWORD"             $RID_ARG
+          dotnet build PCL.Launcher.Android/PCL.Launcher.Android.csproj             -c "$ANDROID_CONFIG" -p:AndroidPackageFormat=apk -p:JavaSdkDirectory="$JAVA_HOME" -p:UseSharedCompilation=false             -p:ApplicationVersion="$VERSION_CODE"             -p:ApplicationDisplayVersion="$VERSION_NAME"             -p:AndroidKeyStore=true             -p:AndroidSigningKeyStore="$RUNNER_TEMP/android-signing/release.jks"             -p:AndroidSigningStorePass="$ANDROID_KEYSTORE_PASSWORD"             -p:AndroidSigningKeyAlias="$ANDROID_KEY_ALIAS"             -p:AndroidSigningKeyPass="$ANDROID_KEY_PASSWORD"             $RID_ARG
 
       - name: Collect and verify APK
         run: |
@@ -148,6 +152,17 @@ jobs:
           fi
           OUT="PCL2_CE_${{ inputs.configuration }}_android_$ABI.apk"
           cp "$APK" "$OUT"
+          python3 - "$OUT" <<'PY'
+          import sys
+          import zipfile
+
+          with zipfile.ZipFile(sys.argv[1]) as apk:
+              bundled_jdk = [name for name in apk.namelist()
+                             if name.rsplit('/', 1)[-1] in {'libjvm.so', 'libjava.so', 'libjli.so', 'rt.jar'}
+                             or name.endswith(('.tar.xz', '/lib/modules', '/bin/java'))]
+          if bundled_jdk:
+              raise SystemExit(f'APK must not embed a JDK: {bundled_jdk}')
+          PY
           BUILD_TOOLS=$(ls -d "$ANDROID_HOME/build-tools/"*/ 2>/dev/null | sort -V | tail -n 1)
           if [ -n "$BUILD_TOOLS" ]; then
             "$BUILD_TOOLS/apksigner" verify --print-certs "$OUT"
