@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using PCL.Core.IO;
 using PCL.Core.Platform;
 
@@ -163,6 +163,9 @@ public static partial class Libraries
                 continue;
 
             var name = library["name"]?.ToString() ?? "";
+            if (library["natives"] is null && !Rules.AllowsLibraryArtifact(name, library["downloads"]?["artifact"]?["path"]?.ToString()))
+                continue;
+
             var rootUrl = library["url"]?.ToString();
             if (rootUrl is not null)
                 rootUrl += McLibGet(

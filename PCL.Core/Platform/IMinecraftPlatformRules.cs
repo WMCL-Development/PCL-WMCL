@@ -14,6 +14,9 @@ public interface IMinecraftPlatformRules
 
     bool MatchesArchRule(string arch);
 
+    /// <summary>Whether a direct artifact (including modern classifier coordinates) is usable on this platform.</summary>
+    bool AllowsLibraryArtifact(string coordinate, string? artifactPath) => true;
+
     /// <summary>游戏窗口尺寸参数是否按物理像素计算；为 <c>true</c> 时，按启动器窗口设置游戏窗口大小需要乘以显示缩放比。</summary>
     bool GameWindowUsesPhysicalPixels { get; }
 }

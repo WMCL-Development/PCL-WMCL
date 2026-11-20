@@ -32,7 +32,7 @@ public static class AndroidServiceRegistration
         services.AddSingleton<IPlatformPathService, LinuxPlatformPathService>();
         services.AddSingleton<ILaunchScriptService, PosixLaunchScriptService>();
         services.AddSingleton<IServerLaunchScriptService>(_ => new PosixServerLaunchScriptService(".sh"));
-        services.AddSingleton<IMinecraftPlatformRules, LinuxMinecraftPlatformRules>();
+        services.AddSingleton<IMinecraftPlatformRules, AndroidMinecraftPlatformRules>();
         services.AddSingleton<IShellCommandService, PosixShellCommandService>();
         services.AddSingleton<IProcessEnvironmentService, PosixProcessEnvironmentService>();
         return services;
