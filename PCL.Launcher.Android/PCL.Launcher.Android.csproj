@@ -10,6 +10,7 @@
         <TargetFramework>net11.0-android</TargetFramework>
         <LangVersion>15.0</LangVersion>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Configurations>Debug;Release</Configurations>
         <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
@@ -41,6 +42,7 @@
         <PackageReference Include="Sentry" Version="6.6.0" ExcludeAssets="build;buildTransitive" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
+        <PackageReference Include="SharpCompress" Version="0.50.1" />
     </ItemGroup>
     <ItemGroup>
         <!-- EasyTier 的 aarch64 静态二进制：以 lib*.so 形式打进 lib/arm64-v8a，
@@ -64,8 +66,73 @@
         <!-- 直接复用桌面端 UI：页面、视图模型与样式都来自 PCL.Launcher。
              桌面端是 Exe，不能作为工程引用，这里直接引用其产物程序集。 -->
         <Reference Include="PCL.Launcher">
-            <HintPath>..\PCL.Launcher\bin\$(Configuration)\net10.0\PCL.Launcher.dll</HintPath>
+            <HintPath>..\PCL.Launcher\bin\$(Configuration)\net11.0\PCL.Launcher.dll</HintPath>
             <Private>true</Private>
         </Reference>
     </ItemGroup>
+
+    <!-- Compile the probe for HotSpot only. It is not an Android (ART) Java source or binding. -->
+    <ItemGroup>
+        <AndroidJavaSource Remove="JavaRuntime/Probe/WmclJvmProbe.java;Graphics/Probe/WmclLwjglProbe.java;Graphics/Probe/WmclDesktopGlProbe.java" />
+    </ItemGroup>
+    <Target Name="CompileWmclJvmProbe" DependsOnTargets="_ResolveSdks"
+            Condition="'$(DesignTimeBuild)' != 'true'"
+            Inputs="$(MSBuildProjectFullPath);JavaRuntime/Probe/WmclJvmProbe.java"
+            Outputs="$(IntermediateOutputPath)jvm-probe/WmclJvmProbe.class">
+        <MakeDir Directories="$(IntermediateOutputPath)jvm-probe" />
+        <Exec Command="&quot;$(_JavaSdkDirectory)/bin/javac&quot; --release 8 -Xlint:-options -encoding UTF-8 -d &quot;$(IntermediateOutputPath)jvm-probe&quot; &quot;JavaRuntime/Probe/WmclJvmProbe.java&quot;" />
+        <ItemGroup>
+            <FileWrites Include="$(IntermediateOutputPath)jvm-probe/WmclJvmProbe.class" />
+        </ItemGroup>
+    </Target>
+    <!-- Opt-in diagnostic only. Keep the HotSpot jar out of ART/DEX and the .so in nativeLibraryDir. -->
+    <ItemGroup Condition="'$(WmclLwjglProbeAssets)' != '' And '$(RuntimeIdentifier)' == 'android-arm64'">
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/liblwjgl.so" Abi="arm64-v8a" />
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/libwmcl_glfw.so" Abi="arm64-v8a" />
+        <AndroidNativeLibraryNoJniPreload Include="liblwjgl.so;libwmcl_glfw.so" />
+        <!-- Optional game natives: packaged only when the probe assets carry them. -->
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/libGL.so" Abi="arm64-v8a"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/libGL.so')" />
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/libmobileglues.so" Abi="arm64-v8a"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/libmobileglues.so')" />
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/libopenal.so" Abi="arm64-v8a"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/libopenal.so')" />
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/liblwjgl_opengl.so" Abi="arm64-v8a"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/liblwjgl_opengl.so')" />
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/liblwjgl_stb.so" Abi="arm64-v8a"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/liblwjgl_stb.so')" />
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/liblwjgl_tinyfd.so" Abi="arm64-v8a"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/liblwjgl_tinyfd.so')" />
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/libfreetype.so" Abi="arm64-v8a"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/libfreetype.so')" />
+        <AndroidNativeLibrary Include="$(WmclLwjglProbeAssets)/libshaderc.so" Abi="arm64-v8a"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/libshaderc.so')" />
+        <AndroidNativeLibraryNoJniPreload Include="libGL.so;libmobileglues.so;libopenal.so;liblwjgl_opengl.so;liblwjgl_stb.so;liblwjgl_tinyfd.so;libfreetype.so;libshaderc.so" />
+        <AndroidAsset Include="$(WmclLwjglProbeAssets)/licenses/**/*" Link="lwjgl-probe/licenses/%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+    <Target Name="BuildWmclLwjglProbe" DependsOnTargets="_ResolveSdks" BeforeTargets="AssignTargetPaths"
+            Condition="'$(DesignTimeBuild)' != 'true' And '$(WmclLwjglProbeAssets)' != ''">
+        <Error Condition="'$(RuntimeIdentifier)' != 'android-arm64'" Text="The opt-in LWJGL probe requires an android-arm64 APK." />
+        <Error Condition="!Exists('$(WmclLwjglProbeAssets)/liblwjgl.so') Or !Exists('$(WmclLwjglProbeAssets)/libwmcl_glfw.so')
+                        Or !Exists('$(WmclLwjglProbeAssets)/lwjgl-3.3.3.jar') Or !Exists('$(WmclLwjglProbeAssets)/lwjgl-glfw-3.3.3.jar')"
+               Text="Prepare the opt-in LWJGL assets with scripts/fetch-lwjgl-probe-android.sh and build the GLFW shim." />
+        <MakeDir Directories="$(IntermediateOutputPath)lwjgl-probe" />
+        <Exec Command="&quot;$(_JavaSdkDirectory)/bin/javac&quot; --release 8 -Xlint:-options -encoding UTF-8 -cp &quot;$(WmclLwjglProbeAssets)/lwjgl-3.3.3.jar&#58;$(WmclLwjglProbeAssets)/lwjgl-glfw-3.3.3.jar&#58;$(WmclLwjglProbeAssets)/lwjgl-opengl-3.3.3.jar&quot; -d &quot;$(IntermediateOutputPath)lwjgl-probe&quot; &quot;Graphics/Probe/WmclLwjglProbe.java&quot; &quot;Graphics/Probe/WmclDesktopGlProbe.java&quot;" />
+        <ItemGroup>
+            <EmbeddedResource Include="$(IntermediateOutputPath)lwjgl-probe/WmclLwjglProbe.class" LogicalName="WmclLwjglProbe.class" />
+            <EmbeddedResource Include="$(IntermediateOutputPath)lwjgl-probe/WmclDesktopGlProbe.class" LogicalName="WmclDesktopGlProbe.class" />
+            <EmbeddedResource Include="$(WmclLwjglProbeAssets)/lwjgl-3.3.3.jar" LogicalName="wmcl.lwjgl-3.3.3.jar" />
+            <EmbeddedResource Include="$(WmclLwjglProbeAssets)/lwjgl-glfw-3.3.3.jar" LogicalName="wmcl.lwjgl-glfw-3.3.3.jar" />
+            <EmbeddedResource Include="$(WmclLwjglProbeAssets)/lwjgl-opengl-3.3.3.jar" LogicalName="wmcl.lwjgl-opengl-3.3.3.jar"
+                              Condition="Exists('$(WmclLwjglProbeAssets)/lwjgl-opengl-3.3.3.jar')" />
+            <FileWrites Include="$(IntermediateOutputPath)lwjgl-probe/WmclLwjglProbe.class" />
+            <FileWrites Include="$(IntermediateOutputPath)lwjgl-probe/WmclDesktopGlProbe.class" />
+        </ItemGroup>
+    </Target>
+    <Target Name="AddWmclJvmProbeResource" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileWmclJvmProbe"
+            Condition="'$(DesignTimeBuild)' != 'true'">
+        <ItemGroup>
+            <EmbeddedResource Include="$(IntermediateOutputPath)jvm-probe/WmclJvmProbe.class" LogicalName="WmclJvmProbe.class" />
+        </ItemGroup>
+    </Target>
 </Project>

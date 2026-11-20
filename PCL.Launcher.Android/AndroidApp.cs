@@ -110,6 +110,13 @@ public class PclAndroidApplication : AvaloniaAndroidApplication<PclAndroidApp>
     {
     }
 
+    public override void OnCreate()
+    {
+        // Avalonia 的 Application.OnCreate 会初始化整套启动器 UI。JVM 进程只运行服务。
+        if (!AndroidJavaPaths.IsJvmProcess)
+            base.OnCreate();
+    }
+
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder) =>
         base.CustomizeAppBuilder(builder)
             .WithInterFont()

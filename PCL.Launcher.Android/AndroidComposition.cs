@@ -20,7 +20,11 @@ public static class AndroidComposition
     public static void Initialize()
     {
         PlatformServiceRegistration.CustomRegistration = services => services.AddAndroidPlatformServices();
-        AvaloniaUiServiceRegistration.CustomRegistration = services => services.AddAndroidUiServices();
+        AvaloniaUiServiceRegistration.CustomRegistration = services =>
+        {
+            services.AddAndroidUiServices();
+            services.AddSingleton<IJavaSetupPageFactory, AndroidJavaSetupPageFactory>();
+        };
 
         var applicationServices = new ApplicationServices
         {

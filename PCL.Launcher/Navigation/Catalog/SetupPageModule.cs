@@ -26,7 +26,8 @@ public sealed class SetupPageModule : IPageModule
             "lucide/coffee",
             "game",
             1,
-            (sp, _) => ActivatorUtilities.CreateInstance<PageSetupJava>(sp),
+            (sp, _) => sp.GetService<IJavaSetupPageFactory>()?.Create() ??
+                       ActivatorUtilities.CreateInstance<PageSetupJava>(sp),
             () => !Config.Preference.Hide.SetupJava,
             true),
         Sub(
