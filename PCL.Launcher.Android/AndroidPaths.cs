@@ -13,13 +13,17 @@ public static class AndroidPaths
         try
         {
             var context = global::Android.App.Application.Context;
-            var external = context.GetExternalFilesDir(null)?.AbsolutePath;
-            var root = !string.IsNullOrWhiteSpace(external) && Directory.Exists(external)
-                ? Path.Combine(external, "pcl")
-                : Path.Combine(context.FilesDir!.AbsolutePath, "pcl");
+            // GetExternalFilesDir hands back a path whose directory may not exist yet on the
+            // first frame after install, so create it instead of testing for it: testing sent
+            // the whole launcher to app-private storage and that choice then stuck, because the
+            // selected folder is persisted.
+            var root = CreateRoot(context.GetExternalFilesDir(null)?.AbsolutePath)
+                       ?? CreateRoot(context.FilesDir!.AbsolutePath);
+            if (root is null)
+                return;
 
-            Directory.CreateDirectory(root);
             Environment.SetEnvironmentVariable("PCL_ANDROID_ROOT", root);
+            global::Android.Util.Log.Info("WMCL.PATHS", "数据目录：" + root);
 
             // EasyTier 的 core/cli 以 lib*.so 随 APK 分发在 nativeLibraryDir，
             // 该目录允许执行；shared-local 里的路径在 Android 上既不存在也不能执行。
@@ -41,6 +45,24 @@ public static class AndroidPaths
         catch (Exception)
         {
             // 解析失败时让 Paths 走默认回退逻辑。
+        }
+    }
+
+    /// <summary>Creates and returns `&lt;base&gt;/pcl`, or null when that location is unusable.</summary>
+    private static string? CreateRoot(string? basePath)
+    {
+        if (string.IsNullOrWhiteSpace(basePath))
+            return null;
+        try
+        {
+            var root = Path.Combine(basePath, "pcl");
+            Directory.CreateDirectory(root);
+            return root;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            global::Android.Util.Log.Warn("WMCL.PATHS", $"无法创建 {basePath}/pcl：{exception.Message}");
+            return null;
         }
     }
 }
