@@ -26,7 +26,6 @@ internal sealed class AndroidJavaSetupPage : MyPageRight, IRefreshable
     private readonly Button _cancel = new();
     private readonly Button _graphics = new();
     private readonly TextBlock _state = new() { TextWrapping = TextWrapping.Wrap };
-    private readonly Button _install = new() { Content = "安装原版 1.21.1" };
     private readonly ProgressBar _progress = new() { IsVisible = false };
     private CancellationTokenSource? _operation;
 
@@ -40,7 +39,6 @@ internal sealed class AndroidJavaSetupPage : MyPageRight, IRefreshable
         _run.Click += async (_, _) => await RunProbeAsync();
         _cancel.Click += (_, _) => _operation?.Cancel();
         _graphics.Click += (_, _) => OpenGraphicsProbe();
-        _install.Click += async (_, _) => await InstallVanillaAsync();
         _versions.SelectionChanged += (_, _) => Refresh();
         var actions = new StackPanel
         {
@@ -48,17 +46,11 @@ internal sealed class AndroidJavaSetupPage : MyPageRight, IRefreshable
             Orientation = Avalonia.Layout.Orientation.Horizontal,
             Children = { _run, _cancel, _graphics }
         };
-        var installRow = new StackPanel
-        {
-            Spacing = 8,
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            Children = { _install }
-        };
         var content = new StackPanel
         {
             Margin = new Thickness(16),
             Spacing = 10,
-            Children = { description, _versions, _state, _progress, actions, installRow }
+            Children = { description, _versions, _state, _progress, actions }
         };
         var card = new MyCard { Children = { content } };
         PanScroll = new MyScrollViewer { Content = new Border { Padding = new Thickness(20), Child = card } };
@@ -157,46 +149,6 @@ internal sealed class AndroidJavaSetupPage : MyPageRight, IRefreshable
             _versions.IsEnabled = true;
             _cancel.IsVisible = false;
             _progress.IsVisible = false;
-        }
-    }
-
-    /// <summary>
-    /// Installs a vanilla version through the launcher's own pipeline, using whichever
-    /// folder and Java runtime this platform has configured.
-    /// </summary>
-    private async Task InstallVanillaAsync()
-    {
-        if (_operation is not null || !AndroidJavaPaths.IsSupported)
-            return;
-
-        using var operation = new CancellationTokenSource();
-        _operation = operation;
-        _install.IsEnabled = false;
-        _progress.IsVisible = true;
-        _progress.IsIndeterminate = false;
-        _progress.Value = 0;
-        _state.Text = "准备安装…";
-        try
-        {
-            var instance = await Task.Run(() => AndroidInstanceInstaller.EnsureInstalled((stage, value) =>
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (operation.IsCancellationRequested) return;
-                    _state.Text = $"{stage} {value:P0}";
-                    _progress.Value = Math.Clamp(value, 0, 1);
-                })), operation.Token);
-            _state.Text = $"已安装：{instance.Name}";
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            LogWrapper.Warn(exception, "Android JVM", "安装原版失败");
-            _state.Text = "安装失败：" + exception.Message;
-        }
-        finally
-        {
-            _operation = null;
-            _install.IsEnabled = true;
-            _progress.IsIndeterminate = false;
         }
     }
 
