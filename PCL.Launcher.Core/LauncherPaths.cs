@@ -69,6 +69,12 @@ public static class LauncherPaths
 
     private static string _GetUserDataRoot()
     {
+        // Android's executable directory is /system/bin, which is read-only and holds no
+        // launcher data. Keep the data root inside the app's private storage, next to the
+        // default Minecraft folder resolved below.
+        if (OperatingSystem.IsAndroid())
+            return _WithTrailingSeparator(PCL.Core.App.Paths.Data);
+
         var dataDirectory = Environment.GetEnvironmentVariable("PCL_DATA_DIR");
         if (!string.IsNullOrWhiteSpace(dataDirectory))
             return _WithTrailingSeparator(Paths.ExpandUserPath(dataDirectory));

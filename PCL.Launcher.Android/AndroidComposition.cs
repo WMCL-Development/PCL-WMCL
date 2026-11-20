@@ -49,12 +49,9 @@ public static class AndroidComposition
     /// </summary>
     public static void ConfigureMinecraftStorage(Context context)
     {
-        var root = Path.Combine(context.FilesDir!.AbsolutePath, "minecraft");
-        global::Android.Util.Log.Info("WMCL.MC", "Minecraft 存储：" + root);
-        Directory.CreateDirectory(root);
-        GameFolders.ApplySelectedFolder(root);
-        // Android keeps every native library in the app's lib directory; there is nothing to
-        // extract from the version jars.
+        // The folder itself comes from the shared default resolution (app-private on Android);
+        // only the natives question is platform specific, because every native library already
+        // sits in the APK's lib directory and nothing has to be extracted.
         GameLaunch.PlatformNativesFolder = () => context.ApplicationInfo!.NativeLibraryDir!;
     }
 }
