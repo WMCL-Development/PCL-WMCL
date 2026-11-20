@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!--
+        独立可移植测试工程：直接编译 PCL.Launcher.Android/JavaRuntime 下的真实源码，
+        避免为了测试把安装器复制一份而产生偏差。目标框架是桌面 net11.0，
+        不依赖 Android workload，可在普通构建机上验证真实 JDK 归档。
+    -->
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net11.0</TargetFramework>
+        <LangVersion>15.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>PCL.Android.Tests</RootNamespace>
+        <AssemblyName>AndroidJavaRuntime.Tests</AssemblyName>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- 测试只在 Linux CI/开发机运行；Unix 权限断言不适用于 Windows。 -->
+        <NoWarn>$(NoWarn);CA1416</NoWarn>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="..\..\PCL.Core\Platform\IMinecraftPlatformRules.cs" Link="AndroidPlatform\IMinecraftPlatformRules.cs" />
+        <Compile Include="..\..\PCL.Platform.Android\AndroidMinecraftPlatformRules.cs" Link="AndroidPlatform\AndroidMinecraftPlatformRules.cs" />
+        <Compile Include="..\..\PCL.Launcher.Core\Launch\JavaLaunchPlan.cs" Link="JavaRuntime\JavaLaunchPlan.cs" />
+        <Compile Include="..\..\PCL.Launcher.Core\Launch\JavaArgumentTokens.cs" Link="JavaRuntime\JavaArgumentTokens.cs" />
+        <Compile Include="..\..\PCL.Launcher.Core\Launch\Android\AndroidVanilla1211.cs" Link="Vanilla\AndroidVanilla1211.cs" />
+        <Compile Include="..\..\PCL.Launcher.Core\Launch\Android\AndroidVanillaDownloader.cs" Link="Vanilla\AndroidVanillaDownloader.cs" />
+        <Compile Include="..\..\PCL.Launcher.Android\JavaRuntime\AndroidJavaArguments.cs" Link="JavaRuntime\AndroidJavaArguments.cs" />
+        <Compile Include="..\..\PCL.Launcher.Android\JavaRuntime\JavaRuntimePackage.cs" Link="JavaRuntime\JavaRuntimePackage.cs" />
+        <Compile Include="..\..\PCL.Launcher.Android\JavaRuntime\JavaRuntimeInstaller.cs" Link="JavaRuntime\JavaRuntimeInstaller.cs" />
+        <Compile Include="..\..\PCL.Launcher.Android\JavaRuntime\JavaRuntimeTar.cs" Link="JavaRuntime\JavaRuntimeTar.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="SharpCompress" Version="0.50.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="Fixtures/**" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+</Project>
