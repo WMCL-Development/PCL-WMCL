@@ -56,6 +56,17 @@ public class PclAndroidApp : Avalonia.Application
         // 页面依赖应用运行时（平台服务、配置、日志、本地化），必须先初始化再创建界面。
         AndroidRuntimeSetup.Initialize();
         AndroidBootstrap.Breadcrumb("App: 运行时已初始化");
+        // The launcher's download and launch pipeline works on the selected folder; on Android
+        // that folder is app-private and the natives come from the APK.
+        try
+        {
+            AndroidComposition.ConfigureMinecraftStorage(global::Android.App.Application.Context);
+            AndroidBootstrap.Breadcrumb("App: Minecraft 存储已配置");
+        }
+        catch (Exception exception)
+        {
+            AndroidBootstrap.RecordFatal("App.MinecraftStorage", exception);
+        }
 
         try
         {

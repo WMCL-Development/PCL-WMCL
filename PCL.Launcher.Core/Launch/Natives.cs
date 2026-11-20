@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using PCL.Core.App.Localization;
 using PCL.Core.IO;
 using PCL.Core.Platform;
@@ -105,6 +105,8 @@ public static partial class GameLaunch
     /// <summary>获取 Natives 文件夹路径，不以路径分隔符结尾。</summary>
     private static string GetNativesFolder()
     {
+        if (PlatformNativesFolder is { } platform)
+            return platform();
         var instance = InstanceList.McMcInstanceSelected!;
         var result = Path.Combine(instance.PathInstance, $"{instance.Name}-natives");
         if (SystemInfo.IsGBKEncoding || result.IsAscii())

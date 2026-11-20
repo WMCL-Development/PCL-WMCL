@@ -395,7 +395,7 @@ public static partial class GameLaunch
     {
         var loaders = new List<Loading.LoaderBase>();
         loaders.AddRange(_CreateGameFileLoaders(skipClientDownloads));
-        loaders.AddRange(_CreateProcessLoaders());
+        loaders.AddRange(PlatformLaunchLoaders?.Invoke() ?? _CreateProcessLoaders());
 
         return new Loading.LoaderCombo<object>(Lang.Text("Minecraft.Launch.Stage.Root"), loaders)
         {

@@ -1,3 +1,4 @@
+using Android.Content;
 using Microsoft.Extensions.DependencyInjection;
 using PCL;
 using PCL.Core.Platform;
@@ -39,5 +40,21 @@ public static class AndroidComposition
 
         _services = LauncherServiceRegistration.Build(applicationServices);
         PageRegistry.Initialize(_services.GetRequiredService<PageHostFactory>());
+    }
+
+    /// <summary>
+    /// Points the launcher's existing download and launch pipeline at app-private storage and
+    /// at the natives that ship inside the APK. Without this the mature Minecraft code would
+    /// keep resolving desktop paths that do not exist on Android.
+    /// </summary>
+    public static void ConfigureMinecraftStorage(Context context)
+    {
+        var root = Path.Combine(context.FilesDir!.AbsolutePath, "minecraft");
+        global::Android.Util.Log.Info("WMCL.MC", "Minecraft 存储：" + root);
+        Directory.CreateDirectory(root);
+        GameFolders.ApplySelectedFolder(root);
+        // Android keeps every native library in the app's lib directory; there is nothing to
+        // extract from the version jars.
+        GameLaunch.PlatformNativesFolder = () => context.ApplicationInfo!.NativeLibraryDir!;
     }
 }
