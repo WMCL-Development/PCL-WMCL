@@ -9,14 +9,17 @@ public sealed class PosixLaunchScriptService : ILaunchScriptService
 
     public string CreateScript(LaunchScriptOptions options)
     {
+        var arguments = string.Join(' ', options.Arguments.Select(Quote));
         return "#!/bin/sh\n"
-            + $"echo {options.StartingText}\n"
-            + $"cd \"{options.WorkingDirectory}\"\n"
+            + $"printf '%s\n' {Quote(options.StartingText)}\n"
+            + $"cd {Quote(options.WorkingDirectory)} || exit 1\n"
             + $"{options.GlobalCommand}\n"
             + $"{options.VersionCommand}\n"
-            + $"\"{options.JavaExecutablePath}\" {options.Arguments}\n"
-            + $"echo {options.ExitedText}\n";
+            + $"{Quote(options.JavaExecutablePath)} {arguments}\n"
+            + $"printf '%s\n' {Quote(options.ExitedText)}\n";
     }
+
+    private static string Quote(string value) => "'" + value.Replace("'", "'\\''") + "'";
 
     public void MakeExecutable(string path)
     {

@@ -8,20 +8,17 @@ namespace PCL;
 
 public static partial class GameLaunch
 {
-    private static string _mcLaunchArgument = "";
+    private static JavaLaunchPlan? _mcLaunchPlan;
 
     private static readonly Lock ExtractJavaWrapperLock = new();
 
     private static readonly Lock ExtractLinkDLock = new();
 
-    internal static void SecretLaunchJvmArgs(ref List<string> dataList)
+    private static void AppendConfiguredJvmOptions(List<string> dataList, McInstance instance)
     {
-        var dataJvmCustom = Config.Instance.JvmArgs[
-            InstanceList.McMcInstanceSelected!.PathInstance
-        ];
-        dataList.Insert(
-            0,
-            string.IsNullOrEmpty(dataJvmCustom) ? Config.Launch.JvmArgs : dataJvmCustom);
+        var custom = Config.Instance.JvmArgs[instance.PathInstance];
+        dataList.InsertRange(0, JavaLaunchPlan.TokenizeLegacy(
+            string.IsNullOrEmpty(custom) ? Config.Launch.JvmArgs : custom));
         _ApplyPreferredIpStackArgs(dataList);
 
         var availableBytes = ApplicationRuntime.Current.Platform.SystemFacts
@@ -32,7 +29,7 @@ public static partial class GameLaunch
 
         _ApplyMemoryArgs(dataList);
 
-        if (!dataList.Any(d => d.Contains("-Dlog4j2.formatMsgNoLookups=true")))
+        if (!dataList.Contains("-Dlog4j2.formatMsgNoLookups=true", StringComparer.Ordinal))
             dataList.Add("-Dlog4j2.formatMsgNoLookups=true");
     }
 
@@ -226,149 +223,86 @@ public static partial class GameLaunch
         Loading.LoaderTask<string, List<Libraries.McLibToken>> loader)
     {
         McLaunchLog("开始获取 Minecraft 启动参数");
-        var mc = InstanceList.McMcInstanceSelected!;
-        var arguments = _CollectJvmArguments(mc);
-        McLaunchLog(arguments);
+        var instance = InstanceList.McMcInstanceSelected!;
+        var mainClass = instance.JsonObject["mainClass"]?.ToString();
+        if (string.IsNullOrWhiteSpace(mainClass))
+            throw new InvalidOperationException(Lang.Text("Minecraft.Launch.Error.MissingMainClass"));
 
-        arguments = _AppendGameArguments(arguments, mc);
-        arguments = _ApplyEncodingArguments(arguments);
-        arguments = arguments.Replace(" -Dos.name=Windows 10", " -Dos.name=\"Windows 10\"");
-        arguments = _ApplyExtraArguments(arguments, mc);
+        var options = instance.JsonObject["arguments"]?["jvm"] is null
+            ? BuildLegacyJvmOptions(instance)
+            : BuildModernJvmOptions(instance);
+        ApplyEncodingOptions(options, mcLaunchJavaSelected!.Installation.MajorVersion);
 
-        var replaceArguments = McLaunchArgumentsReplace(mc, ref loader);
-        arguments = _RemoveEmptyVersionType(arguments, replaceArguments);
-        var finalArguments = _ApplyReplacements(arguments, replaceArguments);
-        finalArguments = _AppendWorldAndServerArguments(finalArguments, mc);
-
-        McLaunchLog("Minecraft 启动参数：");
-        McLaunchLog(finalArguments);
-        _mcLaunchArgument = finalArguments;
-    }
-
-    private static string _CollectJvmArguments(McInstance mc)
-    {
-        if (mc.JsonObject["arguments"]?["jvm"] is not null)
+        var game = new List<string>();
+        if (instance.JsonObject["minecraftArguments"]?.ToString() is { Length: > 0 } legacyGame)
         {
-            McLaunchLog("获取新版 JVM 参数");
-            var arguments = McLaunchArgumentsJvmNew(mc);
-            McLaunchLog("新版 JVM 参数获取成功：");
-            return arguments;
+            var tokens = JavaLaunchPlan.TokenizeLegacy(legacyGame).ToList();
+            if (!tokens.Contains("--height", StringComparer.Ordinal)
+                && instance.releaseTime >= new DateTime(2013, 6, 17))
+                tokens.AddRange(["--height", "${resolution_height}", "--width", "${resolution_width}"]);
+            ApplyOptiFineTweakClass(tokens, instance);
+            game.AddRange(tokens);
         }
 
-        McLaunchLog("获取旧版 JVM 参数");
-        var oldArguments = McLaunchArgumentsJvmOld(mc);
-        McLaunchLog("旧版 JVM 参数获取成功：");
-        return oldArguments;
-    }
-
-    private static string _AppendGameArguments(string arguments, McInstance mc)
-    {
-        if (!string.IsNullOrEmpty(mc.JsonObject["minecraftArguments"]?.ToString()))
+        if (instance.JsonObject["arguments"]?["game"] is not null)
         {
-            McLaunchLog("获取旧版 Game 参数");
-            arguments += $" {McLaunchArgumentsGameOld(mc)}";
-            McLaunchLog("旧版 Game 参数获取成功");
+            var tokens = JavaArgumentTokens.DeduplicateGroups(CollectInheritedArguments(instance, "game"));
+            ApplyOptiFineTweakClass(tokens, instance);
+            game.AddRange(tokens);
         }
 
-        if (mc.JsonObject["arguments"]?["game"] is null)
-            return arguments;
+        if (Config.Launch.GameWindowMode == GameWindowSizeMode.Fullscreen)
+            game.Add("--fullscreen");
+        foreach (var extra in currentLaunchOptions!.ExtraArgs)
+            game.AddRange(JavaLaunchPlan.TokenizeLegacy(extra));
+        var custom = Config.Instance.GameArgs[instance.PathInstance];
+        game.AddRange(JavaLaunchPlan.TokenizeLegacy(string.IsNullOrEmpty(custom) ? Config.Launch.GameArgs : custom));
 
-        McLaunchLog("获取新版 Game 参数");
-        arguments += $" {McLaunchArgumentsGameNew(mc)}";
-        McLaunchLog("新版 Game 参数获取成功");
-        return arguments;
+        var replacements = BuildArgumentReplacements(instance, loader, out var classPath);
+        var resolvedGame = JavaArgumentTokens.ExpandGame(game, replacements);
+        AppendWorldAndServerArguments(resolvedGame, instance);
+        _mcLaunchPlan = new JavaLaunchPlan(
+            options.Select(token => JavaArgumentTokens.Expand(token, replacements)), mainClass, resolvedGame,
+            LauncherCommon.ShortenPath(instance.PathIndie), GetNativesFolder(), classPath, BuildDesktopWrapperOptions());
+        McLaunchLog($"已生成启动计划（JVM {_mcLaunchPlan.JvmOptions.Length} 项，游戏 {_mcLaunchPlan.GameArguments.Length} 项）");
     }
 
-    private static string _ApplyEncodingArguments(string arguments)
+    private static void ApplyEncodingOptions(List<string> options, int javaMajor)
     {
-        if (mcLaunchJavaSelected!.Installation.MajorVersion > 8)
+        AddDefault("-Dstdout.encoding=", "UTF-8", javaMajor > 8);
+        AddDefault("-Dstderr.encoding=", "UTF-8", javaMajor > 8);
+        AddDefault("-Dfile.encoding=", "COMPAT", javaMajor >= 18);
+
+        void AddDefault(string prefix, string value, bool enabled)
         {
-            if (!arguments.Contains("-Dstdout.encoding="))
-                arguments = $"-Dstdout.encoding=UTF-8 {arguments}";
-            if (!arguments.Contains("-Dstderr.encoding="))
-                arguments = $"-Dstderr.encoding=UTF-8 {arguments}";
+            if (enabled && !options.Any(option => option.StartsWith(prefix, StringComparison.Ordinal)))
+                options.Insert(0, prefix + value);
         }
-
-        if (mcLaunchJavaSelected.Installation.MajorVersion >= 18
-            && !arguments.Contains("-Dfile.encoding="))
-            arguments = $"-Dfile.encoding=COMPAT {arguments}";
-        return arguments;
     }
 
-    private static string _ApplyExtraArguments(string arguments, McInstance mc)
-    {
-        if (Config.Launch.GameWindowMode == 0)
-            arguments += " --fullscreen";
-
-        arguments = currentLaunchOptions!.ExtraArgs.Aggregate(
-            arguments,
-            (current, arg) => current + $" {arg.Trim()}");
-
-        var argumentGame = Config.Instance.GameArgs[mc.PathInstance];
-        return $"{arguments} {(string.IsNullOrEmpty(argumentGame)
-            ? Config.Launch.GameArgs
-            : argumentGame)}";
-    }
-
-    private static string _RemoveEmptyVersionType(
-        string arguments,
-        Dictionary<string, string> replaceArguments)
-    {
-        if (!string.IsNullOrWhiteSpace(replaceArguments["${version_type}"]))
-            return arguments;
-        arguments = arguments.Replace(" --versionType ${version_type}", "");
-        replaceArguments["${version_type}"] = "\"\"";
-        return arguments;
-    }
-
-    private static string _ApplyReplacements(
-        string arguments,
-        Dictionary<string, string> replaceArguments)
-    {
-        var finalArguments = "";
-        foreach (var argumentRaw in arguments.Split(" "))
-        {
-            var argument = replaceArguments.Aggregate(
-                argumentRaw,
-                (current, entry) => current.Replace(entry.Key, entry.Value));
-            if ((argument.Contains(' ') || argument.Contains(@":\"))
-                && !argument.EndsWithF("\""))
-                argument = $"\"{argument}\"";
-            finalArguments += $"{argument} ";
-        }
-
-        return finalArguments.TrimEnd();
-    }
-
-    private static string _AppendWorldAndServerArguments(string finalArguments, McInstance mc)
+    private static void AppendWorldAndServerArguments(List<string> arguments, McInstance instance)
     {
         var options = currentLaunchOptions!;
-        var worldName = options.WorldName;
-        if (worldName is not null)
-            finalArguments += $" --quickPlaySingleplayer \"{worldName}\"";
+        if (options.WorldName is { } world)
+            arguments.AddRange(["--quickPlaySingleplayer", world]);
 
         var server = string.IsNullOrEmpty(options.ServerIp)
-            ? Config.Instance.ServerToEnter[mc.PathInstance]
+            ? Config.Instance.ServerToEnter[instance.PathInstance]
             : options.ServerIp;
-        if (string.IsNullOrWhiteSpace(worldName) && !string.IsNullOrWhiteSpace(server))
-        {
-            if (mc.releaseTime > new DateTime(2023, 4, 4))
-            {
-                finalArguments += $" --quickPlayMultiplayer \"{server}\"";
-                return finalArguments;
-            }
+        if (!string.IsNullOrWhiteSpace(options.WorldName) || string.IsNullOrWhiteSpace(server))
+            return;
 
-            if (server.Contains(':'))
-                finalArguments += $" --server {server.Split(":")[0]} --port {server.Split(":")[1]}";
-            else
-                finalArguments += $" --server {server} --port 25565";
-            if (mc.Info.HasOptiFine)
-                LauncherUi.Interaction?.ShowHint(
-                    Lang.Text("Minecraft.Launch.Error.OptiFineAutoJoinWarning"),
-                    NotificationType.Error);
+        if (instance.releaseTime > new DateTime(2023, 4, 4))
+        {
+            arguments.AddRange(["--quickPlayMultiplayer", server]);
+            return;
         }
 
-        return finalArguments;
+        var (host, port) = JavaArgumentTokens.SplitLegacyServerAddress(server);
+        arguments.AddRange(["--server", host, "--port", port]);
+        if (instance.Info.HasOptiFine)
+            LauncherUi.Interaction?.ShowHint(
+                Lang.Text("Minecraft.Launch.Error.OptiFineAutoJoinWarning"), NotificationType.Error);
     }
 
     public class LaunchArgument

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace PCL.Core.Platform;
 
 /// <summary>启动脚本的平台相关生成与权限设置。</summary>
@@ -14,7 +16,7 @@ public interface ILaunchScriptService
 public sealed record LaunchScriptOptions(
     string WorkingDirectory,
     string JavaExecutablePath,
-    string Arguments,
+    IReadOnlyList<string> Arguments,
     string GlobalCommand,
     string VersionCommand,
     int JavaMajorVersion,

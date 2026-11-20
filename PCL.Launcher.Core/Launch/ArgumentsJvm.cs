@@ -11,57 +11,38 @@ namespace PCL;
 
 public static partial class GameLaunch
 {
-    private static string McLaunchArgumentsJvmOld(McInstance instance)
+    private static List<string> BuildLegacyJvmOptions(McInstance instance)
     {
         var dataList = new List<string>
         {
             "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"
         };
 
-        var argumentJvm = Config.Instance.JvmArgs[InstanceList.McMcInstanceSelected!.PathInstance];
-
-        if (string.IsNullOrEmpty(argumentJvm))
-            argumentJvm = Config.Launch.JvmArgs;
-
-        if (!argumentJvm.Contains("-Dlog4j2.formatMsgNoLookups=true"))
-            argumentJvm += " -Dlog4j2.formatMsgNoLookups=true";
-
-        argumentJvm = argumentJvm.Replace(" -XX:MaxDirectMemorySize=256M", "");
-
-        dataList.Insert(0, argumentJvm);
+        var custom = Config.Instance.JvmArgs[instance.PathInstance];
+        dataList.InsertRange(0, JavaLaunchPlan.TokenizeLegacy(
+            string.IsNullOrEmpty(custom) ? Config.Launch.JvmArgs : custom));
+        dataList.RemoveAll(option => option == "-XX:MaxDirectMemorySize=256M");
+        if (!dataList.Contains("-Dlog4j2.formatMsgNoLookups=true", StringComparer.Ordinal))
+            dataList.Add("-Dlog4j2.formatMsgNoLookups=true");
         _AddMemoryJvmArgs(dataList);
-
-        dataList.Add($"\"-Djava.library.path={GetNativesFolder()}\"");
-        dataList.Add("-cp ${classpath}");
+        dataList.Add("-Djava.library.path=${natives_directory}");
+        dataList.AddRange(["-cp", "${classpath}"]);
 
         _AddAuthlibInjectorJvmArgsOld(dataList);
         _AddDebugLog4jConfigJvmArgs(dataList, instance);
         _AddRendererJvmArgs(dataList);
         _AddProxyJvmArgs(dataList, instance);
         _AddLegacyFixJvmArgs(dataList, instance);
-        _AddJavaWrapperJvmArgs(dataList);
-
-        if (instance.JsonObject["mainClass"] is null)
-            throw new Exception(Lang.Text("Minecraft.Launch.Error.MissingMainClass"));
-
-        dataList.Add(instance.JsonObject["mainClass"]!.ToString());
-
-        return dataList.Join(" ");
+        return dataList;
     }
 
     private static void _AddMemoryJvmArgs(List<string> dataList)
     {
-        dataList.Add(
-            $"-Xmn{Math.Floor(MemorySettings.GetRam(
-                InstanceList.McMcInstanceSelected!,
-                !mcLaunchJavaSelected!.Installation.Is64Bit) * 1024d * 0.15d)}m");
-
-        var maxHeapArg = Math.Floor(
-            MemorySettings.GetRam(
-                InstanceList.McMcInstanceSelected!,
-                !mcLaunchJavaSelected.Installation.Is64Bit
-            )
-            * 1024d);
+        var memoryMb = MemorySettings.GetRam(
+            InstanceList.McMcInstanceSelected!, !mcLaunchJavaSelected!.Installation.Is64Bit) * 1024d;
+        var maxHeapArg = Math.Floor(memoryMb).ToString(CultureInfo.InvariantCulture);
+        var youngHeapArg = Math.Floor(memoryMb * 0.15d).ToString(CultureInfo.InvariantCulture);
+        dataList.Add($"-Xmn{youngHeapArg}m");
         dataList.Add($"-Xmx{maxHeapArg}m");
         if (dataList.Any(d => d.Contains("-Xms", StringComparison.OrdinalIgnoreCase)))
             return;
@@ -96,10 +77,11 @@ public static partial class GameLaunch
         {
             var response = Requester.FetchString(server);
             var prefetched = Convert.ToBase64String(Encoding.UTF8.GetBytes(response));
-            dataList.Insert(
-                0,
-                $"-javaagent:\"{Path.Combine(LauncherPaths.PureAsciiDirectory, "authlib-injector.jar")}\"={server} "
-                + $"-Dauthlibinjector.side=client -Dauthlibinjector.yggdrasil.prefetched={prefetched}");
+            dataList.InsertRange(0,
+            [
+                $"-javaagent:{Path.Combine(LauncherPaths.PureAsciiDirectory, "authlib-injector.jar")}={server}",
+                "-Dauthlibinjector.side=client", $"-Dauthlibinjector.yggdrasil.prefetched={prefetched}"
+            ]);
         }
         catch (WebException ex)
         {
@@ -128,7 +110,7 @@ public static partial class GameLaunch
             InstanceList.McMcInstanceSelected!.releaseTime.Year >= 2017
                 ? LaunchEnvUtils.ExtractDebugLog4j2Config()
                 : LaunchEnvUtils.ExtractLegacyDebugLog4j2Config();
-        dataList.Insert(0, $"-Dlog4j.configurationFile=\"{log4JConfigPath}\"");
+        dataList.Insert(0, $"-Dlog4j.configurationFile={log4JConfigPath}");
     }
 
     private static void _AddRendererJvmArgs(List<string> dataList)
@@ -154,7 +136,7 @@ public static partial class GameLaunch
             2 => "d3d12",
             _ => "zink"
         };
-        dataList.Insert(0, $"-javaagent:\"{mesaLoaderWindowsTargetFile}\"={rendererName}");
+        dataList.Insert(0, $"-javaagent:{mesaLoaderWindowsTargetFile}={rendererName}");
     }
 
     private static void _AddProxyJvmArgs(List<string> dataList, McInstance instance)
@@ -187,81 +169,69 @@ public static partial class GameLaunch
             return;
 
         var legacyFixPath = Path.Combine(LauncherPaths.PureAsciiDirectory, "legacyfix.jar");
-        dataList.Add($"-javaagent:\"{legacyFixPath}\"");
+        dataList.Add($"-javaagent:{legacyFixPath}");
 
         if (instance.releaseTime < new DateTime(2011, 5, 25))
             dataList.Add("-Djava.util.Arrays.useLegacyMergeSort=true");
     }
 
-    private static void _AddJavaWrapperJvmArgs(List<string> dataList)
+    private static List<string> BuildDesktopWrapperOptions()
     {
-        if (!LauncherCommon.IsUtf8CodePage()
+        var options = new List<string>();
+        if (OperatingSystem.IsAndroid() || !LauncherCommon.IsUtf8CodePage()
             || Config.Launch.DisableJlw
             || Config.Instance.DisableJlw[InstanceList.McMcInstanceSelected!.PathInstance])
-            return;
+            return options;
 
         if (mcLaunchJavaSelected!.Installation.MajorVersion >= 9)
-            dataList.Add(
-                "--add-exports cpw.mods.bootstraplauncher/cpw.mods.bootstraplauncher=ALL-UNNAMED");
-        dataList.Add(
-            $"-Doolloo.jlw.tmpdir=\"{LauncherPaths.PureAsciiDirectory.TrimEnd(Path.DirectorySeparatorChar)}\"");
-        dataList.Add($"-jar \"{ExtractJavaWrapper()}\"");
+            options.AddRange(["--add-exports", "cpw.mods.bootstraplauncher/cpw.mods.bootstraplauncher=ALL-UNNAMED"]);
+        options.Add("-Doolloo.jlw.tmpdir=" + LauncherPaths.PureAsciiDirectory.TrimEnd(Path.DirectorySeparatorChar));
+        options.AddRange(["-jar", ExtractJavaWrapper()]);
+        return options;
     }
 
-    private static string McLaunchArgumentsJvmNew(McInstance instance)
+    private static List<string> BuildModernJvmOptions(McInstance instance)
     {
-        var dataList = new List<string>();
-
-        _CollectInheritedJvmArguments(dataList, instance);
-        SecretLaunchJvmArgs(ref dataList);
-
-        _AddAuthlibInjectorJvmArgsNew(dataList);
-        _AddLwjglUnsafeAgentJvmArgs(dataList);
-        _AddDebugLog4jConfigJvmArgs(dataList, instance);
-        _AddRendererJvmArgs(dataList);
-        _AddProxyJvmArgs(dataList, instance);
-        _AddJavaWrapperJvmArgs(dataList);
-
-        var result = _DeduplicateJvmArguments(dataList);
-
-        return instance.JsonObject["mainClass"] is null
-            ? throw new Exception(Lang.Text("Minecraft.Launch.Error.MissingMainClass"))
-            : $"{result} {instance.JsonObject["mainClass"]}";
+        var options = CollectInheritedArguments(instance, "jvm");
+        AppendConfiguredJvmOptions(options, instance);
+        _AddAuthlibInjectorJvmArgsNew(options);
+        _AddLwjglUnsafeAgentJvmArgs(options);
+        _AddDebugLog4jConfigJvmArgs(options, instance);
+        _AddRendererJvmArgs(options);
+        _AddProxyJvmArgs(options, instance);
+        options.RemoveAll(option => option == "-XX:MaxDirectMemorySize=256M");
+        return JavaArgumentTokens.DeduplicateGroups(options);
     }
 
-    private static void _CollectInheritedJvmArguments(List<string> dataList, McInstance instance)
+    private static List<string> CollectInheritedArguments(McInstance instance, string section)
     {
-        var currentInstance = instance;
-        while (true)
+        var arguments = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (var current = instance; seen.Add(current.Name);)
         {
-            if (currentInstance.JsonObject["arguments"] is not null
-                && currentInstance.JsonObject["arguments"]!["jvm"] is not null)
-                foreach (var subJson in currentInstance.JsonObject["arguments"]!["jvm"]!.AsArray())
+            if (current.JsonObject["arguments"]?[section] is JsonArray entries)
+            {
+                foreach (var entry in entries)
                 {
-                    if (subJson!.GetValueKind() == JsonValueKind.String)
+                    if (entry is JsonValue value && value.TryGetValue<string>(out var token))
+                        JavaArgumentTokens.AppendManifestValue(arguments, token);
+                    else if (entry is JsonObject conditional && conditional["rules"] is { } rules
+                             && Libraries.McJsonRuleCheck(rules))
                     {
-                        dataList.Add(subJson.ToString());
-                        continue;
+                        if (conditional["value"] is JsonValue single && single.TryGetValue<string>(out var item))
+                            JavaArgumentTokens.AppendManifestValue(arguments, item);
+                        else if (conditional["value"] is JsonArray multiple)
+                            foreach (var itemValue in multiple)
+                                JavaArgumentTokens.AppendManifestValue(arguments, itemValue!.GetValue<string>());
                     }
-
-                    if (!Libraries.McJsonRuleCheck(subJson["rules"]!))
-                        continue;
-
-                    if (subJson["value"]!.GetValueKind() == JsonValueKind.String)
-                    {
-                        dataList.Add(subJson["value"]!.ToString());
-                        continue;
-                    }
-
-                    dataList.AddRange(
-                        subJson["value"]!.AsArray().Select(value => value!.ToString()));
                 }
+            }
 
-            if (string.IsNullOrEmpty(currentInstance.InheritInstanceName))
-                break;
-
-            currentInstance = new McInstance(currentInstance.InheritInstanceName);
+            if (string.IsNullOrEmpty(current.InheritInstanceName))
+                return arguments;
+            current = new McInstance(current.InheritInstanceName);
         }
+        throw new InvalidDataException("Minecraft 版本参数存在循环继承。");
     }
 
     private static void _AddAuthlibInjectorJvmArgsNew(List<string> dataList)
@@ -279,10 +249,11 @@ public static partial class GameLaunch
         {
             var response = NetFacade.NetGetCodeByRequestRetry(server, Encoding.UTF8)?.ToString();
             var prefetched = Convert.ToBase64String(Encoding.UTF8.GetBytes(response!));
-            dataList.Insert(
-                0,
-                $"-javaagent:\"{Path.Combine(LauncherPaths.PureAsciiDirectory, "authlib-injector.jar")}\"={server} "
-                + $"-Dauthlibinjector.side=client -Dauthlibinjector.yggdrasil.prefetched={prefetched}");
+            dataList.InsertRange(0,
+            [
+                $"-javaagent:{Path.Combine(LauncherPaths.PureAsciiDirectory, "authlib-injector.jar")}={server}",
+                "-Dauthlibinjector.side=client", $"-Dauthlibinjector.yggdrasil.prefetched={prefetched}"
+            ]);
         }
         catch (Exception ex)
         {
@@ -301,30 +272,6 @@ public static partial class GameLaunch
             $"获取到的 LWJGL 版本：{McLaunchGetLwjglVersion(InstanceList.McMcInstanceSelected!)}");
         dataList.Insert(
             0,
-            $"-javaagent:\"{Path.Combine(LauncherPaths.PureAsciiDirectory, "lwjgl-unsafe-agent.jar")}\"");
-    }
-
-    private static string _DeduplicateJvmArguments(List<string> dataList)
-    {
-        var deDuplicateDataList = new List<string>();
-        for (var i = 0; i < dataList.Count; i++)
-        {
-            var currentEntry = dataList[i];
-            if (dataList[i].StartsWithF("-"))
-                while (i < dataList.Count - 1)
-                {
-                    if (dataList[i + 1].StartsWithF("-"))
-                        break;
-
-                    i += 1;
-                    currentEntry += $" {dataList[i]}";
-                }
-
-            deDuplicateDataList.Add(currentEntry.Trim().Replace("McEmu= ", "McEmu="));
-        }
-
-        deDuplicateDataList.Remove("-XX:MaxDirectMemorySize=256M");
-
-        return deDuplicateDataList.Distinct().ToList().Join(" ");
+            $"-javaagent:{Path.Combine(LauncherPaths.PureAsciiDirectory, "lwjgl-unsafe-agent.jar")}");
     }
 }

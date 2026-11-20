@@ -381,14 +381,15 @@ public static partial class GameLaunch
         string customCommandVersion)
     {
         var instance = InstanceList.McMcInstanceSelected!;
+        var plan = _mcLaunchPlan ?? throw new InvalidOperationException("未生成 Java 启动计划。");
         var javaInstallation = mcLaunchJavaSelected!.Installation;
         var service = ApplicationRuntime.GetService<ILaunchScriptService>()
             ?? throw new InvalidOperationException("启动脚本服务尚未初始化");
         return service.CreateScript(
             new LaunchScriptOptions(
-                LauncherCommon.ShortenPath(instance.PathIndie),
+                plan.WorkingDirectory,
                 javaInstallation.JavaExePath,
-                _mcLaunchArgument,
+                plan.EnumerateDesktopArguments().Select(argument => LogFilter.FilterAccessToken(argument, 'F')).ToArray(),
                 customCommandGlobal,
                 customCommandVersion,
                 javaInstallation.MajorVersion,
@@ -477,13 +478,14 @@ public static partial class GameLaunch
         startInfo.EnvironmentVariables["appdata"] = LauncherCommon.ShortenPath(
             GameFolders.mcFolderSelected!);
 
-        startInfo.WorkingDirectory =
-            LauncherCommon.ShortenPath(InstanceList.McMcInstanceSelected!.PathIndie);
+        var plan = _mcLaunchPlan ?? throw new InvalidOperationException("未生成 Java 启动计划。");
+        startInfo.WorkingDirectory = plan.WorkingDirectory;
         startInfo.UseShellExecute = false;
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
         startInfo.CreateNoWindow = noJavaw;
-        startInfo.Arguments = _mcLaunchArgument;
+        foreach (var argument in plan.EnumerateDesktopArguments())
+            startInfo.ArgumentList.Add(argument);
         return startInfo;
     }
 
@@ -614,14 +616,10 @@ public static partial class GameLaunch
     private static void _LogLoginParameters()
     {
         McLaunchLog("~ 档案参数 ~");
-        McLaunchLog($"玩家用户名：{mcLoginLoader.output.Name}");
-        McLaunchLog($"AccessToken：{mcLoginLoader.output.AccessToken}");
-        McLaunchLog($"ClientToken：{mcLoginLoader.output.ClientToken}");
-        McLaunchLog($"UUID：{mcLoginLoader.output.Uuid}");
+        // 账户凭据（AccessToken/ClientToken/UUID）不得进入启动器日志；仅记录非敏感认证类型。
         McLaunchLog($"验证方式：{mcLoginLoader.output.Type}");
         McLaunchLog("");
     }
-
     private static void McLaunchEnd()
     {
         McLaunchLog("开始启动结束处理");

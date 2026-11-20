@@ -12,127 +12,45 @@ public static partial class GameLaunch
             ? LauncherCommon.Dpi / 96d
             : 1d;
 
-    private static string McLaunchArgumentsGameOld(McInstance version)
+    private static void ApplyOptiFineTweakClass(List<string> arguments, McInstance version)
     {
-        var dataList = new List<string>();
+        if (version.Info is { HasForge: false, HasLiteLoader: false } || !version.Info.HasOptiFine)
+            return;
 
-        var basicString = version.JsonObject["minecraftArguments"]!.ToString();
-        if (!basicString.Contains("--height")
-            && version.releaseTime >= new DateTime(2013, 6, 17))
-            basicString += " --height ${resolution_height} --width ${resolution_width}";
-        dataList.Add(basicString);
-
-        var result = dataList.Join(" ");
-        return _FixOptiFineTweakClass(result, version);
-    }
-
-    private static string McLaunchArgumentsGameNew(McInstance instance)
-    {
-        var dataList = _CollectInheritedGameArguments(instance);
-        var result = _MergeArgumentTokens(dataList);
-        return _FixOptiFineTweakClass(result, instance);
-    }
-
-    private static List<string> _CollectInheritedGameArguments(McInstance instance)
-    {
-        var dataList = new List<string>();
-        var currentInstance = instance;
-        while (true)
+        const string legacy = "optifine.OptiFineTweaker";
+        const string forge = "optifine.OptiFineForgeTweaker";
+        var found = false;
+        var fixFile = false;
+        for (var i = arguments.Count - 2; i >= 0; i--)
         {
-            if (currentInstance.JsonObject["arguments"]?["game"] != null)
-                foreach (var subJson in currentInstance.JsonObject["arguments"]!["game"]!.AsArray())
-                    if (subJson!.GetValueKind() == JsonValueKind.String)
-                    {
-                        dataList.Add(subJson.ToString());
-                    }
-                    else if (Libraries.McJsonRuleCheck(subJson["rules"]!))
-                    {
-                        if (subJson["value"]!.GetValueKind() == JsonValueKind.String)
-                            dataList.Add(subJson["value"]!.ToString());
-                        else
-                            dataList.AddRange(
-                                subJson["value"]
-                                    !
-                                    .AsArray()
-                                    .Select(value => value!.ToString()));
-                    }
-
-            if (string.IsNullOrEmpty(currentInstance.InheritInstanceName))
-                break;
-
-            currentInstance = new McInstance(currentInstance.InheritInstanceName);
+            if (arguments[i] != "--tweakClass" || arguments[i + 1] is not (legacy or forge))
+                continue;
+            found = true;
+            fixFile |= arguments[i + 1] == legacy;
+            arguments.RemoveRange(i, 2);
         }
+        if (!found)
+            return;
 
-        return dataList;
-    }
-
-    private static string _MergeArgumentTokens(List<string> dataList)
-    {
-        var deDuplicateDataList = new List<string>();
-        for (var i = 0; i < dataList.Count; i++)
-        {
-            var currentEntry = dataList[i];
-            if (dataList[i].StartsWithF("-"))
-                while (i < dataList.Count - 1)
-                {
-                    if (dataList[i + 1].StartsWithF("-"))
-                        break;
-
-                    i += 1;
-                    currentEntry += $" {dataList[i]}";
-                }
-
-            deDuplicateDataList.Add(currentEntry);
-        }
-
-        return deDuplicateDataList.Distinct().ToList().Join(" ");
-    }
-
-    private static string _FixOptiFineTweakClass(string result, McInstance version)
-    {
-        if (version.Info is { HasForge: false, HasLiteLoader: false }
-            || !version.Info.HasOptiFine)
-            return result;
-
-        if (result.Contains("--tweakClass optifine.OptiFineForgeTweaker"))
-        {
-            LauncherCommon.Log($"[Launch] 发现正确的 OptiFineForge TweakClass，目前参数：{result}");
-            result =
-                $"{result
-                    .Replace(" --tweakClass optifine.OptiFineForgeTweaker", "")
-                    .Replace("--tweakClass optifine.OptiFineForgeTweaker ", "")
-                } --tweakClass optifine.OptiFineForgeTweaker";
-        }
-
-        if (!result.Contains("--tweakClass optifine.OptiFineTweaker"))
-            return result;
-
-        LauncherCommon.Log($"[Launch] 发现错误的 OptiFineForge TweakClass，目前参数：{result}");
-        result =
-            $"{result
-                .Replace(" --tweakClass optifine.OptiFineTweaker", "")
-                .Replace("--tweakClass optifine.OptiFineTweaker ", "")
-            } --tweakClass optifine.OptiFineForgeTweaker";
+        arguments.AddRange(["--tweakClass", forge]);
+        if (!fixFile)
+            return;
 
         try
         {
-            Files.WriteAllText(
-                Path.Combine(version.PathInstance, $"{version.Name}.json"),
-                Files
-                    .ReadAllTextOrEmpty(Path.Combine(version.PathInstance, $"{version.Name}.json"))
-                    .Replace("optifine.OptiFineTweaker", "optifine.OptiFineForgeTweaker"));
+            var path = Path.Combine(version.PathInstance, $"{version.Name}.json");
+            Files.WriteAllText(path, Files.ReadAllTextOrEmpty(path).Replace(legacy, forge));
         }
         catch (Exception ex)
         {
             LauncherCommon.Log(ex, "替换 OptiFineForge TweakClass 失败");
         }
-
-        return result;
     }
 
-    private static Dictionary<string, string> McLaunchArgumentsReplace(
+    private static Dictionary<string, string> BuildArgumentReplacements(
         McInstance instance,
-        ref Loading.LoaderTask<string, List<Libraries.McLibToken>> loader)
+        Loading.LoaderTask<string, List<Libraries.McLibToken>> loader,
+        out string[] classPath)
     {
         var gameArguments = _CreateArgumentReplacements(instance);
         gameArguments.Add(
@@ -172,7 +90,8 @@ public static partial class GameLaunch
 
         var libList = Libraries.McLibListGet(instance, true);
         loader.output = libList;
-        gameArguments.Add("${classpath}", _BuildClassPath(instance, libList));
+        classPath = BuildClassPathEntries(instance, libList);
+        gameArguments.Add("${classpath}", string.Join(Path.PathSeparator, classPath));
 
         return gameArguments;
     }
@@ -256,7 +175,7 @@ public static partial class GameLaunch
         gameSize.Height /= scale;
     }
 
-    private static string _BuildClassPath(McInstance instance, List<Libraries.McLibToken> libList)
+    private static string[] BuildClassPathEntries(McInstance instance, List<Libraries.McLibToken> libList)
     {
         var cpStrings = new List<string>();
         string? optiFineCp = null;
@@ -319,11 +238,9 @@ public static partial class GameLaunch
         }
 
         if (optiFineCp is not null)
-            cpStrings.Insert(cpStrings.Count - 2, optiFineCp);
+            cpStrings.Insert(Math.Max(0, cpStrings.Count - 2), optiFineCp);
 
-        return cpStrings
-            .Select(c => LauncherCommon.ShortenPath(c))
-            .Join(Path.PathSeparator.ToString());
+        return cpStrings.Select(c => LauncherCommon.ShortenPath(c)).ToArray();
     }
 
     public struct GameWindowSize(double width, double height)
