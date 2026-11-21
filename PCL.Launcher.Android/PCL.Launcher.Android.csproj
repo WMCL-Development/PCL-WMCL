@@ -71,24 +71,4 @@
         </Reference>
     </ItemGroup>
 
-    <!-- Compile the probe for HotSpot only. It is not an Android (ART) Java source or binding. -->
-    <ItemGroup>
-        <AndroidJavaSource Remove="JavaRuntime/Probe/WmclJvmProbe.java" />
-    </ItemGroup>
-    <Target Name="CompileWmclJvmProbe" DependsOnTargets="_ResolveSdks"
-            Condition="'$(DesignTimeBuild)' != 'true'"
-            Inputs="$(MSBuildProjectFullPath);JavaRuntime/Probe/WmclJvmProbe.java"
-            Outputs="$(IntermediateOutputPath)jvm-probe/WmclJvmProbe.class">
-        <MakeDir Directories="$(IntermediateOutputPath)jvm-probe" />
-        <Exec Command="&quot;$(_JavaSdkDirectory)/bin/javac&quot; --release 8 -Xlint:-options -encoding UTF-8 -d &quot;$(IntermediateOutputPath)jvm-probe&quot; &quot;JavaRuntime/Probe/WmclJvmProbe.java&quot;" />
-        <ItemGroup>
-            <FileWrites Include="$(IntermediateOutputPath)jvm-probe/WmclJvmProbe.class" />
-        </ItemGroup>
-    </Target>
-    <Target Name="AddWmclJvmProbeResource" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileWmclJvmProbe"
-            Condition="'$(DesignTimeBuild)' != 'true'">
-        <ItemGroup>
-            <EmbeddedResource Include="$(IntermediateOutputPath)jvm-probe/WmclJvmProbe.class" LogicalName="WmclJvmProbe.class" />
-        </ItemGroup>
-    </Target>
 </Project>

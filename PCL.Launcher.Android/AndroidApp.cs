@@ -61,9 +61,6 @@ public class PclAndroidApp : Avalonia.Application
         try
         {
             AndroidComposition.ConfigureMinecraftStorage(global::Android.App.Application.Context);
-            global::Android.Util.Log.Info("WMCL.PATHS",
-                $"Paths.Data={PCL.Core.App.Paths.Data} | UserDataRoot={LauncherPaths.UserDataRoot} | "
-                + $"DefaultMC={LauncherPaths.DefaultMinecraftDirectory} | Selected={GameFolders.mcFolderSelected ?? "<null>"}");
             AndroidBootstrap.Breadcrumb("App: Minecraft 存储已配置");
         }
         catch (Exception exception)
