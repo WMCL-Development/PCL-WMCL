@@ -105,8 +105,9 @@ public class PageSetupJavaViewModel : ViewModelBase
         await RunAsync(ct => Task.Run(
             async () =>
             {
-                await JavaService.JavaManager.ScanJavaAsync(true);
-                JavaService.JavaManager.CheckAllAvailability();
+                var manager = await JavaService.EnsureStartedAsync();
+                await manager.ScanJavaAsync(true);
+                manager.CheckAllAvailability();
             },
             ct));
     }
@@ -116,7 +117,7 @@ public class PageSetupJavaViewModel : ViewModelBase
         await RunAsync(ct => Task.Run(
             () =>
             {
-                JavaRuntime.Javas.AddOrGet(javaExePath);
+                JavaService.EnsureStartedAsync().GetAwaiter().GetResult().AddOrGet(javaExePath);
                 JavaRuntime.Javas.SaveConfig();
             },
             ct));

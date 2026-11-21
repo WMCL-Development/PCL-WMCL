@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.Minecraft;
 using PCL.Core.Minecraft.Java;
 using PCL.Core.Platform;
 using PCL.Core.UI;
@@ -93,7 +94,7 @@ public partial class PageSetupJava : MyPageRight, IRefreshable
             _ = ScanThenRefreshAsync();
         }
 
-        task.output = JavaRuntime.Javas.GetSortedJavaList();
+        task.output = JavaService.EnsureStartedAsync().GetAwaiter().GetResult().GetSortedJavaList();
     }
 
     private async Task ScanThenRefreshAsync()

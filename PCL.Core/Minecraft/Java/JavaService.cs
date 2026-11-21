@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using PCL.Core.App.IoC;
 using PCL.Core.Minecraft.Java;
@@ -10,13 +11,44 @@ namespace PCL.Core.Minecraft;
 [LifecycleScope("java", "Java 管理")]
 public sealed partial class JavaService
 {
+    private static readonly Lock StartLock = new();
     private static JavaManager? _javaManager;
-    public static JavaManager JavaManager => _javaManager!;
+    private static Task<JavaManager>? _startTask;
+
+    /// <summary>
+    /// The manager, starting it on demand. Callers that can await should use
+    /// <see cref="EnsureStartedAsync" />; this keeps the many synchronous call sites working
+    /// even when the lifecycle scope has not finished yet.
+    /// </summary>
+    public static JavaManager JavaManager
+    {
+        get
+        {
+            if (_javaManager is not null) return _javaManager;
+            var starting = EnsureStartedAsync();
+            if (!starting.IsCompleted)
+                starting.GetAwaiter().GetResult();
+            return _javaManager!;
+        }
+    }
+
+    /// <summary>
+    /// Returns the manager, starting it on first use. The lifecycle scope begins asynchronously,
+    /// so anything that needs the manager must await this instead of assuming it is ready: on a
+    /// phone the settings page can open long before the scan finishes.
+    /// </summary>
+    public static Task<JavaManager> EnsureStartedAsync()
+    {
+        lock (StartLock)
+            return _startTask ??= StartCoreAsync();
+    }
 
     [LifecycleStart]
-    private static async Task _StartAsync()
+    private static Task _StartAsync() => EnsureStartedAsync();
+
+    private static async Task<JavaManager> StartCoreAsync()
     {
-        if (_javaManager is not null) return;
+        if (_javaManager is not null) return _javaManager;
 
         Context.Info("Initializing Java Manager...");
 
@@ -30,6 +62,7 @@ public sealed partial class JavaService
 
         var logInfo = string.Join("\n\t", _javaManager.GetSortedJavaList());
         Context.Info($"Finished to scan java: \n\t{logInfo}");
+        return _javaManager;
     }
 
     private static IJavaScanner[] _CreateScanners()
@@ -44,5 +77,7 @@ public sealed partial class JavaService
 
         _javaManager.SaveConfig();
         _javaManager = null;
+        lock (StartLock)
+            _startTask = null;
     }
 }
