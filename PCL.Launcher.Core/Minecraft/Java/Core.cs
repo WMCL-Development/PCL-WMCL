@@ -328,7 +328,8 @@ public static partial class JavaRuntime
     /// </summary>
     public static bool IsGameSet64BitJava(McInstance? relatedVersion = null)
     {
-        // Android 上没有 Java 运行环境（JavaService 不启动），直接跳过这项检查。
+        // Android 的运行时由启动器自己下载，不存在“系统安装的 64 位 Java”这个概念，
+        // 但 JavaService 照常启动，这里只需跳过对用户配置值的解析。
         if (OperatingSystem.IsAndroid()) return false;
 
         try

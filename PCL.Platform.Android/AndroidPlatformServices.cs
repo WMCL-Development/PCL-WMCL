@@ -11,7 +11,11 @@ using PCL.Core.Utils.Secret;
 
 namespace PCL.Platform.Android;
 
-/// <summary>Android 不支持通过进程启动 Java，因此不提供扫描器与解析器。</summary>
+/// <summary>
+/// Android 的 Java 运行时由启动器自己下载到应用私有目录。解析器沿用 POSIX 实现：它优先读取
+/// 运行时自带的 release 文件，只有在缺失时才尝试执行 java -version，因此不依赖能否启动进程。
+/// 这里不提供扫描器，Android 上没有可信的系统级 Java 安装可供扫描。
+/// </summary>
 public sealed class AndroidJavaPlatformInfo : IJavaPlatformInfo
 {
     public string JavaExecutableName => "java";
@@ -20,8 +24,7 @@ public sealed class AndroidJavaPlatformInfo : IJavaPlatformInfo
     public string JstackExecutableName => "jstack";
     public bool SupportsJavaw => false;
 
-    public IJavaParser CreateParser() =>
-        throw new PlatformNotSupportedException("Android 无法启动 Java 进程。");
+    public IJavaParser CreateParser() => new PosixJavaParser();
 
     public IJavaScanner[] CreateScanners() => [];
 }

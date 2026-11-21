@@ -47,7 +47,7 @@ public static class AndroidBootstrap
         }
     }
 
-    /// <summary>数据根目录（应用私有目录，无需任何权限）。</summary>
+    /// <summary>应用私有数据目录，仅在外部目录不可用时作为回退存在。</summary>
     public static string DataRoot =>
         Path.Combine(global::Android.App.Application.Context.FilesDir!.AbsolutePath, "pcl");
 
@@ -87,7 +87,9 @@ public static class AndroidBootstrap
             ConfigService.BeginRegistration();
             Breadcrumb("bootstrap: 配置项已登记");
 
-            Paths.Data = DataRoot;
+            // Paths already resolved through PCL_ANDROID_ROOT, which AndroidPaths.Prepare points at
+            // the external app directory when it is usable. Do not override it here: doing so
+            // pinned every derived path (the Minecraft folder included) to app-private storage.
             Directory.CreateDirectory(Paths.Data);
 
             ConfigService.Initialize();
