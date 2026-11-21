@@ -20,17 +20,7 @@ public sealed partial class JavaService
     /// <see cref="EnsureStartedAsync" />; this keeps the many synchronous call sites working
     /// even when the lifecycle scope has not finished yet.
     /// </summary>
-    public static JavaManager JavaManager
-    {
-        get
-        {
-            if (_javaManager is not null) return _javaManager;
-            var starting = EnsureStartedAsync();
-            if (!starting.IsCompleted)
-                starting.GetAwaiter().GetResult();
-            return _javaManager!;
-        }
-    }
+    public static JavaManager JavaManager => _javaManager!;
 
     /// <summary>
     /// Returns the manager, starting it on first use. The lifecycle scope begins asynchronously,

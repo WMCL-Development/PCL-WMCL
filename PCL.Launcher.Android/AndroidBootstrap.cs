@@ -4,6 +4,7 @@ using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.IO.Net;
 using PCL.Core.Logging;
+using PCL.Core.Minecraft;
 using PCL.Platform.Android;
 
 namespace PCL.Android;
@@ -97,6 +98,12 @@ public static class AndroidBootstrap
 
             NetworkService.Initialize();
             Breadcrumb("bootstrap: 网络服务已就绪");
+
+            // Scan for Java before any window exists. The lifecycle scope starts asynchronously,
+            // and a page that asks for the manager before it finishes would find it null. Waiting
+            // here is safe precisely because this runs off the UI thread.
+            JavaService.EnsureStartedAsync().GetAwaiter().GetResult();
+            Breadcrumb("bootstrap: Java 服务已就绪");
 
             LogWrapper.Info("Android", $"数据目录：{Paths.Data}");
         }

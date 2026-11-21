@@ -94,7 +94,7 @@ public partial class PageSetupJava : MyPageRight, IRefreshable
             _ = ScanThenRefreshAsync();
         }
 
-        task.output = JavaService.EnsureStartedAsync().GetAwaiter().GetResult().GetSortedJavaList();
+        task.output = JavaRuntime.Javas.GetSortedJavaList();
     }
 
     private async Task ScanThenRefreshAsync()
