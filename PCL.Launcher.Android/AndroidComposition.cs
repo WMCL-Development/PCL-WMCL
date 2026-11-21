@@ -24,7 +24,7 @@ public static class AndroidComposition
         AvaloniaUiServiceRegistration.CustomRegistration = services =>
         {
             services.AddAndroidUiServices();
-            services.AddSingleton<IJavaSetupPageFactory, AndroidJavaSetupPageFactory>();
+            services.AddSingleton<IJavaRuntimeProvider, AndroidJavaRuntimeProvider>();
         };
 
         var applicationServices = new ApplicationServices

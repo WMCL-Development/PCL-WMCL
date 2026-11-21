@@ -3,6 +3,7 @@ using Avalonia.Media;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
 using PCL.Core.Minecraft.Java;
+using PCL.Core.Platform;
 using PCL.Core.UI;
 using PCL.Core.UI.Dialogs;
 using PCL.Core.UI.Hints;
@@ -28,7 +29,26 @@ public partial class PageSetupJava : MyPageRight, IRefreshable
         PanScroll = PanBack;
 
         _loader = new Loading.LoaderTask<bool, List<JavaEntry>>("JavaPageLoader", LoadJavaList);
-        BtnAdd.Click += async (_, _) => await AddJavaAsync();
+        // 新增拆成「下载」与「导入」两项，点开同一个菜单选择。
+        MenuDownload = new MyMenuItem
+        {
+            SvgIcon = "lucide/download",
+            Header = Lang.Text("Setup.Java.Add.Download")
+        };
+        MenuDownload.Click += async (_, _) => await DownloadJavaAsync();
+        MenuImport = new MyMenuItem
+        {
+            SvgIcon = "lucide/package-plus",
+            Header = Lang.Text("Setup.Java.Add.Import")
+        };
+        MenuImport.Click += async (_, _) => await ImportJavaAsync();
+        BtnAdd.Click += (_, _) =>
+        {
+            var flyout = new MenuFlyout { Placement = PlacementMode.BottomEdgeAlignedLeft };
+            flyout.Items.Add(MenuDownload);
+            flyout.Items.Add(MenuImport);
+            flyout.ShowAt(BtnAdd);
+        };
 
         Loaded += (_, _) =>
         {
@@ -43,6 +63,10 @@ public partial class PageSetupJava : MyPageRight, IRefreshable
                 _ => OnLoadFinished());
         };
     }
+
+    private MyMenuItem MenuDownload { get; }
+
+    private MyMenuItem MenuImport { get; }
 
     public PageSetupJavaViewModel ViewModel { get; }
 
@@ -212,6 +236,128 @@ public partial class PageSetupJava : MyPageRight, IRefreshable
             btnEnableSwitch.SetLocalizedValue(
                 ToolTip.TipProperty,
                 isEnabled ? "Setup.Java.Disable" : "Setup.Java.Enable");
+        }
+    }
+
+    /// <summary>
+    /// Downloads a runtime. Android hosts its own feed, so it answers through
+    /// <see cref="IJavaRuntimeProvider" />; desktop keeps using the launcher's downloader,
+    /// which already falls back to a mirror when the official source fails or stalls.
+    /// </summary>
+    private async Task DownloadJavaAsync()
+    {
+        var provider = ApplicationRuntime.GetService<IJavaRuntimeProvider>();
+        if (provider is { IsAvailable: true } && provider.Options.Count > 0)
+        {
+            var choice = await DialogService.Instance.ShowAsync(new SelectDialogRequest
+            {
+                Title = Lang.Text("Setup.Java.Add.Download"),
+                Options = provider.Options.Select(text => new DialogOption { Text = text }).ToList()
+            });
+            if (choice.IsCanceled || choice.SelectedIndex is not { } index) return;
+            await RunRuntimeTaskAsync(
+                Lang.Text("Setup.Java.Task.Download"),
+                async progress => await provider.InstallAsync(index, progress, CancellationToken.None));
+            return;
+        }
+
+        var loader = JavaRuntime.GetJavaDownloadLoader();
+        loader.Start(null, true);
+        Loading.LoaderTaskbarAdd(loader);
+        try
+        {
+            loader.WaitForExit();
+        }
+        catch (Exception ex)
+        {
+            LauncherCommon.Log(ex, Lang.Text("Setup.Java.AddFailed"), LauncherLogLevel.Hint,
+                userSummary: Lang.Text("Setup.Java.AddFailed"));
+            HintService.Show(Hints.Error(Lang.Text("Setup.Java.AddFailed")));
+            return;
+        }
+        HintService.Show(Hints.Success(Lang.Text("Setup.Java.Added")));
+        _loader.Start(true, true);
+    }
+
+    /// <summary>
+    /// Imports a runtime the player already has: an archive gets unpacked first, and a
+    /// platform that can only handle archives is expected to reject executables here.
+    /// </summary>
+    private async Task ImportJavaAsync()
+    {
+        string path;
+        try
+        {
+            path = await SystemDialogs.SelectFileAsync(
+                Lang.Text("Setup.Java.SelectFile.Filter", JavaExecutableLayout.JavaExecutableName),
+                Lang.Text("Setup.Java.Add.Import"));
+        }
+        catch (Exception ex)
+        {
+            LauncherCommon.Log(ex, Lang.Text("Setup.Java.AddFailed"), LauncherLogLevel.Hint,
+                userSummary: Lang.Text("Setup.Java.AddFailed"));
+            return;
+        }
+        if (string.IsNullOrEmpty(path)) return;
+
+        var provider = ApplicationRuntime.GetService<IJavaRuntimeProvider>();
+        if (IsRuntimeArchive(path) && provider is { IsAvailable: true })
+        {
+            await RunRuntimeTaskAsync(
+                Lang.Text("Setup.Java.Task.Import"),
+                _ => provider.ImportArchiveAsync(path, CancellationToken.None));
+            return;
+        }
+
+        await AddAndReportAsync(path);
+    }
+
+    private static bool IsRuntimeArchive(string path) =>
+        path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".tar.xz", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase);
+
+    private async Task RunRuntimeTaskAsync(string title, Func<Action<string, double>, Task<string>> work)
+    {
+        BtnAdd.IsEnabled = false;
+        try
+        {
+            HintService.Show(Hints.Info(title));
+            var javaHome = await work((stage, value) => { _ = stage; _ = value; });
+            await AddAndReportAsync(JavaExecutableLayout.GetJavaExePath(javaHome));
+        }
+        catch (Exception ex)
+        {
+            LauncherCommon.Log(ex, Lang.Text("Setup.Java.AddFailed"), LauncherLogLevel.Hint,
+                userSummary: Lang.Text("Setup.Java.AddFailed"));
+            HintService.Show(Hints.Error(Lang.Text("Setup.Java.AddFailed")));
+        }
+        finally
+        {
+            BtnAdd.IsEnabled = true;
+        }
+    }
+
+    private async Task AddAndReportAsync(string javaExePath)
+    {
+        if (!File.Exists(javaExePath))
+        {
+            HintService.Show(Hints.Error(Lang.Text("Setup.Java.AddFailed")));
+            return;
+        }
+        if (JavaRuntime.Javas.Exist(javaExePath))
+        {
+            HintService.Show(Hints.Info(Lang.Text("Setup.Java.AlreadyExists")));
+            return;
+        }
+        if (await ViewModel.AddJavaAsync(javaExePath))
+        {
+            HintService.Show(Hints.Success(Lang.Text("Setup.Java.Added")));
+            _loader.Start(true, true);
+        }
+        else
+        {
+            HintService.Show(Hints.Error(Lang.Text("Setup.Java.AddFailed")));
         }
     }
 

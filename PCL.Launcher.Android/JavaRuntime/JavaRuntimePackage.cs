@@ -3,7 +3,7 @@ namespace PCL.Android;
 internal sealed record JavaRuntimePackage(int Major, string Version, long ArchiveSize, string Sha256)
 {
     private const string ReleaseBase =
-        "https://github.com/wenxiangL521/wmcl-android-jdk/releases/download/android-jdk-2026.11.20/";
+        "https://github.com/WMCL-Development/WMCL-Android-JDK/releases/download/android-jdk-2026.11.20/";
 
     public static IReadOnlyList<JavaRuntimePackage> Catalog { get; } = Array.AsReadOnly<JavaRuntimePackage>(
     [

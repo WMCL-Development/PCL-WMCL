@@ -2830,6 +2830,10 @@
     <!-- Setup.Java -->
 
     <sys:String x:Key="Setup.Java.Add">Add</sys:String>
+    <sys:String x:Key="Setup.Java.Add.Download">Download a JDK</sys:String>
+    <sys:String x:Key="Setup.Java.Add.Import">Import a JDK</sys:String>
+    <sys:String x:Key="Setup.Java.Task.Download">Downloading the Java runtime</sys:String>
+    <sys:String x:Key="Setup.Java.Task.Import">Importing the Java runtime</sys:String>
     <sys:String x:Key="Setup.Java.AddFailed">Failed to add Java to the list.</sys:String>
     <sys:String x:Key="Setup.Java.Added">Java added!</sys:String>
     <sys:String x:Key="Setup.Java.AlreadyExists">This Java already exists, so it does not need to be added again...</sys:String>
